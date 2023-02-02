@@ -1,0 +1,7 @@
+{
+  "name": "collabtask",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
