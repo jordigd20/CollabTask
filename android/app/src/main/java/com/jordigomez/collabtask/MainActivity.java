@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.jordigomez.collabtask;
 
 import com.getcapacitor.BridgeActivity;
 
