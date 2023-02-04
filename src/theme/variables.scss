@@ -1,8 +1,14 @@
 // Ionic Variables and Theming. For more info, please see:
 // http://ionicframework.com/docs/theming/
 
+@import "./fonts.scss";
+
 /** Ionic CSS Variables **/
 :root {
+
+  --ion-font-family: 'Poppins', sans-serif;
+  --ion-text-color: #233748;
+
   /** primary **/
   --ion-color-primary: #3dc795;
   --ion-color-primary-rgb: 61, 199, 149;
