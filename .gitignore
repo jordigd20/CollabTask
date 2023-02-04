@@ -69,3 +69,8 @@ Thumbs.db
 
 # Project
 /src/environments/
+
+# Firebase
+.firebase
+*-debug.log
+.runtimeconfig.json
