@@ -1,0 +1,30 @@
+ion-title {
+  font-weight: bold;
+}
+
+ion-title.title-small {
+  font-size: 1.2rem;
+  color: var(--ion-color-secondary);
+}
+
+ion-title.title-large {
+  font-size: 2rem;
+  margin-top: -0.5rem;
+}
+
+ion-content::part(background) {
+  background: linear-gradient(#64d2aa, #1fa474);
+}
+
+.img-slide {
+  height: 300px;
+  display: block;
+  margin: auto;
+  padding: 1px;
+}
+
+.description {
+  font-weight: 300;
+  text-align: center;
+  margin-bottom: 2.5rem;
+}

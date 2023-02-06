@@ -1,0 +1,69 @@
+<ion-header mode="md" class="ion-no-border">
+  <ion-toolbar color="transparent" class="ion-margin-vertical">
+    <ion-title size="small">Bienvenido a</ion-title>
+    <ion-title size="large">CollabTask</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <swiper id="intro-slides" #swiper [config]="slideOpts">
+    <ng-template swiperSlide>
+      <img
+        class="img-slide"
+        src="../../../assets/intro-slides/slide-1.svg"
+        alt="Tres personas conversando sobre como elaborar una lista de tareas"
+      />
+      <ion-text color="white">
+        <h3 class="ion-text-center">Construye tu lista de tareas</h3>
+        <p class="description">
+          Elabora tu lista de tareas junto con tus compañeros y otorga puntos a las tareas para
+          ganarlos al completarlas
+        </p>
+      </ion-text>
+    </ng-template>
+    <ng-template swiperSlide>
+      <img
+        class="img-slide"
+        src="../../../assets/intro-slides/slide-2.svg"
+        alt="Tres personas conversando sobre como repartir las tareas de forma equitativa"
+      />
+      <ion-text color="white">
+        <h3 class="ion-text-center">Reparte las tareas de una forma equitativa</h3>
+        <p class="description">
+          Ponte de acuerdo con tus compañeros para repartir las tareas entre todos o elige que
+          CollabTask haga el reparto por ti
+        </p>
+      </ion-text>
+    </ng-template>
+    <ng-template swiperSlide>
+      <img
+        class="img-slide"
+        src="../../../assets/intro-slides/slide-3.svg"
+        alt="Dos personas intercambiando una tarea por puntos o por otra tarea"
+      />
+      <ion-text color="white">
+        <h3 class="ion-text-center">Intercambia las tareas</h3>
+        <p class="description">
+          Utiliza tus puntos o una de tus tareas para intercambiarlas por otras con tus compañeros
+        </p>
+      </ion-text>
+    </ng-template>
+    <ng-template swiperSlide>
+      <img
+        class="img-slide"
+        src="../../../assets/intro-slides/slide-4.svg"
+        alt="Las tareas y las valoraciones mejoran el sello de calidad de cada usuario"
+      />
+      <ion-text color="white">
+        <h3 class="ion-text-center">Completa tus tareas y valora a tus compañeros</h3>
+        <p class="description">
+          Consigue buenas valoraciones y completa tus tareas para mejorar tu sello de calidad
+        </p>
+      </ion-text>
+    </ng-template>
+  </swiper>
+
+  <ion-button (click)="continue()" color="white" strong="true" expand="block" shape="round">
+    Continuar
+  </ion-button>
+</ion-content>

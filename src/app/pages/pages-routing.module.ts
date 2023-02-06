@@ -4,14 +4,18 @@ import { HomePage } from './home/home.page';
 
 const routes: Routes = [
   {
+    path: '',
+    redirectTo: '/slides',
+    pathMatch: 'full'
+  },
+  {
+    path: 'slides',
+    loadChildren: () => import('./slides/slides.module').then((m) => m.SlidesPageModule)
+  },
+  {
     path: 'home',
     component: HomePage,
     loadChildren: () => import('./home/home.module').then((m) => m.HomePageModule)
-  },
-  {
-    path: '',
-    redirectTo: '/home',
-    pathMatch: 'full'
   }
 ];
 

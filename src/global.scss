@@ -10,20 +10,23 @@
  */
 
 /* Core CSS required for Ionic components to work properly */
-@import "~@ionic/angular/css/core.css";
+@import '~@ionic/angular/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
-@import "~@ionic/angular/css/normalize.css";
-@import "~@ionic/angular/css/structure.css";
-@import "~@ionic/angular/css/typography.css";
+@import '~@ionic/angular/css/normalize.css';
+@import '~@ionic/angular/css/structure.css';
+@import '~@ionic/angular/css/typography.css';
 @import '~@ionic/angular/css/display.css';
 
 /* Optional CSS utils that can be commented out */
-@import "~@ionic/angular/css/padding.css";
-@import "~@ionic/angular/css/float-elements.css";
-@import "~@ionic/angular/css/text-alignment.css";
-@import "~@ionic/angular/css/text-transformation.css";
-@import "~@ionic/angular/css/flex-utils.css";
+@import '~@ionic/angular/css/padding.css';
+@import '~@ionic/angular/css/float-elements.css';
+@import '~@ionic/angular/css/text-alignment.css';
+@import '~@ionic/angular/css/text-transformation.css';
+@import '~@ionic/angular/css/flex-utils.css';
+
+@import 'swiper/css';
+@import 'swiper/css/pagination';
 
 .ion-color-white {
   --ion-color-base: var(--ion-color-white) !important;
@@ -32,4 +35,33 @@
   --ion-color-contrast-rgb: var(--ion-color-white-contrast-rgb) !important;
   --ion-color-shade: var(--ion-color-white-shade) !important;
   --ion-color-tint: var(--ion-color-white-tint) !important;
+}
+
+h1 {
+  font-weight: bold;
+  letter-spacing: -0.01rem;
+}
+
+h2 {
+  font-weight: bold;
+  letter-spacing: -0.03rem;
+}
+
+h3 {
+  font-weight: bold;
+  letter-spacing: -0.03rem;
+}
+
+#intro-slides .swiper-pagination-bullet-active {
+  opacity: 1 !important;
+  background-color: #fff !important;
+}
+
+ion-button {
+  text-transform: none;
+  --box-shadow: none;
+
+  &::part(native) {
+    letter-spacing: 0;
+  }
 }
