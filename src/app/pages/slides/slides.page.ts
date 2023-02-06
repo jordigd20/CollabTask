@@ -22,13 +22,11 @@ export class SlidesPage implements OnInit {
 
   constructor(private router: Router) {}
 
-  ngOnInit() {
-    console.log(this.swiper);
-  }
+  ngOnInit() {}
 
   continue() {
-    // if (this.swiper?.swiperRef.activeIndex === 3)
-    //   this.router.navigate(['/home']);
+    if (this.swiper?.swiperRef.activeIndex === 3)
+      this.router.navigate(['/welcome']);
 
     this.swiper?.swiperRef.slideNext();
   }

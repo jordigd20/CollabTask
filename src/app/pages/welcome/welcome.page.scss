@@ -1,0 +1,30 @@
+ion-content::part(background) {
+  background: linear-gradient(#64d2aa, #1fa474);
+}
+
+.img-logos {
+  width: calc(100% + 75px);
+  max-width: unset;
+  height: auto;
+  display: block;
+  margin: auto;
+}
+
+h1 {
+  font-size: 58px;
+  margin-top: -20px;
+}
+
+h2 {
+  font-size: 40px;
+  margin-right: 60px;
+}
+
+.inline-link {
+  color: #fff;
+  font-weight: bold;
+}
+
+.wrapper {
+  margin-top: 50px;
+}

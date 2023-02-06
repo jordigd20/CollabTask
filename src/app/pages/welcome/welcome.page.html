@@ -1,0 +1,37 @@
+<!-- <ion-header mode="md" class="ion-no-border">
+  <ion-toolbar color="transparent" class="ion-margin-vertical">
+
+  </ion-toolbar>
+</ion-header> -->
+
+<ion-content [fullscreen]="true">
+  <img
+    class="img-logos ion-padding-top"
+    src="../../../assets/multiple-logos.svg"
+    alt="Logo de CollabTask"
+  />
+
+  <div class="ion-padding">
+    <ion-text color="secondary">
+      <h2 class="ion-text-center">Bienvenido a</h2>
+    </ion-text>
+    <ion-text color="white">
+      <h1 class="ion-text-center">Collabtask</h1>
+    </ion-text>
+
+    <div class="wrapper">
+      <ion-button
+        color="white"
+        expand="block"
+        shape="round"
+        [routerLink]="['/register']"
+      >
+        Crear una cuenta nueva
+      </ion-button>
+
+      <p class="ion-text-center">
+        ¿Ya tienes cuenta? <a class="inline-link" [routerLink]="['/login']">Iniciar sesión</a>
+      </p>
+    </div>
+  </div>
+</ion-content>
