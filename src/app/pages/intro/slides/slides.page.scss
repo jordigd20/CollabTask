@@ -10,6 +10,7 @@ ion-title.title-small {
 ion-title.title-large {
   font-size: 32px;
   margin-top: -0.5rem;
+  color: var(--ion-color-white);
 }
 
 ion-content::part(background) {

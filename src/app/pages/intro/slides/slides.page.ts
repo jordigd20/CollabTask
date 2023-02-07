@@ -26,7 +26,7 @@ export class SlidesPage implements OnInit {
 
   continue() {
     if (this.swiper?.swiperRef.activeIndex === 3)
-      this.router.navigate(['/welcome']);
+      this.router.navigate(['/intro/welcome']);
 
     this.swiper?.swiperRef.slideNext();
   }
