@@ -1,0 +1,21 @@
+ion-title {
+  font-weight: bold;
+}
+
+ion-title.title-small {
+  font-size: 19px;
+  color: var(--ion-color-secondary);
+}
+
+ion-title.title-large {
+  font-size: 32px;
+  margin-top: -0.5rem;
+}
+
+.primary {
+  color: var(--ion-color-primary);
+}
+
+.white {
+  color: var(--ion-color-white);
+}

@@ -17,7 +17,6 @@ export class SlidesPage implements OnInit {
   slideOpts: SwiperOptions = {
     pagination: true,
     centeredSlides: true,
-    effect: 'fade'
   };
 
   constructor(private router: Router) {}
