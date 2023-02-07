@@ -9,7 +9,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "splash-screen": "cordova-res android --skip-config --copy"
   },
   "private": true,
   "dependencies": {
