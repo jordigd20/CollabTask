@@ -57,8 +57,7 @@ h3 {
   background-color: #fff !important;
 }
 
-ion-button.button-solid {
-  font-weight: bold;
+ion-button {
   text-transform: none;
   --box-shadow: none;
 
@@ -67,17 +66,19 @@ ion-button.button-solid {
   }
 }
 
+ion-button.button-solid {
+  font-weight: bold;
+}
+
 ion-button.button-outline {
-  text-transform: none;
   font-weight: regular;
   --border-color: var(--ion-color-border);
-  --box-shadow: none;
   --border-width: 1px;
   --color: var(--ion-color-secondary);
+}
 
-  &::part(native) {
-    letter-spacing: 0;
-  }
+ion-button.button-clear {
+  font-weight: bold;
 }
 
 // /* Input texts style */
@@ -136,4 +137,10 @@ ion-item.item-fill-none ion-label {
     background-color: var(--ion-color-white);
     padding: 0 5px;
   }
+}
+
+.auth-inline-link {
+  color: var(--ion-color-primary);
+  font-weight: bold;
+  text-decoration: none;
 }

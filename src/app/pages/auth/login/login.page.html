@@ -4,4 +4,38 @@
   titleColor="primary"
 ></app-intro-header>
 
-<ion-content [fullscreen]="true" class="ion-padding"> </ion-content>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-list>
+    <ion-item mode="md">
+      <ion-label position="stacked">Correo electrónico</ion-label>
+      <ion-input type="text" placeholder="Introduce tu correo electrónico"></ion-input>
+    </ion-item>
+
+    <ion-item mode="md">
+      <ion-label position="stacked">Contraseña</ion-label>
+      <ion-input type="password" placeholder="Introduce tu constraseña"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <!-- <ion-button color="secondary" fill="clear" size="small" class="ion-no-margin">
+    ¿Has olvidado tu contraseña?
+  </ion-button> -->
+
+  <ion-button color="primary" expand="block" shape="round" class="ion-margin-top">
+    Iniciar sesión
+  </ion-button>
+
+  <p class="ion-text-center">
+    ¿Aún no tienes cuenta?
+    <a class="auth-inline-link" [routerLink]="['/auth/register']">Regístrate</a>
+  </p>
+
+  <div class="hr"><span>o</span></div>
+
+  <div class="ion-text-center">
+    <ion-button fill="outline" shape="round">
+      <ion-icon src="../../../../assets/icons/google.svg" size="small" slot="start"></ion-icon>
+      Google
+    </ion-button>
+  </div>
+</ion-content>
