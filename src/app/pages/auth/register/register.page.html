@@ -1,8 +1,42 @@
-<app-intro-header
-  title="Bienvenido a"
-  background="white"
-  titleColor="primary"
-></app-intro-header>
+<app-intro-header title="Bienvenido a" background="white" titleColor="primary"></app-intro-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
+  <ion-list>
+    <ion-item mode="md">
+      <ion-label position="stacked">Nombre</ion-label>
+      <ion-input type="text" placeholder="Introduce tu nombre"></ion-input>
+    </ion-item>
+
+    <ion-item mode="md">
+      <ion-label position="stacked">Correo electrónico</ion-label>
+      <ion-input type="text" placeholder="Introduce tu correo electrónico"></ion-input>
+    </ion-item>
+
+    <ion-item mode="md">
+      <ion-label position="stacked">Contraseña</ion-label>
+      <ion-input type="password" placeholder="Introduce tu constraseña"></ion-input>
+    </ion-item>
+
+    <ion-item mode="md">
+      <ion-label position="stacked">Confirmar contraseña</ion-label>
+      <ion-input type="password" placeholder="Introduce de nuevo tu constraseña"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <ion-button color="primary" expand="block" shape="round" class="ion-margin-top">
+    Regístrate
+  </ion-button>
+
+  <p class="ion-text-center">
+    ¿Ya tienes cuenta? <a class="inline-link" [routerLink]="['/auth/login']">Iniciar sesión</a>
+  </p>
+
+  <div class="hr"><span>o</span></div>
+
+  <div class="ion-text-center">
+    <ion-button fill="outline" shape="round">
+      <ion-icon src="../../../../assets/icons/google.svg" size="small" slot="start"></ion-icon>
+      Google
+    </ion-button>
+  </div>
 </ion-content>
