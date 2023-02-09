@@ -1,31 +1,66 @@
 <app-intro-header title="Bienvenido a" background="white" titleColor="primary"></app-intro-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-list>
-    <ion-item mode="md">
-      <ion-label position="stacked">Nombre</ion-label>
-      <ion-input type="text" placeholder="Introduce tu nombre"></ion-input>
-    </ion-item>
+  <form (ngSubmit)="register()" [formGroup]="credentials">
+    <ion-list class="ion-no-padding ion-padding-bottom">
+      <ion-item mode="md">
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input
+          type="text"
+          placeholder="Introduce tu nombre"
+          formControlName="username"
+        ></ion-input>
+        <ion-note slot="error" *ngIf="username?.touched && username?.errors">
+          Debes introducir un nombre de usuario.
+        </ion-note>
+      </ion-item>
 
-    <ion-item mode="md">
-      <ion-label position="stacked">Correo electrónico</ion-label>
-      <ion-input type="text" placeholder="Introduce tu correo electrónico"></ion-input>
-    </ion-item>
+      <ion-item mode="md">
+        <ion-label position="stacked">Correo electrónico</ion-label>
+        <ion-input
+          type="text"
+          placeholder="Introduce tu correo electrónico"
+          formControlName="email"
+        ></ion-input>
+        <ion-note slot="error" *ngIf="email?.touched && email?.errors">
+          Debes introducir un correo electrónico válido.
+        </ion-note>
+      </ion-item>
 
-    <ion-item mode="md">
-      <ion-label position="stacked">Contraseña</ion-label>
-      <ion-input type="password" placeholder="Introduce tu constraseña"></ion-input>
-    </ion-item>
+      <ion-item mode="md">
+        <ion-label position="stacked">Contraseña</ion-label>
+        <ion-input
+          type="password"
+          placeholder="Introduce tu constraseña"
+          formControlName="password"
+          clearOnEdit="false"
+        ></ion-input>
+        <ion-note slot="error" *ngIf="password?.touched && password?.errors">
+          Debes introducir una contraseña de mínimo 6 caracteres.
+        </ion-note>
+      </ion-item>
 
-    <ion-item mode="md">
-      <ion-label position="stacked">Confirmar contraseña</ion-label>
-      <ion-input type="password" placeholder="Introduce de nuevo tu constraseña"></ion-input>
-    </ion-item>
-  </ion-list>
+      <ion-item mode="md">
+        <ion-label position="stacked">Confirmar contraseña</ion-label>
+        <ion-input
+          type="password"
+          placeholder="Introduce de nuevo tu constraseña"
+          formControlName="confirmPassword"
+          clearOnEdit="false"
+        ></ion-input>
+        <ion-note slot="error" *ngIf="confirmPassword?.touched && confirmPassword?.errors">
+          Ámbas contraseñas deben coincidir.
+        </ion-note>
+      </ion-item>
+    </ion-list>
 
-  <ion-button color="primary" expand="block" shape="round" class="ion-margin-top">
-    Regístrate
-  </ion-button>
+    <ion-text color="danger" class="small-text" *ngIf="!credentials.valid && formSubmitted">
+      Por favor, completa todos los campos para poder continuar.
+    </ion-text>
+    <ion-button type="submit" color="primary" expand="block" shape="round" class="ion-margin-top">
+      Regístrate
+    </ion-button>
+  </form>
 
   <p class="ion-text-center">
     ¿Ya tienes cuenta? <a class="auth-inline-link" [routerLink]="['/auth/login']">Iniciar sesión</a>

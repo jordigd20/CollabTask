@@ -5,25 +5,45 @@
 ></app-intro-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-list>
-    <ion-item mode="md">
-      <ion-label position="stacked">Correo electrónico</ion-label>
-      <ion-input type="text" placeholder="Introduce tu correo electrónico"></ion-input>
-    </ion-item>
+  <form (ngSubmit)="login()" [formGroup]="loginCredentials">
+    <ion-list>
+      <ion-item mode="md">
+        <ion-label position="stacked">Correo electrónico</ion-label>
+        <ion-input
+          type="text"
+          placeholder="Introduce tu correo electrónico"
+          formControlName="email"
+        ></ion-input>
+        <ion-note slot="error" *ngIf="email?.touched && email?.errors">
+          Debes introducir un correo electrónico válido
+        </ion-note>
+      </ion-item>
 
-    <ion-item mode="md">
-      <ion-label position="stacked">Contraseña</ion-label>
-      <ion-input type="password" placeholder="Introduce tu constraseña"></ion-input>
-    </ion-item>
-  </ion-list>
+      <ion-item mode="md">
+        <ion-label position="stacked">Contraseña</ion-label>
+        <ion-input
+          type="password"
+          placeholder="Introduce tu constraseña"
+          formControlName="password"
+          clearOnEdit="false"
+        ></ion-input>
+        <ion-note slot="error" *ngIf="password?.touched && password?.errors">
+          Debes introducir una contraseña
+        </ion-note>
+      </ion-item>
+    </ion-list>
 
-  <!-- <ion-button color="secondary" fill="clear" size="small" class="ion-no-margin">
-    ¿Has olvidado tu contraseña?
-  </ion-button> -->
+    <!-- <ion-button color="secondary" fill="clear" size="small" class="ion-no-margin">
+      ¿Has olvidado tu contraseña?
+    </ion-button> -->
 
-  <ion-button color="primary" expand="block" shape="round" class="ion-margin-top">
-    Iniciar sesión
-  </ion-button>
+    <ion-text color="danger" class="small-text" *ngIf="!loginCredentials.valid && formSubmitted">
+      Por favor, completa todos los campos para poder continuar.
+    </ion-text>
+    <ion-button type="submit" color="primary" expand="block" shape="round" class="ion-margin-top">
+      Iniciar sesión
+    </ion-button>
+  </form>
 
   <p class="ion-text-center">
     ¿Aún no tienes cuenta?

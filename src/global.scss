@@ -81,7 +81,7 @@ ion-button.button-clear {
   font-weight: bold;
 }
 
-// /* Input texts style */
+/* Input field style */
 ion-item.item-fill-none {
   --border-style: none;
   --inner-padding-end: 0;
@@ -107,6 +107,33 @@ ion-item.item-fill-none {
       color: #5c89b0 !important;
     }
   }
+
+  /* Invalid with focus */
+  &.ion-invalid.ion-touched.item-has-focus,
+  &.ion-invalid.ion-touched:focus {
+    ion-input {
+      --background: var(--ion-color-white);
+      box-shadow: 0 0 0 3px rgba(255, 68, 86, 0.3);
+      border: 1px solid var(--ion-color-danger);
+    }
+
+    ion-label {
+      color: var(--ion-color-danger) !important;
+    }
+  }
+
+  /* Invalid without focus */
+  &.ion-invalid.ion-touched:not(.item-has-focus) {
+    ion-input {
+      --background: var(--ion-color-light);
+      box-shadow: var(--box-shadow-input-field);
+      border: 2px solid var(--ion-color-danger);
+    }
+
+    ion-label {
+      color: var(--ion-color-secondary) !important;
+    }
+  }
 }
 
 ion-item.item-fill-none ion-input {
@@ -114,12 +141,13 @@ ion-item.item-fill-none ion-input {
   border-radius: 6px;
   padding: 5px 5px 5px 15px !important;
   margin: 10px 5px 5px 5px;
-  box-shadow: 0 1px 2px 0 rgba(35, 55, 72, 0.25), inset 0 2px 2px -1px rgba(74, 74, 104, 0.1);
+  box-shadow: var(--box-shadow-input-field);
   width: 97%;
   --color: var(--ion-color-secondary);
 }
 
-ion-item.item-fill-none ion-label {
+ion-item.item-fill-none ion-label,
+ion-item.item-fill-none ion-note {
   margin-left: 5px !important;
 }
 
@@ -143,4 +171,8 @@ ion-item.item-fill-none ion-label {
   color: var(--ion-color-primary);
   font-weight: bold;
   text-decoration: none;
+}
+
+.small-text {
+  font-size: 12px;
 }
