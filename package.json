@@ -10,7 +10,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "splash-screen": "cordova-res android --skip-config --copy"
+    "splash-screen": "cordova-res android --skip-config --copy",
+    "emulator": "firebase emulators:start"
   },
   "private": true,
   "dependencies": {
