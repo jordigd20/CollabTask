@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LoadingController } from '@ionic/angular';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 
@@ -11,12 +10,9 @@ import { Router } from '@angular/router';
 })
 export class RegisterPage implements OnInit {
   credentials!: FormGroup;
-  formSubmitted = false;
+  isLoading = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-  ) {}
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {}
 
   get username() {
     return this.credentials.get('username');
@@ -35,23 +31,30 @@ export class RegisterPage implements OnInit {
   }
 
   ngOnInit() {
-    this.credentials = this.fb.group({
-      username: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
-    }, {
-      validator: this.authService.passwordsMustMatch('password', 'confirmPassword')
-    });
+    this.credentials = this.fb.group(
+      {
+        username: ['', Validators.required],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', Validators.required]
+      },
+      {
+        validator: this.authService.passwordsMustMatch('password', 'confirmPassword')
+      }
+    );
   }
 
-  register() {
-    this.formSubmitted = true;
-
-    console.log(this.credentials);
+  async register() {
     if (!this.credentials.valid) return;
 
+    this.isLoading = true;
+    const result = await this.authService.register(this.credentials.value);
+
+    // if (result != null) this.router.navigate(['']);
+    this.isLoading = false;
   }
 
-
+  signInWithGoogle() {
+    this.authService.googleSignIn();
+  }
 }

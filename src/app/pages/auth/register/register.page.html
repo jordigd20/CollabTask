@@ -54,10 +54,15 @@
       </ion-item>
     </ion-list>
 
-    <ion-text color="danger" class="small-text" *ngIf="!credentials.valid && formSubmitted">
-      Por favor, completa todos los campos para poder continuar.
-    </ion-text>
-    <ion-button type="submit" color="primary" expand="block" shape="round" class="ion-margin-top">
+    <ion-button
+      [disabled]="(!credentials.valid && !isLoading) || (credentials.valid && isLoading)"
+      type="submit"
+      color="primary"
+      expand="block"
+      shape="round"
+      class="ion-margin-top"
+    >
+      <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
       Regístrate
     </ion-button>
   </form>
@@ -69,7 +74,7 @@
   <div class="hr"><span>o</span></div>
 
   <div class="ion-text-center">
-    <ion-button fill="outline" shape="round">
+    <ion-button fill="outline" shape="round" (click)="signInWithGoogle()">
       <ion-icon src="../../../../assets/icons/google.svg" size="small" slot="start"></ion-icon>
       Google
     </ion-button>

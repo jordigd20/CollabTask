@@ -94,8 +94,8 @@ ion-item.item-fill-none {
     ion-input {
       --background: var(--ion-color-white);
       box-shadow: 0 0 0 3px rgba(92, 137, 176, 0.3);
-      border: 1px solid #5c89b0;
-      caret-color: #5c89b0 !important;
+      border: 1px solid var(--ion-color-seconary-light);
+      caret-color: var(--ion-color-seconary-light) !important;
 
       .cloned-input {
         --padding-top: 13px !important;
@@ -104,7 +104,7 @@ ion-item.item-fill-none {
     }
 
     ion-label {
-      color: #5c89b0 !important;
+      color: var(--ion-color-seconary-light) !important;
     }
   }
 
@@ -175,4 +175,12 @@ ion-item.item-fill-none ion-note {
 
 .small-text {
   font-size: 12px;
+}
+
+ion-alert.alert-error .alert-title {
+  color: var(--ion-color-danger);
+}
+
+ion-alert.alert-error .alert-button-group button {
+  color: var(--ion-color-secondary);
 }
