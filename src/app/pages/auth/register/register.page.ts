@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { isPlatform } from '@ionic/angular';
 
 @Component({
   selector: 'app-register',
@@ -12,7 +14,11 @@ export class RegisterPage implements OnInit {
   credentials!: FormGroup;
   isLoading = false;
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {}
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+    if (!isPlatform('capacitor')) {
+      GoogleAuth.initialize();
+    }
+  }
 
   get username() {
     return this.credentials.get('username');
@@ -54,7 +60,7 @@ export class RegisterPage implements OnInit {
     this.isLoading = false;
   }
 
-  signInWithGoogle() {
+  async signInWithGoogle() {
     this.authService.googleSignIn();
   }
 }

@@ -5,9 +5,8 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController } from '@ionic/angular';
-import { GoogleAuthProvider } from '@angular/fire/auth';
 import { lastValueFrom } from 'rxjs';
-
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 @Injectable({
   providedIn: 'root'
@@ -39,17 +38,18 @@ export class AuthService {
       return result;
     } catch (error) {
       const authError = error as firebase.auth.Error;
-      this.handleErrors(authError);
+      this.handleFirebaseErrors(authError);
       return null;
     }
   }
 
   async googleSignIn() {
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await this.auth.signInWithPopup(provider);
-      console.log(JSON.stringify(result))
-      console.log(JSON.stringify(result.user))
+      const googleUser = await GoogleAuth.signIn();
+      const credential = firebase.auth.GoogleAuthProvider.credential(
+        googleUser.authentication.idToken
+      );
+      const result = await this.auth.signInWithCredential(credential);
 
       // Check if user exists in firestore
       const userDocSnapshot = await lastValueFrom(
@@ -73,8 +73,7 @@ export class AuthService {
 
       return result;
     } catch (error) {
-      const authError = error as firebase.auth.Error;
-      this.handleErrors(authError);
+      this.handleGoogleSignInErrors(error);
       return null;
     }
   }
@@ -84,15 +83,42 @@ export class AuthService {
     return userRef.set(user, { merge: true });
   }
 
-  async handleErrors(error: firebase.auth.Error) {
+  async handleGoogleSignInErrors(error: any) {
+    const errorCode = error.error;
+    let errorMessage = '';
+
+    if (errorCode === 'popup_closed_by_user') {
+      return;
+    } else if (errorCode === 'access_denied') {
+      errorMessage = 'Acceso denegado. Por favor intentalo de nuevo más tarde.';
+    } else {
+      errorMessage = 'Ha ocurrido un error inesperado. Por favor intentalo de nuevo más tarde.';
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Ha ocurrido un error',
+      message: `${errorMessage}`,
+      buttons: ['OK'],
+      cssClass: 'alert-error'
+    });
+
+    await alert.present();
+  }
+
+  async handleFirebaseErrors(error: firebase.auth.Error) {
     const errorCode = error.code;
     let errorMessage = error.message;
 
-    if (errorCode === 'auth/cancelled-popup-request') return;
-    if (errorCode === 'auth/popup-closed-by-user') return;
-
-    if (errorCode === 'auth/email-already-in-use') {
+    if (errorCode === 'auth/popup-closed-by-user') {
+      return;
+    } else if (errorCode === 'auth/cancelled-popup-request') {
+      return;
+    } else if (errorCode === 'auth/invalid-email') {
+      errorMessage = 'La dirección de correo electrónico no es válida.';
+    } else if (errorCode === 'auth/email-already-in-use') {
       errorMessage = 'La dirección de correo electrónico ya está siendo utilizada por otra cuenta.';
+    } else {
+      errorMessage = 'Ha ocurrido un error inesperado. Por favor intentalo de nuevo más tarde.';
     }
 
     const alert = await this.alertController.create({
