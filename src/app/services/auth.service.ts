@@ -138,6 +138,7 @@ export class AuthService {
     const errorCode = error.error;
     let errorMessage = '';
 
+    console.error(error);
     if (errorCode === 'popup_closed_by_user') {
       return;
     } else if (errorCode === 'access_denied') {
@@ -160,6 +161,7 @@ export class AuthService {
     const errorCode = error.code;
     let errorMessage = error.message;
 
+    console.error(error);
     switch (errorCode) {
       case FirebaseErrorCode.PopUpClosedByUser:
         return;

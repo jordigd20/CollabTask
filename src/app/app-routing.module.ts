@@ -22,15 +22,15 @@ const routes: Routes = [
     ...canActivate(redirectLoggedInToHome)
   },
   {
-    path: 'home',
-    loadChildren: () => import('./pages/home/home.module').then((m) => m.HomePageModule),
+    path: 'tabs',
+    loadChildren: () => import('./pages/tabs/tabs/tabs.module').then((m) => m.TabsModule),
     ...canActivate(redirectUnauthorizedToLogin)
   },
   {
     path: '**',
     redirectTo: 'intro',
     pathMatch: 'full'
-  }
+  },
 ];
 
 @NgModule({

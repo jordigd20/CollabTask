@@ -184,3 +184,10 @@ ion-alert.alert-error .alert-title {
 ion-alert.alert-error .alert-button-group button {
   color: var(--ion-color-secondary);
 }
+
+.firebase-emulator-warning {
+  background-color: transparent !important;
+  border: none !important;
+  color: rgba(245, 66, 66, 0.3) !important;
+  bottom: 65px !important;
+}

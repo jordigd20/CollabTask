@@ -58,14 +58,14 @@ export class RegisterPage implements OnInit {
 
     this.isLoading = false;
     if (result) {
-      this.router.navigate(['home']);
+      this.router.navigate(['tabs/home']);
     }
   }
 
   async signInWithGoogle() {
     const result = await this.authService.googleSignIn();
     if (result) {
-      this.router.navigate(['home']);
+      this.router.navigate(['tabs/home']);
     }
   }
 }

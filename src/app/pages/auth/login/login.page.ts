@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
+import { isPlatform } from '@ionic/angular';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +14,11 @@ export class LoginPage implements OnInit {
   loginCredentials!: FormGroup;
   isLoading = false;
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {}
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+    if (!isPlatform('capacitor')) {
+      GoogleAuth.initialize();
+    }
+  }
 
   get email() {
     return this.loginCredentials.get('email');
@@ -38,15 +44,14 @@ export class LoginPage implements OnInit {
 
     this.isLoading = false;
     if (result) {
-      this.router.navigate(['home']);
+      this.router.navigate(['tabs/home']);
     }
-
   }
 
   async signInWithGoogle() {
     const result = await this.authService.googleSignIn();
     if (result) {
-      this.router.navigate(['home']);
+      this.router.navigate(['tabs/home']);
     }
   }
 }

@@ -1,0 +1,30 @@
+<ion-tabs (ionTabsDidChange)="setCurrentTab($event)">
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="home">
+      <ion-icon [name]="currentTab === 'home' ? 'home' : 'home-outline'"></ion-icon>
+      <ion-label>Mis tareas</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="lists">
+      <ion-icon [src]="currentTab === 'lists' ? '../../../../assets/icons/list_filled.svg' : './../../../assets/icons/list.svg'"></ion-icon>
+      <ion-label>Listas</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="search">
+      <ion-icon [name]="currentTab === 'search' ? 'search' : 'search-outline'"></ion-icon>
+      <ion-label>Buscar</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="trades">
+      <ion-icon
+        [name]="currentTab === 'trades' ? 'swap-horizontal' : 'swap-horizontal-outline'"
+      ></ion-icon>
+      <ion-label>Intercambios</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="profile">
+      <ion-icon [name]="currentTab === 'profile' ? 'person' : 'person-outline'"></ion-icon>
+      <ion-label>Perfil</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>
