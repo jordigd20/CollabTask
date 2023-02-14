@@ -56,11 +56,16 @@ export class RegisterPage implements OnInit {
     this.isLoading = true;
     const result = await this.authService.register(this.credentials.value);
 
-    // if (result != null) this.router.navigate(['']);
     this.isLoading = false;
+    if (result) {
+      this.router.navigate(['home']);
+    }
   }
 
   async signInWithGoogle() {
-    this.authService.googleSignIn();
+    const result = await this.authService.googleSignIn();
+    if (result) {
+      this.router.navigate(['home']);
+    }
   }
 }

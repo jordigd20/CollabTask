@@ -5,18 +5,54 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController } from '@ionic/angular';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, of, switchMap, Observable, distinctUntilChanged } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { LoginData } from '../interfaces/login-data.interface';
+import { FirebaseErrorCode } from '../interfaces/firebase-error-codes.enum';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  user: User | undefined;
+
   constructor(
     private auth: AngularFireAuth,
     private afs: AngularFirestore,
     private alertController: AlertController
-  ) {}
+  ) {
+    this.auth.authState
+      .pipe(
+        switchMap(async (user) => {
+          if (user) {
+            return this.afs.doc<User>(`users/${user?.uid}`).valueChanges();
+          } else {
+            return null;
+          }
+        })
+      )
+      .subscribe((response) => {
+        if (response) {
+          response
+            // Avoid subscribing to the same user twice
+            .pipe(distinctUntilChanged((prev, curr) => this.objectsAreEqual(prev, curr)))
+            .subscribe((user) => {
+              this.user = user;
+              console.log(user);
+            });
+        }
+      });
+  }
+
+  async logIn({ email, password }: LoginData) {
+    try {
+      return await this.auth.signInWithEmailAndPassword(email, password);
+    } catch (error) {
+      const authError = error as firebase.auth.Error;
+      this.handleFirebaseErrors(authError);
+      return null;
+    }
+  }
 
   async register({ email, password, ...restData }: RegisterData) {
     try {
@@ -83,6 +119,21 @@ export class AuthService {
     return userRef.set(user, { merge: true });
   }
 
+  async logOut() {
+    return await this.auth.signOut();
+  }
+
+  private objectsAreEqual(x: any, y: any) {
+    let equalObjects = true;
+    for (let propertyName in x) {
+      if (x[propertyName] !== y[propertyName]) {
+        equalObjects = false;
+        break;
+      }
+    }
+    return equalObjects;
+  }
+
   async handleGoogleSignInErrors(error: any) {
     const errorCode = error.error;
     let errorMessage = '';
@@ -109,16 +160,24 @@ export class AuthService {
     const errorCode = error.code;
     let errorMessage = error.message;
 
-    if (errorCode === 'auth/popup-closed-by-user') {
-      return;
-    } else if (errorCode === 'auth/cancelled-popup-request') {
-      return;
-    } else if (errorCode === 'auth/invalid-email') {
-      errorMessage = 'La dirección de correo electrónico no es válida.';
-    } else if (errorCode === 'auth/email-already-in-use') {
-      errorMessage = 'La dirección de correo electrónico ya está siendo utilizada por otra cuenta.';
-    } else {
-      errorMessage = 'Ha ocurrido un error inesperado. Por favor intentalo de nuevo más tarde.';
+    switch (errorCode) {
+      case FirebaseErrorCode.PopUpClosedByUser:
+        return;
+      case FirebaseErrorCode.CancelledPopUpRequest:
+        return;
+      case FirebaseErrorCode.InvalidEmail:
+        errorMessage = 'La dirección de correo electrónico no es válida.';
+        break;
+      case FirebaseErrorCode.EmailAlreadyInUse:
+        errorMessage =
+          'La dirección de correo electrónico ya está siendo utilizada por otra cuenta.';
+        break;
+      case FirebaseErrorCode.WrongPassword:
+        errorMessage = 'Usuario o contraseña incorrecto.';
+        break;
+      default:
+        errorMessage = 'Ha ocurrido un error inesperado. Por favor intentalo de nuevo más tarde.';
+        break;
     }
 
     const alert = await this.alertController.create({
