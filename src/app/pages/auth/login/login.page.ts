@@ -36,22 +36,14 @@ export class LoginPage implements OnInit {
   }
 
   async login() {
-    console.log(this.loginCredentials);
     if (!this.loginCredentials.valid) return;
 
     this.isLoading = true;
-    const result = await this.authService.logIn(this.loginCredentials.value);
-
+    await this.authService.logIn(this.loginCredentials.value)
     this.isLoading = false;
-    if (result) {
-      this.router.navigate(['tabs/home']);
-    }
   }
 
-  async signInWithGoogle() {
-    const result = await this.authService.googleSignIn();
-    if (result) {
-      this.router.navigate(['tabs/home']);
-    }
+  signInWithGoogle() {
+    this.authService.googleSignIn();
   }
 }

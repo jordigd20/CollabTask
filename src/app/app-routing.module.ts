@@ -7,7 +7,7 @@ import {
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['auth']);
-const redirectLoggedInToHome = () => redirectLoggedInTo(['home']);
+const redirectLoggedInToHome = () => redirectLoggedInTo(['tabs/home']);
 
 const routes: Routes = [
   {
@@ -27,10 +27,16 @@ const routes: Routes = [
     ...canActivate(redirectUnauthorizedToLogin)
   },
   {
+    path: 'first-time',
+    loadChildren: () =>
+      import('./pages/intro/first-time/first-time.module').then((m) => m.FirstTimePageModule),
+    ...canActivate(redirectUnauthorizedToLogin)
+  },
+  {
     path: '**',
     redirectTo: 'intro',
     pathMatch: 'full'
-  },
+  }
 ];
 
 @NgModule({

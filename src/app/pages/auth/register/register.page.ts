@@ -54,18 +54,11 @@ export class RegisterPage implements OnInit {
     if (!this.credentials.valid) return;
 
     this.isLoading = true;
-    const result = await this.authService.register(this.credentials.value);
-
+    await this.authService.register(this.credentials.value)
     this.isLoading = false;
-    if (result) {
-      this.router.navigate(['tabs/home']);
-    }
   }
 
-  async signInWithGoogle() {
-    const result = await this.authService.googleSignIn();
-    if (result) {
-      this.router.navigate(['tabs/home']);
-    }
+  signInWithGoogle() {
+    this.authService.googleSignIn();
   }
 }

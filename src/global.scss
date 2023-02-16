@@ -177,6 +177,10 @@ ion-item.item-fill-none ion-note {
   font-size: 12px;
 }
 
+.fw-bold {
+  font-weight: bold !important;
+}
+
 ion-alert.alert-error .alert-title {
   color: var(--ion-color-danger);
 }

@@ -1,0 +1,35 @@
+<app-intro-header title="Bienvenido a" background="white" titleColor="primary"></app-intro-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-text>Para empezar a utilizar CollabTask correctamente debes pertenecer a un equipo</ion-text>
+
+  <div class="hr" style="margin: 25px 0"></div>
+
+  <p class="fw-bold ion-no-margin">Crear un equipo nuevo</p>
+  <ion-text>Crea tu propio equipo e invita a otros miembros para que se unan</ion-text>
+
+  <div class="ion-text-center ion-margin-vertical">
+    <ion-button [routerLink]="" expand="full" shape="round"> Crear un equipo </ion-button>
+  </div>
+
+  <div class="hr" style="margin: 25px 0"></div>
+
+  <p class="fw-bold ion-no-margin">Unirse a un equipo existente</p>
+  <ion-text>Consigue un código de invitación de otro miembro para unirte a su equipo</ion-text>
+  <ion-item mode="md">
+    <ion-input
+      type="text"
+      placeholder="Código de invitación"
+      (ionChange)="changeDisabledButton($event)"
+    ></ion-input>
+  </ion-item>
+  <ion-button [disabled]="disableJoinTeam" expand="full" shape="round" class="ion-margin-top">
+    Unirse al equipo
+  </ion-button>
+
+  <div class="hr" style="margin: 25px 0"></div>
+
+  <ion-button expand="block" fill="clear" shape="round" [routerLink]="['tabs/home']">
+    Entrar a CollabTask de todas formas
+  </ion-button>
+</ion-content>

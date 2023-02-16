@@ -5,48 +5,31 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController } from '@ionic/angular';
-import { lastValueFrom, of, switchMap, Observable, distinctUntilChanged } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData } from '../interfaces/login-data.interface';
 import { FirebaseErrorCode } from '../interfaces/firebase-error-codes.enum';
+import { Router } from '@angular/router';
+import { LoadingController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  user: User | undefined;
-
   constructor(
     private auth: AngularFireAuth,
     private afs: AngularFirestore,
-    private alertController: AlertController
-  ) {
-    this.auth.authState
-      .pipe(
-        switchMap(async (user) => {
-          if (user) {
-            return this.afs.doc<User>(`users/${user?.uid}`).valueChanges();
-          } else {
-            return null;
-          }
-        })
-      )
-      .subscribe((response) => {
-        if (response) {
-          response
-            // Avoid subscribing to the same user twice
-            .pipe(distinctUntilChanged((prev, curr) => this.objectsAreEqual(prev, curr)))
-            .subscribe((user) => {
-              this.user = user;
-              console.log(user);
-            });
-        }
-      });
-  }
+    private alertController: AlertController,
+    private router: Router,
+    private loadingCtrl: LoadingController
+  ) {}
 
   async logIn({ email, password }: LoginData) {
     try {
-      return await this.auth.signInWithEmailAndPassword(email, password);
+      const result = await this.auth.signInWithEmailAndPassword(email, password);
+      this.router.navigate(['tabs/home']);
+
+      return result;
     } catch (error) {
       const authError = error as firebase.auth.Error;
       this.handleFirebaseErrors(authError);
@@ -69,7 +52,8 @@ export class AuthService {
         tasksCompleted: 0
       };
 
-      this.setUserData(user);
+      await this.setUserData(user);
+      this.router.navigate(['first-time']);
 
       return result;
     } catch (error) {
@@ -79,9 +63,17 @@ export class AuthService {
     }
   }
 
+
   async googleSignIn() {
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando...',
+      spinner: 'crescent'
+    });
+
     try {
       const googleUser = await GoogleAuth.signIn();
+
+      loading.present();
       const credential = firebase.auth.GoogleAuthProvider.credential(
         googleUser.authentication.idToken
       );
@@ -104,34 +96,29 @@ export class AuthService {
           tasksCompleted: 0
         };
 
-        this.setUserData(user);
+        await this.setUserData(user);
+        this.router.navigate(['first-time']);
+      } else {
+        this.router.navigate(['tabs/home']);
       }
+
+      loading.dismiss();
 
       return result;
     } catch (error) {
+      loading.dismiss();
       this.handleGoogleSignInErrors(error);
       return null;
     }
   }
 
-  setUserData(user: User) {
+  async setUserData(user: User) {
     const userRef = this.afs.doc<User>(`users/${user.id}`);
     return userRef.set(user, { merge: true });
   }
 
   async logOut() {
     return await this.auth.signOut();
-  }
-
-  private objectsAreEqual(x: any, y: any) {
-    let equalObjects = true;
-    for (let propertyName in x) {
-      if (x[propertyName] !== y[propertyName]) {
-        equalObjects = false;
-        break;
-      }
-    }
-    return equalObjects;
   }
 
   async handleGoogleSignInErrors(error: any) {
@@ -161,7 +148,7 @@ export class AuthService {
     const errorCode = error.code;
     let errorMessage = error.message;
 
-    console.error(error);
+    console.log(error);
     switch (errorCode) {
       case FirebaseErrorCode.PopUpClosedByUser:
         return;
