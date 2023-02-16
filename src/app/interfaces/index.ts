@@ -1,4 +1,4 @@
 export { User } from './user.interface';
 export { RegisterData } from './register-data.interface';
 export { LoginData } from './login-data.interface';
-export { FirebaseErrorCode } from './firebase-error-codes.enum';
+export { AuthErrorCode } from './auth-error-codes.enum';

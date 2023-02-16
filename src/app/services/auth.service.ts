@@ -8,7 +8,7 @@ import { AlertController } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData } from '../interfaces/login-data.interface';
-import { FirebaseErrorCode } from '../interfaces/firebase-error-codes.enum';
+import { AuthErrorCode } from '../interfaces/auth-error-codes.enum';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 
@@ -31,8 +31,8 @@ export class AuthService {
 
       return result;
     } catch (error) {
-      const authError = error as firebase.auth.Error;
-      this.handleFirebaseErrors(authError);
+      console.error(error);
+      this.handleError(error, 'firebase');
       return null;
     }
   }
@@ -57,12 +57,11 @@ export class AuthService {
 
       return result;
     } catch (error) {
-      const authError = error as firebase.auth.Error;
-      this.handleFirebaseErrors(authError);
+      console.error(error);
+      this.handleError(error, 'firebase');
       return null;
     }
   }
-
 
   async googleSignIn() {
     const loading = await this.loadingCtrl.create({
@@ -107,7 +106,8 @@ export class AuthService {
       return result;
     } catch (error) {
       loading.dismiss();
-      this.handleGoogleSignInErrors(error);
+      console.error(error);
+      this.handleError(error, 'google');
       return null;
     }
   }
@@ -121,48 +121,40 @@ export class AuthService {
     return await this.auth.signOut();
   }
 
-  async handleGoogleSignInErrors(error: any) {
-    const errorCode = error.error;
+  async handleError(error: any, type: 'firebase' | 'google') {
+    let errorCode = '';
     let errorMessage = '';
 
-    console.error(error);
-    if (errorCode === 'popup_closed_by_user') {
-      return;
-    } else if (errorCode === 'access_denied') {
-      errorMessage = 'Acceso denegado. Por favor intentalo de nuevo más tarde.';
+    if (type === 'firebase' || (type === 'google' && error.code)) {
+      errorCode = error.code;
     } else {
-      errorMessage = 'Ha ocurrido un error inesperado. Por favor intentalo de nuevo más tarde.';
+      errorCode = error.error;
     }
 
-    const alert = await this.alertController.create({
-      header: 'Ha ocurrido un error',
-      message: `${errorMessage}`,
-      buttons: ['OK'],
-      cssClass: 'alert-error'
-    });
-
-    await alert.present();
-  }
-
-  async handleFirebaseErrors(error: firebase.auth.Error) {
-    const errorCode = error.code;
-    let errorMessage = error.message;
-
-    console.log(error);
     switch (errorCode) {
-      case FirebaseErrorCode.PopUpClosedByUser:
+      case AuthErrorCode.PopUpClosedByUser:
         return;
-      case FirebaseErrorCode.CancelledPopUpRequest:
+      case AuthErrorCode.CancelledPopUpRequest:
         return;
-      case FirebaseErrorCode.InvalidEmail:
+      case AuthErrorCode.GooglePopUpClosedByUser:
+        return;
+      case AuthErrorCode.GoogleAndroidPopUpClosed:
+        return;
+      case AuthErrorCode.InvalidEmail:
         errorMessage = 'La dirección de correo electrónico no es válida.';
         break;
-      case FirebaseErrorCode.EmailAlreadyInUse:
+      case AuthErrorCode.EmailAlreadyInUse:
         errorMessage =
           'La dirección de correo electrónico ya está siendo utilizada por otra cuenta.';
         break;
-      case FirebaseErrorCode.WrongPassword:
+      case AuthErrorCode.WrongPassword:
         errorMessage = 'Usuario o contraseña incorrecto.';
+        break;
+      case AuthErrorCode.UserNotFound:
+        errorMessage = 'No existe ningún usuario con ese correo electrónico.';
+        break;
+      case AuthErrorCode.GoogleAccessDenied:
+        errorMessage = 'Acceso denegado. Por favor intentalo de nuevo más tarde.';
         break;
       default:
         errorMessage = 'Ha ocurrido un error inesperado. Por favor intentalo de nuevo más tarde.';
