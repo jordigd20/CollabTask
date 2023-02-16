@@ -4,7 +4,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 import { lastValueFrom } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData } from '../interfaces/login-data.interface';
@@ -20,8 +20,9 @@ export class AuthService {
     private auth: AngularFireAuth,
     private afs: AngularFirestore,
     private alertController: AlertController,
-    private router: Router,
-    private loadingCtrl: LoadingController
+    private loadingController: LoadingController,
+    private toastController: ToastController,
+    private router: Router
   ) {}
 
   async logIn({ email, password }: LoginData) {
@@ -64,7 +65,7 @@ export class AuthService {
   }
 
   async googleSignIn() {
-    const loading = await this.loadingCtrl.create({
+    const loading = await this.loadingController.create({
       message: 'Cargando...',
       spinner: 'crescent'
     });
@@ -119,6 +120,26 @@ export class AuthService {
 
   async logOut() {
     return await this.auth.signOut();
+  }
+
+  async forgotPassword(email: string) {
+    try {
+      await this.auth.sendPasswordResetEmail(email);
+
+      const toast = await this.toastController.create({
+        message: `Se ha enviado un correo electrónico a ${email} para restablecer tu contraseña.`,
+        duration: 5000,
+        position: 'bottom'
+      });
+
+      await toast.present();
+
+      return;
+    } catch (error) {
+      console.error(error);
+      this.handleError(error, 'firebase');
+      return null;
+    }
   }
 
   async handleError(error: any, type: 'firebase' | 'google') {

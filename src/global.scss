@@ -177,8 +177,59 @@ ion-item.item-fill-none ion-note {
   font-size: 12px;
 }
 
+.fw-light {
+  font-weight: 300 !important;
+}
+
+.fw-regular {
+  font-weight: normal !important;
+}
+
 .fw-bold {
   font-weight: bold !important;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+.justify-center {
+  justify-content: center !important;
+}
+
+.justify-end {
+  justify-content: end !important;
+}
+
+.justify-start {
+  justify-content: start !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.modal-sheet {
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+  --backdrop-opacity: var(--ion-backdrop-opacity, 0.9);
+
+  ion-title {
+    height: auto;
+  }
+
+  .ion-page {
+    border-radius: 20px;
+  }
+
+  &::part(content) {
+    overflow: unset;
+    border-radius: 20px;
+  }
+
+  &::part(handle) {
+    top: -10px;
+    background-color: #fff;
+  }
 }
 
 ion-alert.alert-error .alert-title {
@@ -190,6 +241,7 @@ ion-alert.alert-error .alert-button-group button {
 }
 
 .firebase-emulator-warning {
+  display: none;
   background-color: transparent !important;
   border: none !important;
   color: rgba(245, 66, 66, 0.3) !important;

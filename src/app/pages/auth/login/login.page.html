@@ -6,11 +6,11 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <form (ngSubmit)="login()" [formGroup]="loginCredentials">
-    <ion-list>
+    <ion-list class="ion-no-padding">
       <ion-item mode="md">
         <ion-label position="stacked">Correo electrónico</ion-label>
         <ion-input
-          type="text"
+          type="email"
           placeholder="Introduce tu correo electrónico"
           formControlName="email"
         ></ion-input>
@@ -33,9 +33,17 @@
       </ion-item>
     </ion-list>
 
-    <!-- <ion-button color="secondary" fill="clear" size="small" class="ion-no-margin">
-      ¿Has olvidado tu contraseña?
-    </ion-button> -->
+    <div class="d-flex justify-end" style="margin-top: 10px;">
+      <ion-button
+        color="secondary"
+        fill="clear"
+        size="small"
+        class="ion-no-margin fw-regular"
+        (click)="showForgotPassword()"
+      >
+        ¿Has olvidado tu contraseña?
+      </ion-button>
+    </div>
 
     <ion-button
       [disabled]="(!loginCredentials.valid && !isLoading) || (loginCredentials.valid && isLoading)"
@@ -43,7 +51,7 @@
       color="primary"
       expand="block"
       shape="round"
-      class="ion-margin-top"
+      style="margin-top: 15px"
     >
       <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
       Iniciar sesión
