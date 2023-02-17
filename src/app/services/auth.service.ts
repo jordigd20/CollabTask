@@ -11,6 +11,7 @@ import { LoginData } from '../interfaces/login-data.interface';
 import { AuthErrorCode } from '../interfaces/auth-error-codes.enum';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,12 +23,14 @@ export class AuthService {
     private alertController: AlertController,
     private loadingController: LoadingController,
     private toastController: ToastController,
+    private storageService: StorageService,
     private router: Router
   ) {}
 
   async logIn({ email, password }: LoginData) {
     try {
       const result = await this.auth.signInWithEmailAndPassword(email, password);
+      this.setAvoidIntroPages(true);
       this.router.navigate(['tabs/home']);
 
       return result;
@@ -54,6 +57,7 @@ export class AuthService {
       };
 
       await this.setUserData(user);
+      this.setAvoidIntroPages(true);
       this.router.navigate(['first-time']);
 
       return result;
@@ -102,6 +106,7 @@ export class AuthService {
         this.router.navigate(['tabs/home']);
       }
 
+      this.setAvoidIntroPages(true);
       loading.dismiss();
 
       return result;
@@ -209,5 +214,9 @@ export class AuthService {
         return null;
       }
     };
+  }
+
+  private setAvoidIntroPages(avoidIntroPages: boolean) {
+    return this.storageService.set('avoidIntroPages', avoidIntroPages);
   }
 }

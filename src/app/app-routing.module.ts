@@ -5,6 +5,7 @@ import {
   canActivate
 } from '@angular/fire/compat/auth-guard';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { AvoidIntroGuard } from './guards/avoid-intro.guard';
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['auth']);
 const redirectLoggedInToHome = () => redirectLoggedInTo(['tabs/home']);
@@ -14,7 +15,7 @@ const routes: Routes = [
     path: 'intro',
     loadChildren: () =>
       import('./pages/intro/intro-routing.module').then((m) => m.IntroRoutingModule),
-    ...canActivate(redirectLoggedInToHome)
+    canActivate: [AvoidIntroGuard]
   },
   {
     path: 'auth',

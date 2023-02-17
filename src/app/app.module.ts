@@ -27,6 +27,7 @@ import {
 import { AngularFireAuthGuardModule } from '@angular/fire/compat/auth-guard';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
+import { IonicStorageModule } from '@ionic/storage-angular';
 
 @NgModule({
   declarations: [AppComponent],
@@ -41,7 +42,8 @@ import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
     AngularFireMessagingModule,
     AngularFireFunctionsModule,
     AngularFireStorageModule,
-    provideFirebaseApp(() => initializeApp(environment.firebase))
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    IonicStorageModule.forRoot(),
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
