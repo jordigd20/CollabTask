@@ -1,0 +1,32 @@
+<app-back-header [title]="headerTitle"></app-back-header>
+
+<ion-content class="ion-padding">
+  <form (ngSubmit)="createTeam()" [formGroup]="teamForm">
+    <ion-item mode="md" style="margin-bottom: 10px">
+      <ion-label position="stacked" style="font-size: 18px">Nombre</ion-label>
+      <ion-input type="text" placeholder="Introduce tu nombre" formControlName="name"></ion-input>
+      <ion-note slot="error" *ngIf="name?.touched && name?.errors">
+        Debes introducir un nombre de usuario.
+      </ion-note>
+    </ion-item>
+
+    <p class="medium-title ion-no-margin">Permitir nuevos miembros</p>
+
+    <ion-item>
+      <ion-label class="toggle-label medium-text">
+        Permitir que cualquier usuario pueda acceder mediante el código de invitación
+      </ion-label>
+      <ion-toggle slot="end" formControlName="allowNewMembers"></ion-toggle>
+    </ion-item>
+
+    <ion-button
+      [disabled]="(!teamForm.valid && !isLoading) || (teamForm.valid && isLoading)"
+      type="submit"
+      expand="block"
+      shape="round"
+      class="ion-margin-top"
+    >
+      {{ buttonText }}
+    </ion-button>
+  </form>
+</ion-content>

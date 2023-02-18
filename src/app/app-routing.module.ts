@@ -34,6 +34,18 @@ const routes: Routes = [
     ...canActivate(redirectUnauthorizedToLogin)
   },
   {
+    path: 'create-team',
+    loadChildren: () =>
+      import('./pages/common/team-form/team-form.module').then((m) => m.TeamFormPageModule),
+    ...canActivate(redirectUnauthorizedToLogin)
+  },
+  {
+    path: 'edit-team/:id',
+    loadChildren: () =>
+      import('./pages/common/team-form/team-form.module').then((m) => m.TeamFormPageModule),
+    ...canActivate(redirectUnauthorizedToLogin)
+  },
+  {
     path: '**',
     redirectTo: 'intro',
     pathMatch: 'full'
