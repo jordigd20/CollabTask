@@ -1,12 +1,12 @@
 <app-back-header [title]="headerTitle"></app-back-header>
 
 <ion-content class="ion-padding">
-  <form (ngSubmit)="createTeam()" [formGroup]="teamForm">
+  <form (ngSubmit)="teamId ? updateTeam() : createTeam()" [formGroup]="teamForm">
     <ion-item mode="md" style="margin-bottom: 10px">
       <ion-label position="stacked" style="font-size: 18px">Nombre</ion-label>
       <ion-input type="text" placeholder="Introduce tu nombre" formControlName="name"></ion-input>
       <ion-note slot="error" *ngIf="name?.touched && name?.errors">
-        Debes introducir un nombre de usuario.
+        Debes introducir un nombre para el equipo de almenos 3 carácteres.
       </ion-note>
     </ion-item>
 
@@ -26,6 +26,7 @@
       shape="round"
       class="ion-margin-top"
     >
+      <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
       {{ buttonText }}
     </ion-button>
   </form>
