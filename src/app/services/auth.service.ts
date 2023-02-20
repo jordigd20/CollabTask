@@ -5,7 +5,7 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController, ToastController } from '@ionic/angular';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, mergeMap, of, map } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData } from '../interfaces/login-data.interface';
 import { AuthErrorCode } from '../interfaces/auth-error-codes.enum';
@@ -25,12 +25,36 @@ export class AuthService {
     private toastController: ToastController,
     private storageService: StorageService,
     private router: Router
-  ) {}
+  ) {
+    try {
+      this.auth.authState
+        .pipe(
+          mergeMap((authUser) => {
+            if (authUser) {
+              return this.afs
+                .doc<User>(`users/${authUser?.uid}`)
+                .get()
+                .pipe(map((doc) => doc.data()));
+            } else {
+              return of(null);
+            }
+          })
+        )
+        .subscribe(async (user) => {
+          console.log('authService', user);
+          if (user) {
+            await this.setUserInStorage(user);
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   async logIn({ email, password }: LoginData) {
     try {
       const result = await this.auth.signInWithEmailAndPassword(email, password);
-      this.setAvoidIntroPages(true);
+      await this.setAvoidIntroPages(true);
       this.router.navigate(['tabs/home']);
 
       return result;
@@ -57,7 +81,7 @@ export class AuthService {
       };
 
       await this.setUserData(user);
-      this.setAvoidIntroPages(true);
+      await this.setAvoidIntroPages(true);
       this.router.navigate(['first-time']);
 
       return result;
@@ -101,12 +125,13 @@ export class AuthService {
         };
 
         await this.setUserData(user);
+        await this.setUserInStorage(user);
         this.router.navigate(['first-time']);
       } else {
         this.router.navigate(['tabs/home']);
       }
 
-      this.setAvoidIntroPages(true);
+      await this.setAvoidIntroPages(true);
       loading.dismiss();
 
       return result;
@@ -120,11 +145,12 @@ export class AuthService {
 
   async setUserData(user: User) {
     const userRef = this.afs.doc<User>(`users/${user.id}`);
-    return userRef.set(user, { merge: true });
+    userRef.set(user, { merge: true });
   }
 
   async logOut() {
-    return await this.auth.signOut();
+    await this.storageService.remove('user');
+    await this.auth.signOut();
   }
 
   async forgotPassword(email: string) {
@@ -218,5 +244,9 @@ export class AuthService {
 
   private setAvoidIntroPages(avoidIntroPages: boolean) {
     return this.storageService.set('avoidIntroPages', avoidIntroPages);
+  }
+
+  private setUserInStorage(user: User) {
+    return this.storageService.set('user', user);
   }
 }

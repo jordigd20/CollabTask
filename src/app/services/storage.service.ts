@@ -23,4 +23,9 @@ export class StorageService {
   get(key: string) {
     return this._storage?.get(key);
   }
+
+  async remove(key: string) {
+    await this._storage?.remove(key);
+  }
+
 }
