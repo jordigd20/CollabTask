@@ -10,7 +10,7 @@ export interface Team {
 export interface UserMember {
   id: string;
   name: string;
-  rol: string;
+  role: string;
   userTotalScore: number;
 }
 

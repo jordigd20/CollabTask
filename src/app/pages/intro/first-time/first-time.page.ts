@@ -5,13 +5,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./first-time.page.scss']
 })
 export class FirstTimePage implements OnInit {
-  disableJoinTeam = true;
-
   constructor() {}
 
   ngOnInit() {}
-
-  changeDisabledButton(event: any) {
-    this.disableJoinTeam = event.target.value.length === 0;
-  }
 }

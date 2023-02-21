@@ -66,7 +66,7 @@ export class TeamFormPage implements OnInit {
       await this.teamService.createTeam(this.teamForm.value);
       this.isLoading = false;
 
-      await this.showToast(`Equipo ${name} creado correctamente`);
+      await this.showToast(`El equipo "${name}" se ha creado correctamente`);
     } catch (error) {
       console.error(error);
       this.showToast('Ha ocurrido un error al crear el equipo');

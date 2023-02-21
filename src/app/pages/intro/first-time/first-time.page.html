@@ -18,16 +18,8 @@
 
   <p class="fw-bold ion-no-margin">Unirse a un equipo existente</p>
   <ion-text>Consigue un código de invitación de otro miembro para unirte a su equipo</ion-text>
-  <ion-item mode="md">
-    <ion-input
-      type="text"
-      placeholder="Código de invitación"
-      (ionChange)="changeDisabledButton($event)"
-    ></ion-input>
-  </ion-item>
-  <ion-button [disabled]="disableJoinTeam" expand="full" shape="round" class="ion-margin-top">
-    Unirse al equipo
-  </ion-button>
+
+  <app-join-team></app-join-team>
 
   <div class="hr" style="margin: 25px 0"></div>
 

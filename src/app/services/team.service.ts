@@ -3,13 +3,19 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TeamData, Team } from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
-import { map } from 'rxjs';
+import { map, throwError, mergeMap, of } from 'rxjs';
+import { TeamErrorCodes } from '../interfaces';
+import { ToastController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TeamService {
-  constructor(private afs: AngularFirestore, private storageService: StorageService) {}
+  constructor(
+    private afs: AngularFirestore,
+    private storageService: StorageService,
+    private toastController: ToastController
+  ) {}
 
   async createTeam({ name, allowNewMembers }: TeamData) {
     const id = this.afs.createId();
@@ -20,7 +26,7 @@ export class TeamService {
     const user = {
       id: userId,
       name: username,
-      rol: 'admin',
+      role: 'admin',
       userTotalScore: 0
     };
 
@@ -43,5 +49,99 @@ export class TeamService {
 
   updateTeamProperties(id: string, { name, allowNewMembers }: TeamData) {
     return this.afs.doc<Team>(`teams/${id}`).update({ name, allowNewMembers });
+  }
+
+  async joinTeam(invitationCode: string) {
+    const teamsCollection = this.afs.collection<Team>('teams', (ref) =>
+      ref.where('invitationCode', '==', invitationCode)
+    );
+
+    const { id: userId, username } = await this.storageService.get('user');
+
+    teamsCollection
+      .get()
+      .pipe(
+        mergeMap((teamFound) => {
+          if (teamFound.empty) {
+            return throwError(() => new Error(TeamErrorCodes.TeamInvitationCodeNotFound));
+          }
+
+          const { allowNewMembers, userMembers } = teamFound.docs[0].data();
+          if (!allowNewMembers) {
+            return throwError(() => new Error(TeamErrorCodes.TeamDoesNotAllowNewMembers));
+          }
+
+          for (const member of userMembers) {
+            if (member.id === userId) {
+              return throwError(() => new Error(TeamErrorCodes.TeamUserIsAlreadyMember));
+            }
+          }
+
+          return of(teamFound);
+        })
+      )
+      .subscribe({
+        next: async (teamFound) => {
+          console.log(teamFound.docs[0].data());
+          const { id, userMembers, taskLists } = teamFound.docs[0].data();
+
+          const user = {
+            id: userId,
+            name: username,
+            role: 'member',
+            userTotalScore: 0
+          };
+
+          if (taskLists.length > 0) {
+            for (const list of taskLists) {
+              list.userScore[userId] = 0;
+            }
+          }
+
+          await teamsCollection.doc(id).update({
+            userMembers: [...userMembers, user],
+            taskLists: [...taskLists]
+          });
+
+          this.showToast('¡Te has unido al equipo correctamente!');
+        },
+        error: (err) => {
+          console.error(err);
+          this.handleError(err);
+        }
+      });
+  }
+
+  handleError(error: any) {
+    let message = '';
+
+    switch (error.message) {
+      case TeamErrorCodes.TeamInvitationCodeNotFound:
+        message = 'No se ha encontrado ningún equipo con ese código de invitación';
+        break;
+      case TeamErrorCodes.TeamDoesNotAllowNewMembers:
+        message = 'Este equipo no permite nuevos miembros';
+        break;
+      case TeamErrorCodes.TeamUserIsAlreadyMember:
+        message = 'Ya eres miembro de este equipo';
+        break;
+      default:
+        message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
+        break;
+    }
+
+    this.showToast(message);
+  }
+
+  async showToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      position: 'bottom',
+      color: 'secondary',
+      keyboardClose: true,
+    });
+
+    await toast.present();
   }
 }

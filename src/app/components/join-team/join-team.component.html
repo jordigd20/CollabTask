@@ -1,0 +1,18 @@
+<form (ngSubmit)="joinTeam()" [formGroup]="joinTeamForm">
+  <ion-item mode="md">
+    <ion-label position="stacked" >Nombre</ion-label>
+    <ion-input
+      type="text"
+      placeholder="Código de invitación"
+      formControlName="invitationCode"
+    ></ion-input>
+    <ion-note slot="error" *ngIf="invitationCode?.touched && invitationCode?.errors">
+      Debes introducir un código válido.
+    </ion-note>
+  </ion-item>
+
+  <ion-button [disabled]="(!joinTeamForm.valid && !isLoading) || (joinTeamForm.valid && isLoading)" type="submit"  expand="full" shape="round" class="ion-margin-top">
+    <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
+    Unirse al equipo
+  </ion-button>
+</form>
