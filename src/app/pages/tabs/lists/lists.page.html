@@ -1,9 +1,125 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>lists</ion-title>
+    <ion-title class="fw-bold large-text ion-text-center">Listas</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content color="tertiary">
+  <ion-toolbar class="search-header">
+    <ion-searchbar
+      placeholder="Buscar equipos o listas de tareas"
+      color="light"
+      [debounce]="250"
+      class="search ion-margin-top"
+    ></ion-searchbar>
 
+    <div class="d-flex align-items-center justify-between ion-padding-horizontal">
+      <h3>Lista de equipos y tareas</h3>
+      <ion-text class="small-text">2 equipos</ion-text>
+    </div>
+  </ion-toolbar>
+
+  <div class="main ion-padding">
+    <ion-list class="root-list" lines="none">
+      <ion-item color="primary" class="header-item">
+        <ion-button fill="clear" color="white" slot="start">
+          <ion-icon name="caret-down-outline"></ion-icon>
+        </ion-button>
+
+        <ion-label class="fw-bold">Equipo X</ion-label>
+
+        <ion-button (click)="presentTeamActionSheet()" fill="clear" color="white" slot="end">
+          <ion-icon name="ellipsis-vertical"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <ion-item class="container-list" color="tertiary">
+        <ion-list class="sub-list" color="tertiary" lines="none">
+          <ion-item class="sub-item">
+            <div class="square-color" slot="start">
+              <span class="letter">T</span>
+            </div>
+
+            <div class="medium-part">
+              <ion-label class="fw-bold">Trabajo Final</ion-label>
+              <div class="d-flex align-items-center" style="gap: 5px">
+                <div class="score">
+                  <ion-icon
+                    src="../../../../assets/icons/score.svg"
+                    style="margin-bottom: 3px"
+                  ></ion-icon>
+                  <span>150</span>
+                </div>
+                <ion-text class="points-earned" color="medium">Puntos adquiridos</ion-text>
+              </div>
+            </div>
+
+            <ion-button (click)="presentTaskListActionSheet()" fill="clear" color="secondary" slot="end">
+              <ion-icon name="ellipsis-vertical"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item class="sub-item">
+            <div class="square-color" slot="start">
+              <span class="letter">T</span>
+            </div>
+
+            <div class="medium-part">
+              <ion-label class="fw-bold">Trabajo Final</ion-label>
+              <div class="d-flex align-items-center" style="gap: 5px">
+                <div class="score">
+                  <ion-icon
+                    src="../../../../assets/icons/score.svg"
+                    style="margin-bottom: 3px"
+                  ></ion-icon>
+                  <span>150</span>
+                </div>
+                <ion-text class="points-earned" color="medium">Puntos adquiridos</ion-text>
+              </div>
+            </div>
+
+            <ion-button fill="clear" color="secondary" slot="end">
+              <ion-icon name="ellipsis-vertical"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-item>
+
+      <ion-item color="primary" class="header-item">
+        <ion-button fill="clear" color="white" slot="start">
+          <ion-icon name="caret-down-outline"></ion-icon>
+        </ion-button>
+
+        <ion-label class="fw-bold">Equipo X</ion-label>
+
+        <ion-button fill="clear" color="white" slot="end">
+          <ion-icon name="ellipsis-vertical"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <ion-item class="helper sub-item">
+        <ion-label>
+          Despliega las opciones del equipo para crear la primera lista de tareas
+        </ion-label>
+      </ion-item>
+
+      <!-- <ion-item class="helper sub-item">
+        <ion-label>¡Crea tu propio equipo o unéte a otro para ver aquí todas sus listas!</ion-label>
+      </ion-item> -->
+    </ion-list>
+
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button class="main-button">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-list side="top">
+        <ion-fab-button color="primary" [routerLink]="['/create-team']">
+          <ion-icon src="../../../../assets/icons/team.svg"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button color="primary" [routerLink]="['/join-team']">
+          <ion-icon name="enter-outline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab-list>
+    </ion-fab>
+  </div>
 </ion-content>

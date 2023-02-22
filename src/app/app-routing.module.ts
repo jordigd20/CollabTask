@@ -46,10 +46,15 @@ const routes: Routes = [
     ...canActivate(redirectUnauthorizedToLogin)
   },
   {
+    path: 'join-team',
+    loadChildren: () => import('./pages/common/join-team/join-team.module').then((m) => m.JoinTeamPageModule),
+    ...canActivate(redirectUnauthorizedToLogin)
+  },
+  {
     path: '**',
     redirectTo: 'intro',
     pathMatch: 'full'
-  }
+  },
 ];
 
 @NgModule({

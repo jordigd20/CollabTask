@@ -1,0 +1,130 @@
+.search-header {
+  background-color: var(--ion-color-white);
+  position: fixed;
+
+  h3 {
+    font-size: 20px;
+  }
+
+  ion-text {
+    margin-top: 16px;
+    margin-bottom: 10px;
+  }
+}
+
+.main {
+  margin-top: 115px;
+}
+
+ion-list.root-list ion-item,
+ion-list.sub-list ion-item {
+  --border-style: none;
+  --inner-padding-end: 0;
+  --inner-padding-start: 0;
+  --padding-end: 0;
+  --padding-start: 0;
+  font-size: 14px;
+}
+
+ion-list.root-list {
+  background-color: var(--ion-color-tertiary);
+  padding: 0;
+}
+
+ion-item.header-item {
+  --border-radius: 6px;
+  margin-bottom: 10px;
+
+  ion-button[slot='start'] {
+    margin-inline-start: 5px;
+    margin-inline-end: 5px;
+  }
+
+  ion-button[slot='end'] {
+    margin-inline-start: 5px;
+    margin-inline-end: 5px;
+  }
+
+  &::part(native) {
+    min-height: 38px;
+    height: 38px;
+  }
+}
+
+ion-item.container-list {
+  background-color: var(--ion-color-tertiary);
+  margin-bottom: 20px;
+
+  ion-list.sub-list {
+    width: 100%;
+    background-color: var(--ion-color-tertiary);
+    padding: 0;
+  }
+}
+
+ion-item.sub-item {
+  --border-radius: 6px;
+  margin-bottom: 10px;
+
+  ion-button[slot='end'] {
+    margin-inline-start: 2px;
+    margin-inline-end: 5px;
+    // margin-bottom: 40px;
+  }
+
+  .medium-part {
+    margin-left: 5px;
+  }
+
+  ion-label {
+    margin-bottom: 5px;
+    margin-top: -5px;
+  }
+}
+
+ion-item.helper ion-label {
+  margin: 10px;
+  overflow: unset;
+  white-space: unset;
+}
+
+.square-color {
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  background-color: #fff2ae;
+  border-radius: 6px;
+  margin: 6px;
+
+  .letter {
+    display: inline-block;
+    font-size: 30px;
+    font-weight: bold;
+    vertical-align: middle;
+    line-height: normal;
+  }
+}
+
+.score {
+  background-color: var(--ion-color-score);
+  color: var(--ion-color-score-text);
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.points-earned {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+ion-fab-button.fab-button-close-active {
+  --background: var(--ion-color-light);
+  --color: var(--ion-text-color);
+}

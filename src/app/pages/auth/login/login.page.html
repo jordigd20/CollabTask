@@ -7,7 +7,7 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <form (ngSubmit)="login()" [formGroup]="loginCredentials">
     <ion-list class="ion-no-padding">
-      <ion-item mode="md">
+      <ion-item mode="md" class="item-form">
         <ion-label position="stacked">Correo electrónico</ion-label>
         <ion-input
           type="email"
@@ -19,7 +19,7 @@
         </ion-note>
       </ion-item>
 
-      <ion-item mode="md">
+      <ion-item mode="md" class="item-form">
         <ion-label position="stacked">Contraseña</ion-label>
         <ion-input
           type="password"

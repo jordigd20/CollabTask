@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TeamService } from '../../services/team.service';
 
 @Component({
-  selector: 'app-join-team',
+  selector: 'app-join-team-form',
   templateUrl: './join-team.component.html',
   styleUrls: ['./join-team.component.scss']
 })

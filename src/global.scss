@@ -82,7 +82,7 @@ ion-button.button-clear {
 }
 
 /* Input field style */
-ion-item.item-fill-none {
+ion-item.item-form.item-fill-none {
   --border-style: none;
   --inner-padding-end: 0;
   --inner-padding-start: 0;
@@ -94,8 +94,8 @@ ion-item.item-fill-none {
     ion-input {
       --background: var(--ion-color-white);
       box-shadow: 0 0 0 3px rgba(92, 137, 176, 0.3);
-      border: 1px solid var(--ion-color-seconary-light);
-      caret-color: var(--ion-color-seconary-light) !important;
+      border: 1px solid var(--ion-color-secondary-light);
+      caret-color: var(--ion-color-secondary-light) !important;
 
       .cloned-input {
         --padding-top: 13px !important;
@@ -104,7 +104,7 @@ ion-item.item-fill-none {
     }
 
     ion-label {
-      color: var(--ion-color-seconary-light) !important;
+      color: var(--ion-color-secondary-light) !important;
     }
   }
 
@@ -136,7 +136,7 @@ ion-item.item-fill-none {
   }
 }
 
-ion-item.item-fill-none ion-input {
+ion-item.item-form.item-fill-none ion-input {
   --background: var(--ion-color-light);
   border-radius: 6px;
   padding: 5px 5px 5px 15px !important;
@@ -146,8 +146,8 @@ ion-item.item-fill-none ion-input {
   --color: var(--ion-color-secondary);
 }
 
-ion-item.item-fill-none ion-label,
-ion-item.item-fill-none ion-note {
+ion-item.item-form.item-fill-none ion-label,
+ion-item.item-form.item-fill-none ion-note {
   margin-left: 5px !important;
 }
 
@@ -181,6 +181,10 @@ ion-item.item-fill-none ion-note {
   font-size: 16px !important;
 }
 
+.large-text {
+  font-size: 24px !important;
+}
+
 .fw-light {
   font-weight: 300 !important;
 }
@@ -207,6 +211,10 @@ ion-item.item-fill-none ion-note {
 
 .justify-start {
   justify-content: start !important;
+}
+
+.justify-between {
+  justify-content: space-between !important;
 }
 
 .align-items-center {
@@ -242,6 +250,36 @@ ion-alert.alert-error .alert-title {
 
 ion-alert.alert-error .alert-button-group button {
   color: var(--ion-color-secondary);
+}
+
+ion-searchbar {
+  --border-radius: 23px !important;
+  --box-shadow: inset 0 2px 2px -1px rgba(74, 74, 104, 0.1) !important;
+}
+
+.searchbar-input {
+  font-size: 15px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+.searchbar-search-icon {
+  top: 9px !important;
+}
+
+.action-sheet-group.sc-ion-action-sheet-md:first-child {
+  padding-top: 10px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.action-sheet-custom-icon ion-icon {
+  color: var(--ion-text-color) !important;
+}
+
+.action-sheet-tasklist-icon ion-icon {
+  color: var(--ion-text-color) !important;
+  margin-bottom: 5px !important;
 }
 
 .firebase-emulator-warning {
