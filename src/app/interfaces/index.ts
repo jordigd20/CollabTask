@@ -4,4 +4,6 @@ export { LoginData } from './login-data.interface';
 export { AuthErrorCode } from './auth-error-codes.enum';
 export { TeamData } from './team-data.interface';
 export { Team } from './team.interface';
+export { UserMember } from './team.interface';
+export { TaskList } from './team.interface';
 export { TeamErrorCodes } from './errors/team-error-codes.enum';

@@ -3,4 +3,5 @@ export enum TeamErrorCodes {
   TeamInviationCodeNotValid = 'team/invitation-code-not-valid',
   TeamUserIsAlreadyMember = 'team/user-already-member',
   TeamDoesNotAllowNewMembers = 'team/does-not-allow-new-members',
+  TeamReachedMaxMembers = 'team/reached-max-members',
 }

@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
+import { TeamService } from '../../../services/team.service';
+import { Team } from '../../../interfaces';
+import { StorageService } from '../../../services/storage.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-lists',
@@ -7,9 +11,89 @@ import { ActionSheetController } from '@ionic/angular';
   styleUrls: ['./lists.page.scss']
 })
 export class ListsPage implements OnInit {
-  constructor(private actionSheetController: ActionSheetController) {}
+  teamsList: Team[] = [];
+  isLoading: boolean = true;
+  isSearching: boolean = false;
+  userId: string = '';
+  showTaskLists: { [key: string] : boolean } = {};
+  colors: string[] = ['yellow', 'blue', 'purple', 'green', 'red'];
+  assignedColors: { [key: string] : string } = {};
 
-  ngOnInit() {}
+  constructor(
+    private actionSheetController: ActionSheetController,
+    private storageService: StorageService,
+    private teamService: TeamService,
+    private router: Router
+  ) {}
+
+  async ngOnInit() {
+    this.isLoading = true;
+
+    await this.storageService.init();
+    const { id } = await this.storageService.get('user');
+    this.userId = id;
+
+    await this.getTeamsList();
+  }
+
+  async getTeamsList() {
+    const result = await this.teamService.getAllUserTeams(this.userId);
+
+    result.subscribe((teams) => {
+      this.teamsList = teams;
+      console.log(this.teamsList);
+
+      const allTaskLists = [];
+      for (const team of this.teamsList) {
+        this.showTaskLists[team.id] = true;
+
+        for(const taskList of team.taskLists) {
+          allTaskLists.push(taskList);
+        }
+      }
+
+      // Repeat the colors always in the same order
+      let i = 0;
+      for (const taskList of allTaskLists) {
+        if (i === this.colors.length) i = 0;
+
+        this.assignedColors[taskList.id] = this.colors[i];
+        i++;
+      }
+
+      console.log(this.assignedColors);
+      this.isLoading = false;
+    });
+  }
+
+  handleSearch(event: any) {
+    console.log(event);
+    const { value } = event.detail;
+    this.isSearching = value !== '';
+
+    console.log(value);
+
+    if (value === '') {
+      this.getTeamsList();
+      return;
+    }
+
+    this.teamsList = this.teamsList.filter((team) => {
+      const teamResult = team.name.toLowerCase().includes(value.toLowerCase());
+
+      if (!teamResult) {
+        for (const taskList of team.taskLists) {
+          const taskListResult = taskList.name.toLowerCase().includes(value.toLowerCase());
+
+          if (taskListResult) {
+            return true;
+          }
+        }
+      }
+
+      return teamResult;
+    });
+  }
 
   async presentTeamActionSheet() {
     const actionSheet = await this.actionSheetController.create({
@@ -75,5 +159,19 @@ export class ListsPage implements OnInit {
     actionSheet.present();
   }
 
+  handleRefresh(event: any) {
+    setTimeout(async () => {
+      await this.getTeamsList();
+      event.target.complete();
+    }, 2000);
+  }
 
+  handleItemClick(taskListId: string) {
+    console.log('Item clicked', taskListId);
+    // this.router.navigate([`/tabs/lists/${taskListId}`]);
+  }
+
+  toggleShowTaskLists(teamId: string) {
+    this.showTaskLists[teamId] = !this.showTaskLists[teamId];
+  }
 }

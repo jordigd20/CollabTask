@@ -3,7 +3,7 @@ export interface Team {
   name: string;
   allowNewMembers: boolean;
   invitationCode: string;
-  userMembers: UserMember[];
+  userMembers: { [key: string] : UserMember };
   taskLists: TaskList[];
 }
 

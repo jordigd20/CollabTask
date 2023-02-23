@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { TeamData, Team } from '../interfaces';
+import { TeamData, Team, TeamErrorCodes, UserMember } from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
 import { map, throwError, mergeMap, of } from 'rxjs';
-import { TeamErrorCodes } from '../interfaces';
 import { ToastController } from '@ionic/angular';
 
 @Injectable({
@@ -23,11 +22,13 @@ export class TeamService {
 
     const { id: userId, username } = await this.storageService.get('user');
 
-    const user = {
-      id: userId,
-      name: username,
-      role: 'admin',
-      userTotalScore: 0
+    const userMembers = {
+      [userId]: {
+        id: userId,
+        name: username,
+        role: 'admin',
+        userTotalScore: 0
+      }
     };
 
     await this.afs.doc<Team>(`teams/${id}`).set({
@@ -35,7 +36,7 @@ export class TeamService {
       name,
       allowNewMembers,
       invitationCode,
-      userMembers: [user],
+      userMembers,
       taskLists: []
     });
   }
@@ -45,6 +46,13 @@ export class TeamService {
       .doc<Team>(`teams/${id}`)
       .get()
       .pipe(map((team) => team.data()));
+  }
+
+  async getAllUserTeams(userId: string) {
+    return this.afs
+      .collection<Team>('teams', (ref) => ref.where(`userMembers.${userId}.id`, '==', userId))
+      .get()
+      .pipe(map((teams) => teams.docs.map((team) => team.data())));
   }
 
   updateTeamProperties(id: string, { name, allowNewMembers }: TeamData) {
@@ -67,12 +75,18 @@ export class TeamService {
           }
 
           const { allowNewMembers, userMembers } = teamFound.docs[0].data();
+          const userMembersListById = Object.keys(userMembers);
+
           if (!allowNewMembers) {
             return throwError(() => new Error(TeamErrorCodes.TeamDoesNotAllowNewMembers));
           }
 
-          for (const member of userMembers) {
-            if (member.id === userId) {
+          if (userMembersListById.length > 10) {
+            return throwError(() => new Error(TeamErrorCodes.TeamReachedMaxMembers));
+          }
+
+          for (const id of userMembersListById) {
+            if (id === userId) {
               return throwError(() => new Error(TeamErrorCodes.TeamUserIsAlreadyMember));
             }
           }
@@ -99,7 +113,7 @@ export class TeamService {
           }
 
           await teamsCollection.doc(id).update({
-            userMembers: [...userMembers, user],
+            userMembers: { ...userMembers, [userId]: user },
             taskLists: [...taskLists]
           });
 
@@ -124,6 +138,9 @@ export class TeamService {
         break;
       case TeamErrorCodes.TeamUserIsAlreadyMember:
         message = 'Ya eres miembro de este equipo';
+        break;
+      case TeamErrorCodes.TeamReachedMaxMembers:
+        message = 'No se pueden añadir más miembros a este equipo';
         break;
       default:
         message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
