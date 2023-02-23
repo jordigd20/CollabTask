@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
 import { map, throwError, mergeMap, of } from 'rxjs';
 import { ToastController } from '@ionic/angular';
+import firebase from 'firebase/compat/app';
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +38,8 @@ export class TeamService {
       allowNewMembers,
       invitationCode,
       userMembers,
-      taskLists: []
+      taskLists: [],
+      dateCreated: firebase.firestore.FieldValue.serverTimestamp()
     });
   }
 
@@ -48,11 +50,12 @@ export class TeamService {
       .pipe(map((team) => team.data()));
   }
 
-  async getAllUserTeams(userId: string) {
+  getAllUserTeams(userId: string) {
     return this.afs
-      .collection<Team>('teams', (ref) => ref.where(`userMembers.${userId}.id`, '==', userId))
-      .get()
-      .pipe(map((teams) => teams.docs.map((team) => team.data())));
+      .collection<Team>('teams', (ref) =>
+        ref.where(`userMembers.${userId}.id`, '==', userId).orderBy('dateCreated', 'asc')
+      )
+      .valueChanges();
   }
 
   updateTeamProperties(id: string, { name, allowNewMembers }: TeamData) {
@@ -156,7 +159,7 @@ export class TeamService {
       duration: 3000,
       position: 'bottom',
       color: 'secondary',
-      keyboardClose: true,
+      keyboardClose: true
     });
 
     await toast.present();

@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ActionSheetController } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActionSheetController, IonSearchbar } from '@ionic/angular';
 import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
@@ -11,6 +11,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./lists.page.scss']
 })
 export class ListsPage implements OnInit {
+  @ViewChild(IonSearchbar) ionSearchInput!: IonSearchbar;
+
   teamsList: Team[] = [];
   isLoading: boolean = true;
   isSearching: boolean = false;
@@ -33,45 +35,52 @@ export class ListsPage implements OnInit {
     const { id } = await this.storageService.get('user');
     this.userId = id;
 
-    await this.getTeamsList();
+    this.getTeamsList();
   }
 
-  async getTeamsList() {
-    const result = await this.teamService.getAllUserTeams(this.userId);
+  getTeamsList() {
+    const result = this.teamService.getAllUserTeams(this.userId);
 
     result.subscribe((teams) => {
-      this.teamsList = teams;
-      console.log(this.teamsList);
-
-      const allTaskLists = [];
-      for (const team of this.teamsList) {
-        this.showTaskLists[team.id] = true;
-
-        for(const taskList of team.taskLists) {
-          allTaskLists.push(taskList);
-        }
+      if (teams.length > 0) {
+        this.fillComponentData(teams);
+      } else {
+        this.isLoading = false;
       }
-
-      // Repeat the colors always in the same order
-      let i = 0;
-      for (const taskList of allTaskLists) {
-        if (i === this.colors.length) i = 0;
-
-        this.assignedColors[taskList.id] = this.colors[i];
-        i++;
-      }
-
-      console.log(this.assignedColors);
-      this.isLoading = false;
     });
   }
 
+  fillComponentData(teams: Team[]) {
+    this.teamsList = teams;
+    this.ionSearchInput.value = '';
+    console.log(this.teamsList);
+
+    const allTaskLists = [];
+    for (const team of this.teamsList) {
+      this.showTaskLists[team.id] = true;
+
+      for(const taskList of team.taskLists) {
+        allTaskLists.push(taskList);
+      }
+    }
+
+    // Repeat the colors always in the same order
+    let i = 0;
+    for (const taskList of allTaskLists) {
+      if (i === this.colors.length) i = 0;
+
+      this.assignedColors[taskList.id] = this.colors[i];
+      i++;
+    }
+
+    console.log(this.assignedColors);
+    this.isLoading = false;
+
+  }
+
   handleSearch(event: any) {
-    console.log(event);
     const { value } = event.detail;
     this.isSearching = value !== '';
-
-    console.log(value);
 
     if (value === '') {
       this.getTeamsList();
@@ -157,13 +166,6 @@ export class ListsPage implements OnInit {
     });
 
     actionSheet.present();
-  }
-
-  handleRefresh(event: any) {
-    setTimeout(async () => {
-      await this.getTeamsList();
-      event.target.complete();
-    }, 2000);
   }
 
   handleItemClick(taskListId: string) {

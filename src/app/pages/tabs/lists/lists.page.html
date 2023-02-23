@@ -12,6 +12,7 @@
       [debounce]="250"
       (ionChange)="handleSearch($event)"
       class="search ion-margin-top"
+      #ionSearchBar
     ></ion-searchbar>
 
     <div class="d-flex align-items-center justify-between ion-padding-horizontal">
@@ -21,10 +22,6 @@
   </ion-toolbar>
 
   <div class="main ion-padding">
-    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)" class="list-refresher">
-      <ion-refresher-content></ion-refresher-content>
-    </ion-refresher>
-
     <ion-spinner
       *ngIf="isLoading"
       class="loading-content"
@@ -47,7 +44,6 @@
     >
       <ion-label>No se ha encontrado ningún resultado</ion-label>
     </ion-item>
-
 
     <div *ngIf="!isLoading && teamsList.length > 0">
       <ion-list *ngFor="let team of teamsList" class="root-list" lines="none">

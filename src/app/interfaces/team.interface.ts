@@ -5,6 +5,7 @@ export interface Team {
   invitationCode: string;
   userMembers: { [key: string] : UserMember };
   taskLists: TaskList[];
+  dateCreated: any;
 }
 
 export interface UserMember {
