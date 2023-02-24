@@ -18,29 +18,36 @@ export class TeamService {
   ) {}
 
   async createTeam({ name, allowNewMembers }: TeamData) {
-    const id = this.afs.createId();
-    const invitationCode = nanoid(12);
+    try {
+      const id = this.afs.createId();
+      const invitationCode = nanoid(12);
 
-    const { id: userId, username } = await this.storageService.get('user');
+      const { id: userId, username } = await this.storageService.get('user');
 
-    const userMembers = {
-      [userId]: {
-        id: userId,
-        name: username,
-        role: 'admin',
-        userTotalScore: 0
-      }
-    };
+      const userMembers: { [key: string]: UserMember } = {
+        [userId]: {
+          id: userId,
+          name: username,
+          role: 'admin',
+          userTotalScore: 0
+        }
+      };
 
-    await this.afs.doc<Team>(`teams/${id}`).set({
-      id,
-      name,
-      allowNewMembers,
-      invitationCode,
-      userMembers,
-      taskLists: [],
-      dateCreated: firebase.firestore.FieldValue.serverTimestamp()
-    });
+      await this.afs.doc<Team>(`teams/${id}`).set({
+        id,
+        name,
+        allowNewMembers,
+        invitationCode,
+        userMembers,
+        taskLists: [],
+        dateCreated: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      this.showToast(`El equipo "${name}" se ha creado correctamente`);
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
   }
 
   getTeam(id: string) {
@@ -58,8 +65,24 @@ export class TeamService {
       .valueChanges();
   }
 
-  updateTeamProperties(id: string, { name, allowNewMembers }: TeamData) {
-    return this.afs.doc<Team>(`teams/${id}`).update({ name, allowNewMembers });
+  async updateTeamProperties(
+    id: string,
+    { name, allowNewMembers }: TeamData,
+    userMembers: { [key: string]: UserMember }
+  ) {
+    try {
+      const { id: userId } = await this.storageService.get('user');
+
+      if (userMembers[userId].role !== 'admin') {
+        throw new Error(TeamErrorCodes.TeamUserDoesNotHavePermission);
+      }
+
+      await this.afs.doc<Team>(`teams/${id}`).update({ name, allowNewMembers });
+      this.showToast(`Equipo "${name}" se ha actualizado correctamente`);
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
   }
 
   async joinTeam(invitationCode: string) {
@@ -144,6 +167,9 @@ export class TeamService {
         break;
       case TeamErrorCodes.TeamReachedMaxMembers:
         message = 'No se pueden añadir más miembros a este equipo';
+        break;
+      case TeamErrorCodes.TeamUserDoesNotHavePermission:
+        message = 'Solo los administradores pueden realizar esta acción';
         break;
       default:
         message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';

@@ -160,7 +160,8 @@ export class AuthService {
       const toast = await this.toastController.create({
         message: `Se ha enviado un correo electrónico a ${email} para restablecer tu contraseña.`,
         duration: 5000,
-        position: 'bottom'
+        position: 'bottom',
+        color: 'secondary'
       });
 
       await toast.present();

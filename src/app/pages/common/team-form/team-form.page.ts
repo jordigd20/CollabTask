@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
-import { ToastController } from '@ionic/angular';
+import { Team } from '../../../interfaces/team.interface';
 
 @Component({
   selector: 'app-team-form',
@@ -15,12 +15,13 @@ export class TeamFormPage implements OnInit {
   buttonText: string = 'Crear equipo';
   isLoading: boolean = false;
   teamId: string | null = null;
+  team: Team | undefined;
 
   constructor(
     private fb: FormBuilder,
     private activeRoute: ActivatedRoute,
     private teamService: TeamService,
-    private toastController: ToastController
+    private router: Router
   ) {}
 
   get name() {
@@ -36,7 +37,9 @@ export class TeamFormPage implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       allowNewMembers: [true, Validators.required]
     });
+  }
 
+  ionViewWillEnter() {
     this.teamId = this.activeRoute.snapshot.paramMap.get('id');
 
     if (this.teamId) {
@@ -44,60 +47,39 @@ export class TeamFormPage implements OnInit {
       this.buttonText = 'Guardar cambios';
 
       this.teamService.getTeam(this.teamId).subscribe((team) => {
-        console.log('getTeam: ', team);
-        const { name, allowNewMembers } = { ...team };
+        if (!team) {
+          this.router.navigate(['/tabs/home']);
+        } else {
+          this.team = team;
+          const { name, allowNewMembers } = { ...team };
+          console.log('getTeam: ', this.team);
 
-        this.teamForm.setValue({
-          name,
-          allowNewMembers
-        });
+          this.teamForm.setValue({
+            name,
+            allowNewMembers
+          });
+        }
       });
     }
   }
 
   async createTeam() {
-    try {
-      if (!this.teamForm.valid) return;
+    if (!this.teamForm.valid) return;
 
-      console.log('createTeam: ', this.teamForm.value);
-      const { name } = this.teamForm.value;
-
-      this.isLoading = true;
-      await this.teamService.createTeam(this.teamForm.value);
-      this.isLoading = false;
-
-      await this.showToast(`El equipo "${name}" se ha creado correctamente`);
-    } catch (error) {
-      console.error(error);
-      this.showToast('Ha ocurrido un error al crear el equipo');
-    }
+    this.isLoading = true;
+    await this.teamService.createTeam(this.teamForm.value);
+    this.isLoading = false;
   }
 
   async updateTeam() {
-    try {
-      if (!this.teamForm.valid) return;
+    if (!this.teamForm.valid || !this.team) return;
 
-      console.log('updateTeam: ', this.teamForm.value);
-      const { name } = this.teamForm.value;
-
-      this.isLoading = true;
-      await this.teamService.updateTeamProperties(this.teamId!, this.teamForm.value);
-      this.isLoading = false;
-
-      await this.showToast(`Equipo ${name} actualizado correctamente`);
-    } catch (error) {
-      console.error(error);
-      this.showToast('Ha ocurrido un error al actualizar el equipo');
-    }
-  }
-
-  async showToast(message: string) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      position: 'bottom'
-    });
-
-    await toast.present();
+    this.isLoading = true;
+    await this.teamService.updateTeamProperties(
+      this.teamId!,
+      this.teamForm.value,
+      this.team.userMembers
+    );
+    this.isLoading = false;
   }
 }
