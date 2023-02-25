@@ -5,4 +5,5 @@ export enum TeamErrorCodes {
   TeamDoesNotAllowNewMembers = 'team/does-not-allow-new-members',
   TeamReachedMaxMembers = 'team/reached-max-members',
   TeamUserDoesNotHavePermission = 'team/user-does-not-have-permission',
+  TeamReachedMaxTaskLists = 'team/reached-max-task-lists',
 }

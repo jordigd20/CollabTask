@@ -28,10 +28,6 @@ export class TeamFormPage implements OnInit {
     return this.teamForm.get('name');
   }
 
-  get allowNewMembers() {
-    return this.teamForm.get('allowNewMembers');
-  }
-
   ngOnInit() {
     this.teamForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],

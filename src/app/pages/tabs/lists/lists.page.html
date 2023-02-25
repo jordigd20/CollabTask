@@ -46,7 +46,11 @@
     </ion-item>
 
     <div *ngIf="!isLoading && teamsList.length > 0">
-      <ion-list *ngFor="let team of teamsList" class="root-list" lines="none">
+      <ion-list
+        *ngFor="let team of teamsList | searchTeams: searchText"
+        class="root-list"
+        lines="none"
+      >
         <ion-item color="primary" class="header-item">
           <ion-button
             (click)="toggleShowTaskLists(team.id)"
@@ -61,14 +65,19 @@
 
           <ion-label class="fw-bold">{{ team.name }}</ion-label>
 
-          <ion-button (click)="presentTeamActionSheet()" fill="clear" color="white" slot="end">
+          <ion-button
+            (click)="presentTeamActionSheet(team.id)"
+            fill="clear"
+            color="white"
+            slot="end"
+          >
             <ion-icon name="ellipsis-vertical"></ion-icon>
           </ion-button>
         </ion-item>
 
         <ion-item *ngIf="showTaskLists[team.id]" class="container-list" color="tertiary">
           <ion-list class="sub-list" color="tertiary" lines="none">
-            <ion-item *ngFor="let list of team.taskLists" button class="sub-item">
+            <ion-item *ngFor="let list of team.taskLists | objValues" button class="sub-item">
               <div (click)="handleItemClick(list.id)">
                 <div [ngClass]="'square-color ' + assignedColors[list.id]" slot="start">
                   <span class="letter">{{ list.name.charAt(0) }}</span>
@@ -90,7 +99,7 @@
               </div>
 
               <ion-button
-                (click)="presentTaskListActionSheet()"
+                (click)="presentTaskListActionSheet(team.id, list.id)"
                 fill="clear"
                 color="secondary"
                 slot="end"
@@ -99,7 +108,7 @@
               </ion-button>
             </ion-item>
 
-            <ion-item *ngIf="team.taskLists.length === 0" class="helper sub-item">
+            <ion-item *ngIf="taskListIsEmpty(team)" class="helper sub-item">
               <ion-label>
                 Despliega las opciones del equipo para crear la primera lista de tareas
               </ion-label>

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { TeamData, Team, TeamErrorCodes, UserMember } from '../interfaces';
+import { TeamData, Team, TeamErrorCodes, UserMember, TaskListData, TaskList } from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
-import { map, throwError, mergeMap, of } from 'rxjs';
+import { map, throwError, mergeMap, of, lastValueFrom } from 'rxjs';
 import { ToastController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
 
@@ -16,6 +16,21 @@ export class TeamService {
     private storageService: StorageService,
     private toastController: ToastController
   ) {}
+
+  getTeam(id: string) {
+    return this.afs
+      .doc<Team>(`teams/${id}`)
+      .get()
+      .pipe(map((team) => team.data()));
+  }
+
+  getAllUserTeams(userId: string) {
+    return this.afs
+      .collection<Team>('teams', (ref) =>
+        ref.where(`userMembers.${userId}.id`, '==', userId).orderBy('dateCreated', 'asc')
+      )
+      .valueChanges();
+  }
 
   async createTeam({ name, allowNewMembers }: TeamData) {
     try {
@@ -35,11 +50,11 @@ export class TeamService {
 
       await this.afs.doc<Team>(`teams/${id}`).set({
         id,
-        name,
+        name: name.trim(),
         allowNewMembers,
         invitationCode,
         userMembers,
-        taskLists: [],
+        taskLists: {},
         dateCreated: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -48,21 +63,6 @@ export class TeamService {
       console.error(error);
       this.handleError(error);
     }
-  }
-
-  getTeam(id: string) {
-    return this.afs
-      .doc<Team>(`teams/${id}`)
-      .get()
-      .pipe(map((team) => team.data()));
-  }
-
-  getAllUserTeams(userId: string) {
-    return this.afs
-      .collection<Team>('teams', (ref) =>
-        ref.where(`userMembers.${userId}.id`, '==', userId).orderBy('dateCreated', 'asc')
-      )
-      .valueChanges();
   }
 
   async updateTeamProperties(
@@ -79,6 +79,59 @@ export class TeamService {
 
       await this.afs.doc<Team>(`teams/${id}`).update({ name, allowNewMembers });
       this.showToast(`Equipo "${name}" se ha actualizado correctamente`);
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async createTaskList(idTeam: string, { name, distributionType }: TaskListData) {
+    try {
+      const team = await lastValueFrom(this.getTeam(idTeam));
+
+      if (!team) {
+        throw new Error('No se ha encontrado el equipo');
+      }
+
+      if (Object.keys(team.taskLists).length >= 5) {
+        throw new Error(TeamErrorCodes.TeamReachedMaxTaskLists);
+      }
+
+      const id = this.afs.createId();
+      const taskList: TaskList = {
+        id,
+        name: name.trim(),
+        distributionType,
+        userScore: {}
+      };
+
+      for (const user of Object.values(team.userMembers)) {
+        taskList.userScore[user.id] = 0;
+      }
+
+      await this.afs.doc<Team>(`teams/${idTeam}`).update({
+        taskLists: { ...team.taskLists, [id]: taskList }
+      });
+
+      this.showToast(`La lista de tareas "${name}" se ha creado correctamente`);
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async updateTaskListProperties(
+    idTeam: string,
+    idTaskList: string,
+    { name, distributionType }: TaskListData
+  ) {
+    try {
+      await this.afs.doc<Team>(`teams/${idTeam}`).update({
+        [`taskLists.${idTaskList}.name`]: name,
+        [`taskLists.${idTaskList}.distributionType`]: distributionType
+      });
+
+      this.showToast(`La lista de tareas "${name}" se ha actualizado correctamente`);
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -132,15 +185,15 @@ export class TeamService {
             userTotalScore: 0
           };
 
-          if (taskLists.length > 0) {
-            for (const list of taskLists) {
-              list.userScore[userId] = 0;
+          if (Object.values(taskLists).length > 0) {
+            for (const list of Object.values(taskLists)) {
+              taskLists[list.id].userScore[userId] = 0;
             }
           }
 
           await teamsCollection.doc(id).update({
             userMembers: { ...userMembers, [userId]: user },
-            taskLists: [...taskLists]
+            taskLists: { ...taskLists }
           });
 
           this.showToast('¡Te has unido al equipo correctamente!');
@@ -167,6 +220,9 @@ export class TeamService {
         break;
       case TeamErrorCodes.TeamReachedMaxMembers:
         message = 'No se pueden añadir más miembros a este equipo';
+        break;
+      case TeamErrorCodes.TeamReachedMaxTaskLists:
+        message = 'Este equipo ha alcanzado el máximo de listas de tareas disponibles';
         break;
       case TeamErrorCodes.TeamUserDoesNotHavePermission:
         message = 'Solo los administradores pueden realizar esta acción';

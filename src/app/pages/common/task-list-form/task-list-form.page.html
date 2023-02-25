@@ -1,0 +1,60 @@
+<app-back-header [title]="headerTitle"></app-back-header>
+
+<ion-content class="ion-padding">
+  <form
+    (ngSubmit)="(idTeam && idTaskList) ? updateTaskList() : createTaskList()"
+    [formGroup]="taskListForm"
+  >
+    <ion-item mode="md" style="margin-bottom: 10px" class="item-form">
+      <ion-label position="stacked" style="font-size: 18px">Nombre de la lista de tareas</ion-label>
+      <ion-input
+        type="text"
+        placeholder="Introduce el nombre de la lista"
+        formControlName="name"
+      ></ion-input>
+      <ion-note slot="error" *ngIf="name?.touched && name?.errors">
+        Debes introducir un nombre para la lista de tareas de almenos 3 carácteres.
+      </ion-note>
+    </ion-item>
+
+    <p class="medium-title ion-no-margin">Tipo de reparto</p>
+
+    <p class="paragraph-text">
+      En el reparto <b>manual</b> los miembros del grupo deberéis poneros de acuerdo para asignaros
+      las tareas.
+    </p>
+    <p class="paragraph-text">
+      En el reparto por <b>preferencias</b> se asignarán las tareas automáticamente teniendo
+      preferencia los que más puntos hayan conseguido.
+    </p>
+
+    <div class="d-flex align-items-center justify-center" style="gap: 5px">
+      <ion-button
+        (click)="setDistributionType('manual')"
+        [color]="distributionType?.value === 'manual' ? 'primary' : 'light'"
+        [ngClass]="{ 'fw-regular deactivated-type': distributionType?.value === 'preferences' }"
+      >
+        Manual
+      </ion-button>
+
+      <ion-button
+        (click)="setDistributionType('preferences')"
+        [color]="distributionType?.value === 'preferences' ? 'primary' : 'light'"
+        [ngClass]="{ 'fw-regular deactivated-type': distributionType?.value === 'manual' }"
+      >
+        Preferencias
+      </ion-button>
+    </div>
+
+    <ion-button
+      [disabled]="(!taskListForm.valid && !isLoading) || (taskListForm.valid && isLoading)"
+      type="submit"
+      expand="block"
+      shape="round"
+      class="ion-margin-top"
+    >
+      <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
+      {{ buttonText }}
+    </ion-button>
+  </form>
+</ion-content>

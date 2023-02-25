@@ -17,9 +17,10 @@ export class ListsPage implements OnInit {
   isLoading: boolean = true;
   isSearching: boolean = false;
   userId: string = '';
-  showTaskLists: { [key: string] : boolean } = {};
+  showTaskLists: { [key: string]: boolean } = {};
   colors: string[] = ['yellow', 'blue', 'purple', 'green', 'red'];
-  assignedColors: { [key: string] : string } = {};
+  assignedColors: { [key: string]: string } = {};
+  searchText: string = '';
 
   constructor(
     private actionSheetController: ActionSheetController,
@@ -34,7 +35,6 @@ export class ListsPage implements OnInit {
     await this.storageService.init();
     const { id } = await this.storageService.get('user');
     this.userId = id;
-
     this.getTeamsList();
   }
 
@@ -45,6 +45,7 @@ export class ListsPage implements OnInit {
       if (teams.length > 0) {
         this.fillComponentData(teams);
       } else {
+        this.teamsList = [];
         this.isLoading = false;
       }
     });
@@ -52,19 +53,18 @@ export class ListsPage implements OnInit {
 
   fillComponentData(teams: Team[]) {
     this.teamsList = teams;
-    this.ionSearchInput.value = '';
     console.log(this.teamsList);
 
     const allTaskLists = [];
     for (const team of this.teamsList) {
       this.showTaskLists[team.id] = true;
 
-      for(const taskList of team.taskLists) {
+      for (const taskList of Object.values(team.taskLists)) {
         allTaskLists.push(taskList);
       }
     }
 
-    // Repeat the colors always in the same order
+    // Repeats the colors always in the same order
     let i = 0;
     for (const taskList of allTaskLists) {
       if (i === this.colors.length) i = 0;
@@ -75,36 +75,14 @@ export class ListsPage implements OnInit {
 
     console.log(this.assignedColors);
     this.isLoading = false;
-
   }
 
   handleSearch(event: any) {
-    const { value } = event.detail;
-    this.isSearching = value !== '';
-
-    if (value === '') {
-      this.getTeamsList();
-      return;
-    }
-
-    this.teamsList = this.teamsList.filter((team) => {
-      const teamResult = team.name.toLowerCase().includes(value.toLowerCase());
-
-      if (!teamResult) {
-        for (const taskList of team.taskLists) {
-          const taskListResult = taskList.name.toLowerCase().includes(value.toLowerCase());
-
-          if (taskListResult) {
-            return true;
-          }
-        }
-      }
-
-      return teamResult;
-    });
+    this.searchText = event.detail.value;
+    this.isSearching = this.searchText !== '';
   }
 
-  async presentTeamActionSheet() {
+  async presentTeamActionSheet(idTeam: string) {
     const actionSheet = await this.actionSheetController.create({
       htmlAttributes: {
         'aria-label': 'Acciones del equipo'
@@ -115,7 +93,7 @@ export class ListsPage implements OnInit {
           icon: '../../../../assets/icons/list-add.svg',
           cssClass: 'action-sheet-custom-icon',
           handler: () => {
-            console.log('Create new task list');
+            this.router.navigate([`/create-task-list/${idTeam}`]);
           }
         },
         {
@@ -140,7 +118,7 @@ export class ListsPage implements OnInit {
     actionSheet.present();
   }
 
-  async presentTaskListActionSheet() {
+  async presentTaskListActionSheet(idTeam: string, idTaskList: string) {
     const actionSheet = await this.actionSheetController.create({
       htmlAttributes: {
         'aria-label': 'Acciones de la lista de tareas'
@@ -159,7 +137,7 @@ export class ListsPage implements OnInit {
           icon: 'create-outline',
           cssClass: 'action-sheet-tasklist-icon',
           handler: () => {
-            console.log('Edit task list properties');
+            this.router.navigate([`/edit-task-list/${idTeam}/${idTaskList}`]);
           }
         }
       ]
@@ -175,5 +153,10 @@ export class ListsPage implements OnInit {
 
   toggleShowTaskLists(teamId: string) {
     this.showTaskLists[teamId] = !this.showTaskLists[teamId];
+  }
+
+  taskListIsEmpty(team: Team) {
+    const teamIndex = this.teamsList.findIndex((t) => t.id === team.id);
+    return Object.keys(this.teamsList[teamIndex].taskLists).length === 0;
   }
 }

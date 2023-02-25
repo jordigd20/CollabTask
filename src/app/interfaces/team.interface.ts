@@ -4,7 +4,7 @@ export interface Team {
   allowNewMembers: boolean;
   invitationCode: string;
   userMembers: { [key: string] : UserMember };
-  taskLists: TaskList[];
+  taskLists: { [key: string] : TaskList };
   dateCreated: any;
 }
 
@@ -18,6 +18,6 @@ export interface UserMember {
 export interface TaskList {
   id: string;
   name: string;
-  distributionType: string;
+  distributionType: 'manual' | 'preferences';
   userScore: { [key: string] : number };
 }

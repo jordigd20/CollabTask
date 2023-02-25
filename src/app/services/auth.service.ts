@@ -71,9 +71,9 @@ export class AuthService {
 
       const user: User = {
         id: result.user?.uid,
-        email,
+        email: email.trim(),
         photoURL: result.user?.photoURL || '',
-        username: restData.username,
+        username: restData.username.trim(),
         efficiency: 0,
         qualityMark: 0,
         tasksAssigned: 0,
