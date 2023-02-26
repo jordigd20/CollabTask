@@ -162,7 +162,8 @@ export class AuthService {
         message: `Se ha enviado un correo electrónico a ${email} para restablecer tu contraseña.`,
         duration: 5000,
         position: 'bottom',
-        color: 'secondary'
+        color: 'secondary',
+        cssClass: 'custom-toast'
       });
 
       await toast.present();

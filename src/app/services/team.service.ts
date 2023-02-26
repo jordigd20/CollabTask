@@ -252,7 +252,8 @@ export class TeamService {
       duration: 3000,
       position: 'bottom',
       color: 'secondary',
-      keyboardClose: true
+      keyboardClose: true,
+      cssClass: 'custom-toast'
     });
 
     await toast.present();
