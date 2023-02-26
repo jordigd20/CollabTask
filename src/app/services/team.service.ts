@@ -146,71 +146,63 @@ export class TeamService {
 
     const { id: userId, username } = await this.storageService.get('user');
 
-    teamsCollection
-      .get()
-      .pipe(
-        mergeMap((teamFound) => {
-          if (teamFound.empty) {
-            return throwError(() => new Error(TeamErrorCodes.TeamInvitationCodeNotFound));
-          }
-
-          const { allowNewMembers, userMembers } = teamFound.docs[0].data();
-          const userMembersListById = Object.keys(userMembers);
-
-          if (!allowNewMembers) {
-            return throwError(() => new Error(TeamErrorCodes.TeamDoesNotAllowNewMembers));
-          }
-
-          if (userMembersListById.length > 10) {
-            return throwError(() => new Error(TeamErrorCodes.TeamReachedMaxMembers));
-          }
-
-          for (const id of userMembersListById) {
-            if (id === userId) {
-              return throwError(() => new Error(TeamErrorCodes.TeamUserIsAlreadyMember));
-            }
-          }
-
-          return of(teamFound);
-        })
-      )
-      .subscribe({
-        next: async (teamFound) => {
-          try {
-            console.log(teamFound.docs[0].data());
-            const { id, userMembers, taskLists, idUserMembers } = teamFound.docs[0].data();
-
-            const user = {
-              id: userId,
-              name: username,
-              role: 'member',
-              userTotalScore: 0
-            };
-
-            if (Object.values(taskLists).length > 0) {
-              for (const list of Object.values(taskLists)) {
-                taskLists[list.id].userScore[userId] = 0;
-              }
-            }
-
-            await teamsCollection.doc(id).update({
-              idUserMembers: [...idUserMembers, userId],
-              userMembers: { ...userMembers, [userId]: user },
-              taskLists: { ...taskLists }
-            });
-
-            this.showToast('¡Te has unido al equipo correctamente!');
-          } catch (error: any) {
-            const { code } = { error }.error;
-            console.error(error);
-            this.handleError({ message: code });
-          }
-        },
-        error: (err) => {
-          console.error(err);
-          this.handleError(err);
+    return teamsCollection.get().pipe(
+      mergeMap((teamFound) => {
+        if (teamFound.empty) {
+          return throwError(() => new Error(TeamErrorCodes.TeamInvitationCodeNotFound));
         }
-      });
+
+        const { allowNewMembers, userMembers } = teamFound.docs[0].data();
+        const userMembersListById = Object.keys(userMembers);
+
+        if (!allowNewMembers) {
+          return throwError(() => new Error(TeamErrorCodes.TeamDoesNotAllowNewMembers));
+        }
+
+        if (userMembersListById.length > 10) {
+          return throwError(() => new Error(TeamErrorCodes.TeamReachedMaxMembers));
+        }
+
+        for (const id of userMembersListById) {
+          if (id === userId) {
+            return throwError(() => new Error(TeamErrorCodes.TeamUserIsAlreadyMember));
+          }
+        }
+
+        return of(teamFound);
+      }),
+      tap(async (teamFound) => {
+        try {
+          console.log(teamFound.docs[0].data());
+          const { id, userMembers, taskLists, idUserMembers } = teamFound.docs[0].data();
+
+          const user = {
+            id: userId,
+            name: username,
+            role: 'member',
+            userTotalScore: 0
+          };
+
+          if (Object.values(taskLists).length > 0) {
+            for (const list of Object.values(taskLists)) {
+              taskLists[list.id].userScore[userId] = 0;
+            }
+          }
+
+          await teamsCollection.doc(id).update({
+            idUserMembers: [...idUserMembers, userId],
+            userMembers: { ...userMembers, [userId]: user },
+            taskLists: { ...taskLists }
+          });
+
+          this.showToast('¡Te has unido al equipo correctamente!');
+        } catch (error: any) {
+          const { code } = { error }.error;
+          console.error(error);
+          this.handleError({ message: code });
+        }
+      })
+    );
   }
 
   handleError(error: any) {

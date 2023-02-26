@@ -11,10 +11,7 @@ export class JoinTeamComponent implements OnInit {
   joinTeamForm!: FormGroup;
   isLoading: boolean = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private teamService: TeamService,
-  ) {}
+  constructor(private fb: FormBuilder, private teamService: TeamService) {}
 
   get invitationCode() {
     return this.joinTeamForm.get('invitationCode');
@@ -32,8 +29,17 @@ export class JoinTeamComponent implements OnInit {
     const { invitationCode } = this.joinTeamForm.value;
 
     this.isLoading = true;
-    await this.teamService.joinTeam(invitationCode);
-    this.isLoading = false;
-  }
+    const result = await this.teamService.joinTeam(invitationCode);
 
+    result.subscribe({
+      next: () => {
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error(error);
+        this.isLoading = false;
+        this.teamService.handleError(error);
+      }
+    });
+  }
 }
