@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TeamData, Team, TeamErrorCodes, UserMember, TaskListData, TaskList } from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
-import { map, throwError, mergeMap, of, lastValueFrom } from 'rxjs';
+import { map, throwError, mergeMap, of, lastValueFrom, tap } from 'rxjs';
 import { ToastController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
 
@@ -27,7 +27,7 @@ export class TeamService {
   getAllUserTeams(userId: string) {
     return this.afs
       .collection<Team>('teams', (ref) =>
-        ref.where(`userMembers.${userId}.id`, '==', userId).orderBy('dateCreated', 'asc')
+        ref.where(`idUserMembers`, 'array-contains', userId).orderBy('dateCreated', 'asc')
       )
       .valueChanges();
   }
@@ -53,6 +53,7 @@ export class TeamService {
         name: name.trim(),
         allowNewMembers,
         invitationCode,
+        idUserMembers: [userId],
         userMembers,
         taskLists: {},
         dateCreated: firebase.firestore.FieldValue.serverTimestamp()
@@ -74,7 +75,7 @@ export class TeamService {
       const { id: userId } = await this.storageService.get('user');
 
       if (userMembers[userId].role !== 'admin') {
-        throw new Error(TeamErrorCodes.TeamUserDoesNotHavePermission);
+        throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
       }
 
       await this.afs.doc<Team>(`teams/${id}`).update({ name, allowNewMembers });
@@ -175,28 +176,35 @@ export class TeamService {
       )
       .subscribe({
         next: async (teamFound) => {
-          console.log(teamFound.docs[0].data());
-          const { id, userMembers, taskLists } = teamFound.docs[0].data();
+          try {
+            console.log(teamFound.docs[0].data());
+            const { id, userMembers, taskLists, idUserMembers } = teamFound.docs[0].data();
 
-          const user = {
-            id: userId,
-            name: username,
-            role: 'member',
-            userTotalScore: 0
-          };
+            const user = {
+              id: userId,
+              name: username,
+              role: 'member',
+              userTotalScore: 0
+            };
 
-          if (Object.values(taskLists).length > 0) {
-            for (const list of Object.values(taskLists)) {
-              taskLists[list.id].userScore[userId] = 0;
+            if (Object.values(taskLists).length > 0) {
+              for (const list of Object.values(taskLists)) {
+                taskLists[list.id].userScore[userId] = 0;
+              }
             }
+
+            await teamsCollection.doc(id).update({
+              idUserMembers: [...idUserMembers, userId],
+              userMembers: { ...userMembers, [userId]: user },
+              taskLists: { ...taskLists }
+            });
+
+            this.showToast('¡Te has unido al equipo correctamente!');
+          } catch (error: any) {
+            const { code } = { error }.error;
+            console.error(error);
+            this.handleError({ message: code });
           }
-
-          await teamsCollection.doc(id).update({
-            userMembers: { ...userMembers, [userId]: user },
-            taskLists: { ...taskLists }
-          });
-
-          this.showToast('¡Te has unido al equipo correctamente!');
         },
         error: (err) => {
           console.error(err);
@@ -224,8 +232,11 @@ export class TeamService {
       case TeamErrorCodes.TeamReachedMaxTaskLists:
         message = 'Este equipo ha alcanzado el máximo de listas de tareas disponibles';
         break;
-      case TeamErrorCodes.TeamUserDoesNotHavePermission:
+      case TeamErrorCodes.TeamUserPermissionDenied:
         message = 'Solo los administradores pueden realizar esta acción';
+        break;
+      case TeamErrorCodes.FirestorePermissionDenied:
+        message = 'No tienes el permiso suficiente para realizar esta acción';
         break;
       default:
         message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';

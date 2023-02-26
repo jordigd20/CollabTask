@@ -19,14 +19,14 @@ export class AvoidIntroGuard implements CanActivate {
       take(1),
       switchMap(async (authState) => {
         if (authState) {
-          this.router.navigate(['/tabs/home']);
+          this.router.navigate(['/tabs/home'], { replaceUrl: true });
           return false;
         }
 
         const avoidIntroPages = await this.storageService.get('avoidIntroPages');
 
         if (avoidIntroPages) {
-          this.router.navigate(['/auth']);
+          this.router.navigate(['/auth'], { replaceUrl: true });
           return false;
         }
 

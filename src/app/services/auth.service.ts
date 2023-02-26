@@ -55,7 +55,7 @@ export class AuthService {
     try {
       const result = await this.auth.signInWithEmailAndPassword(email, password);
       await this.setAvoidIntroPages(true);
-      this.router.navigate(['tabs/home']);
+      this.router.navigate(['/tabs/home'], { replaceUrl: true });
 
       return result;
     } catch (error) {
@@ -82,7 +82,7 @@ export class AuthService {
 
       await this.setUserData(user);
       await this.setAvoidIntroPages(true);
-      this.router.navigate(['first-time']);
+      this.router.navigate(['first-time'], { replaceUrl: true });
 
       return result;
     } catch (error) {
@@ -126,9 +126,9 @@ export class AuthService {
 
         await this.setUserData(user);
         await this.setUserInStorage(user);
-        this.router.navigate(['first-time']);
+        this.router.navigate(['first-time'], { replaceUrl: true });
       } else {
-        this.router.navigate(['tabs/home']);
+        this.router.navigate(['tabs/home'], { replaceUrl: true });
       }
 
       await this.setAvoidIntroPages(true);
@@ -151,6 +151,7 @@ export class AuthService {
   async logOut() {
     await this.storageService.remove('user');
     await this.auth.signOut();
+    await this.router.navigate(['/auth/login'], { replaceUrl: true });
   }
 
   async forgotPassword(email: string) {

@@ -4,6 +4,7 @@ import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-lists',
@@ -21,6 +22,7 @@ export class ListsPage implements OnInit {
   colors: string[] = ['yellow', 'blue', 'purple', 'green', 'red'];
   assignedColors: { [key: string]: string } = {};
   searchText: string = '';
+  getTeams$: Subscription = new Subscription();
 
   constructor(
     private actionSheetController: ActionSheetController,
@@ -38,10 +40,15 @@ export class ListsPage implements OnInit {
     this.getTeamsList();
   }
 
+  ngOnDestroy() {
+    console.log('ngOnDestroy lists page');
+    this.getTeams$.unsubscribe();
+  }
+
   getTeamsList() {
     const result = this.teamService.getAllUserTeams(this.userId);
 
-    result.subscribe((teams) => {
+    this.getTeams$ = result.subscribe((teams) => {
       if (teams.length > 0) {
         this.fillComponentData(teams);
       } else {
