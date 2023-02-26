@@ -37,14 +37,6 @@
       <ion-label>¡Crea tu propio equipo o unéte a otro para ver aquí todas sus listas!</ion-label>
     </ion-item>
 
-    <ion-item
-      *ngIf="!isLoading && isSearching && teamsList.length === 0"
-      class="root-helper helper sub-item"
-      style="z-index: 0"
-    >
-      <ion-label>No se ha encontrado ningún resultado</ion-label>
-    </ion-item>
-
     <div *ngIf="!isLoading && teamsList.length > 0">
       <ion-list
         *ngFor="let team of teamsList | searchTeams: searchText"
@@ -117,6 +109,14 @@
         </ion-item>
       </ion-list>
     </div>
+
+    <ion-item
+      *ngIf="!isLoading && isSearching && (teamsList | searchTeams: searchText)?.length === 0"
+      class="root-helper helper sub-item"
+      style="z-index: 0"
+    >
+      <ion-label>No se ha encontrado ningún resultado</ion-label>
+    </ion-item>
 
     <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="position: fixed">
       <ion-fab-button class="main-button">
