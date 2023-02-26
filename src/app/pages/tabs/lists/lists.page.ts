@@ -100,7 +100,7 @@ export class ListsPage implements OnInit {
           icon: '../../../../assets/icons/list-add.svg',
           cssClass: 'action-sheet-custom-icon',
           handler: () => {
-            this.router.navigate([`/create-task-list/${idTeam}`]);
+            this.router.navigate([`/tabs/lists/create-task-list/${idTeam}`]);
           }
         },
         {
@@ -144,7 +144,7 @@ export class ListsPage implements OnInit {
           icon: 'create-outline',
           cssClass: 'action-sheet-tasklist-icon',
           handler: () => {
-            this.router.navigate([`/edit-task-list/${idTeam}/${idTaskList}`]);
+            this.router.navigate([`/tabs/lists/edit-task-list/${idTeam}/${idTaskList}`]);
           }
         }
       ]

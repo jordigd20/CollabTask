@@ -40,34 +40,6 @@ const routes: Routes = [
     ...canActivate(redirectUnauthorizedToLogin)
   },
   {
-    path: 'edit-team/:id',
-    loadChildren: () =>
-      import('./pages/common/team-form/team-form.module').then((m) => m.TeamFormPageModule),
-    ...canActivate(redirectUnauthorizedToLogin)
-  },
-  {
-    path: 'join-team',
-    loadChildren: () =>
-      import('./pages/common/join-team/join-team.module').then((m) => m.JoinTeamPageModule),
-    ...canActivate(redirectUnauthorizedToLogin)
-  },
-  {
-    path: 'create-task-list/:idTeam',
-    loadChildren: () =>
-      import('./pages/common/task-list-form/task-list-form.module').then(
-        (m) => m.TaskListFormPageModule
-      ),
-    ...canActivate(redirectUnauthorizedToLogin)
-  },
-  {
-    path: 'edit-task-list/:idTeam/:idTaskList',
-    loadChildren: () =>
-      import('./pages/common/task-list-form/task-list-form.module').then(
-        (m) => m.TaskListFormPageModule
-      ),
-    ...canActivate(redirectUnauthorizedToLogin)
-  },
-  {
     path: '**',
     redirectTo: 'intro',
     pathMatch: 'full'

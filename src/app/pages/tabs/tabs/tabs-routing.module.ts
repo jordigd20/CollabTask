@@ -13,19 +13,53 @@ const routes: Routes = [
       },
       {
         path: 'lists',
-        loadChildren: () => import('../lists/lists.module').then((m) => m.ListsPageModule)
+        children: [
+          {
+            path: '',
+            loadChildren: () => import('../lists/lists.module').then((m) => m.ListsPageModule)
+          },
+          {
+            path: 'create-team',
+            loadChildren: () =>
+              import('../../common/team-form/team-form.module').then((m) => m.TeamFormPageModule)
+          },
+          {
+            path: 'edit-team/:id',
+            loadChildren: () =>
+              import('../../common/team-form/team-form.module').then((m) => m.TeamFormPageModule)
+          },
+          {
+            path: 'join-team',
+            loadChildren: () =>
+              import('../../common/join-team/join-team.module').then((m) => m.JoinTeamPageModule)
+          },
+          {
+            path: 'create-task-list/:idTeam',
+            loadChildren: () =>
+              import('../../common/task-list-form/task-list-form.module').then(
+                (m) => m.TaskListFormPageModule
+              )
+          },
+          {
+            path: 'edit-task-list/:idTeam/:idTaskList',
+            loadChildren: () =>
+              import('../../common/task-list-form/task-list-form.module').then(
+                (m) => m.TaskListFormPageModule
+              )
+          }
+        ]
       },
       {
         path: 'search',
-        loadChildren: () => import('../search/search.module').then( m => m.SearchPageModule)
+        loadChildren: () => import('../search/search.module').then((m) => m.SearchPageModule)
       },
       {
         path: 'trades',
-        loadChildren: () => import('../trades/trades.module').then( m => m.TradesPageModule)
+        loadChildren: () => import('../trades/trades.module').then((m) => m.TradesPageModule)
       },
       {
         path: 'profile',
-        loadChildren: () => import('../profile/profile.module').then( m => m.ProfilePageModule)
+        loadChildren: () => import('../profile/profile.module').then((m) => m.ProfilePageModule)
       },
       {
         path: '**',
@@ -33,7 +67,7 @@ const routes: Routes = [
         pathMatch: 'full'
       }
     ]
-  },
+  }
 ];
 
 @NgModule({
