@@ -116,7 +116,7 @@ export class ListsPage implements OnInit {
           icon: 'settings-outline',
           cssClass: 'action-sheet-custom-icon',
           handler: () => {
-            console.log('Team settings');
+            this.router.navigate([`/tabs/lists/team-settings/${idTeam}`]);
           }
         }
       ]

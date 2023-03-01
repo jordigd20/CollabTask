@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
-import { Team } from '../../../interfaces/team.interface';
+import { Team } from '../../../interfaces';
 
 @Component({
   selector: 'app-team-form',
@@ -14,7 +14,7 @@ export class TeamFormPage implements OnInit {
   headerTitle: string = 'Crear equipo nuevo';
   buttonText: string = 'Crear equipo';
   isLoading: boolean = false;
-  teamId: string | null = null;
+  idTeam: string | null = null;
   team: Team | undefined;
 
   constructor(
@@ -33,28 +33,40 @@ export class TeamFormPage implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       allowNewMembers: [true, Validators.required]
     });
-  }
 
-  ionViewWillEnter() {
-    this.teamId = this.activeRoute.snapshot.paramMap.get('id');
+    this.idTeam = this.activeRoute.snapshot.paramMap.get('id');
 
-    if (this.teamId) {
+    if (this.idTeam) {
       this.headerTitle = 'Editar equipo';
       this.buttonText = 'Guardar cambios';
 
-      this.teamService.getTeam(this.teamId).subscribe((team) => {
-        if (!team) {
-          this.router.navigate(['/tabs/home']);
-        } else {
-          this.team = team;
-          const { name, allowNewMembers } = { ...team };
-          console.log('getTeam: ', this.team);
+      const teamsNotFound = this.teamService.teams.length === 0;
+      if (teamsNotFound) {
+        this.getTeamFirstTime();
+        return;
+      }
 
-          this.teamForm.setValue({
-            name,
-            allowNewMembers
-          });
-        }
+      const team = this.teamService.teams.find((team) => team.id === this.idTeam);
+      this.fillComponentData(team);
+    }
+  }
+
+  getTeamFirstTime() {
+    this.teamService.getTeam(this.idTeam!).subscribe((team) => {
+      this.fillComponentData(team);
+    });
+  }
+
+  fillComponentData(team: Team | undefined) {
+    if (!team) {
+      this.router.navigate([`/tabs/lists/team-settings/${this.idTeam}`]);
+    } else {
+      this.team = team;
+      const { name, allowNewMembers } = { ...team };
+
+      this.teamForm.setValue({
+        name,
+        allowNewMembers
       });
     }
   }
@@ -72,7 +84,7 @@ export class TeamFormPage implements OnInit {
 
     this.isLoading = true;
     await this.teamService.updateTeamProperties(
-      this.teamId!,
+      this.idTeam!,
       this.teamForm.value,
       this.team.userMembers
     );

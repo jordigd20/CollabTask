@@ -11,11 +11,17 @@ import firebase from 'firebase/compat/app';
   providedIn: 'root'
 })
 export class TeamService {
+  teamsList: Team[] = [];
+
   constructor(
     private afs: AngularFirestore,
     private storageService: StorageService,
     private toastController: ToastController
   ) {}
+
+  get teams() {
+    return this.teamsList;
+  }
 
   getTeam(id: string) {
     return this.afs
@@ -29,7 +35,12 @@ export class TeamService {
       .collection<Team>('teams', (ref) =>
         ref.where(`idUserMembers`, 'array-contains', userId).orderBy('dateCreated', 'asc')
       )
-      .valueChanges();
+      .valueChanges()
+      .pipe(
+        tap((teams) => {
+          this.teamsList = teams;
+        })
+      );
   }
 
   async createTeam({ name, allowNewMembers }: TeamData) {
@@ -59,7 +70,7 @@ export class TeamService {
         dateCreated: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      this.showToast(`El equipo "${name}" se ha creado correctamente`);
+      this.showToast(`${name} se ha creado correctamente`);
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -79,7 +90,7 @@ export class TeamService {
       }
 
       await this.afs.doc<Team>(`teams/${id}`).update({ name, allowNewMembers });
-      this.showToast(`Equipo "${name}" se ha actualizado correctamente`);
+      this.showToast(`${name} se ha actualizado correctamente`);
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -114,7 +125,7 @@ export class TeamService {
         taskLists: { ...team.taskLists, [id]: taskList }
       });
 
-      this.showToast(`La lista de tareas "${name}" se ha creado correctamente`);
+      this.showToast(`${name} se ha creado correctamente`);
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -132,12 +143,15 @@ export class TeamService {
         [`taskLists.${idTaskList}.distributionType`]: distributionType
       });
 
-      this.showToast(`La lista de tareas "${name}" se ha actualizado correctamente`);
+      this.showToast(`${name} se ha actualizado correctamente`);
     } catch (error) {
       console.error(error);
       this.handleError(error);
     }
   }
+
+  //TODO:
+  leaveTeam(idTeam: string) {}
 
   async joinTeam(invitationCode: string) {
     const teamsCollection = this.afs.collection<Team>('teams', (ref) =>

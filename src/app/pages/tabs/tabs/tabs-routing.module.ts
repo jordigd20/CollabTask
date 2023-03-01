@@ -46,6 +46,10 @@ const routes: Routes = [
               import('../../common/task-list-form/task-list-form.module').then(
                 (m) => m.TaskListFormPageModule
               )
+          },
+          {
+            path: 'team-settings/:id',
+            loadChildren: () => import('../lists/team-settings/team-settings.module').then( m => m.TeamSettingsPageModule)
           }
         ]
       },

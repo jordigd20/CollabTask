@@ -1,7 +1,7 @@
 <app-back-header [title]="headerTitle"></app-back-header>
 
 <ion-content class="ion-padding">
-  <form (ngSubmit)="teamId ? updateTeam() : createTeam()" [formGroup]="teamForm">
+  <form (ngSubmit)="idTeam ? updateTeam() : createTeam()" [formGroup]="teamForm">
     <ion-item mode="md" style="margin-bottom: 10px" class="item-form">
       <ion-label position="stacked" style="font-size: 18px">Nombre del equipo</ion-label>
       <ion-input type="text" placeholder="Introduce el nombre del equipo" formControlName="name"></ion-input>
