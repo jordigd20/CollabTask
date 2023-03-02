@@ -244,6 +244,15 @@ ion-item.item-form.item-fill-none ion-note {
   }
 }
 
+.confirmation-modal {
+  --width: 90%;
+  --border-radius: 10px;
+}
+
+.leave-team-modal {
+  --height: 25%;
+}
+
 ion-alert.alert-error .alert-title {
   color: var(--ion-color-danger);
 }
@@ -287,7 +296,7 @@ ion-searchbar {
 }
 
 .secondary-button {
-  &::part(native){
+  &::part(native) {
     border: 1px solid var(--ion-color-border);
     color: var(--ion-color-secondary) !important;
   }
@@ -329,8 +338,6 @@ ion-list.settings-list {
       height: 3em;
     }
   }
-
-
 
   ion-item.code-item {
     --inner-padding-end: 0;

@@ -3,6 +3,8 @@ import { TeamService } from '../../../../services/team.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Team } from '../../../../interfaces';
 import { Clipboard } from '@capacitor/clipboard';
+import { ModalController } from '@ionic/angular';
+import { ConfirmationModalComponent } from '../../../../components/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-team-settings',
@@ -13,10 +15,12 @@ export class TeamSettingsPage implements OnInit {
   idTeam: string | null = null;
   teamName: string = '';
   invitationCode: string = '';
+  modal: HTMLIonModalElement | undefined;
 
   constructor(
     private activeRoute: ActivatedRoute,
     private teamService: TeamService,
+    private modalController: ModalController,
     private router: Router
   ) {}
 
@@ -50,6 +54,30 @@ export class TeamSettingsPage implements OnInit {
       this.teamName = team.name;
       this.invitationCode = team.invitationCode;
     }
+  }
+
+  async presentConfirmation() {
+    this.modal = await this.modalController.create({
+      component: ConfirmationModalComponent,
+      componentProps: {
+        title: 'Abandonar el equipo',
+        message: '¿Estas seguro de que quieres salir del equipo?',
+        confirmText: 'Eliminar',
+        dangerType: true,
+        dismissModal: () => this.modal!.dismiss(),
+        mainFunction: () => this.leaveTeam()
+      },
+      backdropDismiss: false,
+      cssClass: 'confirmation-modal leave-team-modal'
+    });
+
+    this.modal.present();
+  }
+
+  async leaveTeam() {
+    await this.teamService.leaveTeam(this.idTeam!);
+    await this.modal!.dismiss();
+    this.router.navigate(['/tabs/lists']);
   }
 
   async copyCodeToClipboard() {

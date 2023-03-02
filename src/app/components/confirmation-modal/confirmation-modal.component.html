@@ -1,0 +1,28 @@
+<ion-content class="ion-padding">
+  <ion-title>
+    <h3>{{ title }}</h3>
+  </ion-title>
+  <ion-text>{{ message }}</ion-text>
+
+  <div class="d-flex align-items-center justify-end ion-margin-top">
+    <ion-button
+      (click)="dismissModal()"
+      [disabled]="isLoading"
+      class="secondary-button"
+      color="white"
+      shape="round"
+    >
+      Cancelar
+    </ion-button>
+
+    <ion-button
+      (click)="executeAction()"
+      [color]="dangerType ? 'danger' : 'primary'"
+      [disabled]="isLoading"
+      shape="round"
+    >
+      <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
+      {{ confirmText }}
+    </ion-button>
+  </div>
+</ion-content>

@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TeamData, Team, TeamErrorCodes, UserMember, TaskListData, TaskList } from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
-import { map, throwError, mergeMap, of, lastValueFrom, tap } from 'rxjs';
+import { map, throwError, mergeMap, of, lastValueFrom, tap, debounceTime } from 'rxjs';
 import { ToastController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
 
@@ -39,7 +39,8 @@ export class TeamService {
       .pipe(
         tap((teams) => {
           this.teamsList = teams;
-        })
+        }),
+        debounceTime(350)
       );
   }
 
@@ -151,7 +152,59 @@ export class TeamService {
   }
 
   //TODO:
-  leaveTeam(idTeam: string) {}
+  async leaveTeam(idTeam: string) {
+    try {
+      let teamFound = this.teamsList.find((team) => team.id !== idTeam);
+
+      if (!teamFound) {
+        const team = await lastValueFrom(this.getTeam(idTeam));
+
+        if (!team) {
+          throw new Error('No se ha encontrado el equipo');
+        }
+
+        teamFound = team;
+      }
+
+      if (Object.keys(teamFound!.userMembers).length === 1) {
+        this.deleteTeam(idTeam);
+      } else {
+        this.removeUserFromTeam(idTeam);
+      }
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  //TODO:
+  async deleteTeam(idTeam: string) {
+    try {
+      await this.afs.doc<Team>(`teams/${idTeam}`).delete();
+
+      this.showToast('Has abandonado el equipo');
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  //TODO:
+  async removeUserFromTeam(idTeam: string) {
+    try {
+      const { id: userId } = await this.storageService.get('user');
+
+      await this.afs.doc<Team>(`teams/${idTeam}`).update({
+        [`userMembers.${userId}`]: firebase.firestore.FieldValue.delete(),
+        [`idUserMembers`]: firebase.firestore.FieldValue.arrayRemove(userId) as unknown as string[]
+      });
+
+      this.showToast('Has abandonado el equipo');
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
 
   async joinTeam(invitationCode: string) {
     const teamsCollection = this.afs.collection<Team>('teams', (ref) =>

@@ -6,6 +6,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { ReactiveFormsModule } from '@angular/forms';
 import { BackHeaderComponent } from './back-header/back-header.component';
 import { JoinTeamComponent } from './join-team/join-team.component';
+import { ConfirmationModalComponent } from './confirmation-modal/confirmation-modal.component';
 
 @NgModule({
   declarations: [
@@ -13,6 +14,7 @@ import { JoinTeamComponent } from './join-team/join-team.component';
     ForgotPasswordComponent,
     BackHeaderComponent,
     JoinTeamComponent,
+    ConfirmationModalComponent
   ],
   imports: [
     CommonModule,
@@ -24,6 +26,7 @@ import { JoinTeamComponent } from './join-team/join-team.component';
     ForgotPasswordComponent,
     BackHeaderComponent,
     JoinTeamComponent,
+    ConfirmationModalComponent
   ]
 })
 export class ComponentsModule { }

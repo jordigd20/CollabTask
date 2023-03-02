@@ -34,13 +34,13 @@
       </ion-label>
     </ion-item>
 
-    <ion-item class="settings-item" button>
+    <ion-item (click)="presentConfirmation()" class="settings-item" button>
       <ion-avatar slot="start" style="background-color: var(--ion-color-danger);">
         <ion-icon color="white" name="log-out-outline" style="padding: 8px 9px;"></ion-icon>
       </ion-avatar>
       <ion-label>
-        <h3 class="fw-bold">Abandonar grupo</h3>
-        <p>Perderás los datos del grupo en tu perfil y se te desasignará de tus tareas</p>
+        <h3 class="fw-bold">Abandonar equipo</h3>
+        <p>Perderás los datos del equipo en tu perfil y se te desasignará de tus tareas</p>
       </ion-label>
     </ion-item>
 
