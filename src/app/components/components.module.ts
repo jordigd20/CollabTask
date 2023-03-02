@@ -7,6 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { BackHeaderComponent } from './back-header/back-header.component';
 import { JoinTeamComponent } from './join-team/join-team.component';
 import { ConfirmationModalComponent } from './confirmation-modal/confirmation-modal.component';
+import { ToolbarSearchbarComponent } from './toolbar-searchbar/toolbar-searchbar.component';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { ConfirmationModalComponent } from './confirmation-modal/confirmation-mo
     ForgotPasswordComponent,
     BackHeaderComponent,
     JoinTeamComponent,
-    ConfirmationModalComponent
+    ConfirmationModalComponent,
+    ToolbarSearchbarComponent
   ],
   imports: [
     CommonModule,
@@ -26,7 +28,8 @@ import { ConfirmationModalComponent } from './confirmation-modal/confirmation-mo
     ForgotPasswordComponent,
     BackHeaderComponent,
     JoinTeamComponent,
-    ConfirmationModalComponent
+    ConfirmationModalComponent,
+    ToolbarSearchbarComponent
   ]
 })
 export class ComponentsModule { }

@@ -1,5 +1,5 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, IonSearchbar } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { ActionSheetController } from '@ionic/angular';
 import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
@@ -12,8 +12,6 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./lists.page.scss']
 })
 export class ListsPage implements OnInit {
-  @ViewChild(IonSearchbar) ionSearchInput!: IonSearchbar;
-
   teamsList: Team[] = [];
   isLoading: boolean = true;
   isSearching: boolean = false;
@@ -154,8 +152,7 @@ export class ListsPage implements OnInit {
   }
 
   handleItemClick(taskListId: string) {
-    console.log('Item clicked', taskListId);
-    // this.router.navigate([`/tabs/lists/${taskListId}`]);
+    this.router.navigate([`/tabs/lists/task-list/${taskListId}`]);
   }
 
   toggleShowTaskLists(teamId: string) {

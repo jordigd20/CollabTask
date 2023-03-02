@@ -5,21 +5,12 @@
 </ion-header>
 
 <ion-content color="tertiary">
-  <ion-toolbar class="search-header">
-    <ion-searchbar
-      placeholder="Buscar equipos o listas de tareas"
-      color="light"
-      [debounce]="250"
-      (ionChange)="handleSearch($event)"
-      class="search ion-margin-top"
-      #ionSearchBar
-    ></ion-searchbar>
-
-    <div class="d-flex align-items-center justify-between ion-padding-horizontal">
-      <h3>Lista de equipos y tareas</h3>
-      <ion-text class="small-text">{{ teamsList.length }} equipos</ion-text>
-    </div>
-  </ion-toolbar>
+  <app-toolbar-searchbar
+    title="Lista de equipos y tareas"
+    placeholder="Buscar equipos o listas de tareas"
+    [totalItems]="teamsList.length"
+    (search)="handleSearch($event)"
+  ></app-toolbar-searchbar>
 
   <div class="main ion-padding">
     <ion-spinner

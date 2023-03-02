@@ -1,0 +1,14 @@
+<ion-toolbar class="search-header">
+  <ion-searchbar
+    [placeholder]="placeholder"
+    color="light"
+    [debounce]="250"
+    (ionChange)="handleSearch($event)"
+    class="search ion-margin-top"
+  ></ion-searchbar>
+
+  <div class="d-flex align-items-center justify-between ion-padding-horizontal">
+    <h3>{{ title }}</h3>
+    <ion-text class="small-text">{{ totalItems }} equipos</ion-text>
+  </div>
+</ion-toolbar>

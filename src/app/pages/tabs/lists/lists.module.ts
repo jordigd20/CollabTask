@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { ListsPageRoutingModule } from './lists-routing.module';
 import { ListsPage } from './lists.page';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { ComponentsModule } from '../../../components/components.module';
 
 @NgModule({
   imports: [
@@ -12,7 +13,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
     FormsModule,
     IonicModule,
     ListsPageRoutingModule,
-    PipesModule
+    PipesModule,
+    ComponentsModule
   ],
   declarations: [ListsPage]
 })
