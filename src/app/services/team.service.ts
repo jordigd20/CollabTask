@@ -154,7 +154,7 @@ export class TeamService {
   //TODO:
   async leaveTeam(idTeam: string) {
     try {
-      let teamFound = this.teamsList.find((team) => team.id !== idTeam);
+      let teamFound = this.teamsList.find((team) => team.id === idTeam);
 
       if (!teamFound) {
         const team = await lastValueFrom(this.getTeam(idTeam));
