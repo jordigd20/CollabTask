@@ -1,0 +1,24 @@
+<app-back-header
+  title="Nombre de la tarea"
+  [showMoreOptions]="true"
+  [showPreferences]="true"
+  (moreOptions)="handleMoreOptions()"
+  (preferences)="handlePreferences()"
+></app-back-header>
+
+<ion-content color="tertiary">
+  <app-toolbar-searchbar
+    title="Lista de tareas"
+    placeholder="Buscar tareas"
+    [totalItems]="0"
+    (search)="handleSearch($event)"
+  ></app-toolbar-searchbar>
+
+  <div class="main-container ion-padding">
+    <ion-fab vertical="bottom" horizontal="center" slot="fixed" style="position: fixed">
+      <ion-button color="primary" shape="round">
+        Reparto de tareas
+      </ion-button>
+    </ion-fab>
+  </div>
+</ion-content>

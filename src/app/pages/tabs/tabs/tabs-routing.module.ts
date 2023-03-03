@@ -50,6 +50,10 @@ const routes: Routes = [
           {
             path: 'team-settings/:id',
             loadChildren: () => import('../lists/team-settings/team-settings.module').then( m => m.TeamSettingsPageModule)
+          },
+          {
+            path: 'task-list/:idTeam/:idTaskList',
+            loadChildren: () => import('../lists/task-list/task-list.module').then( m => m.TaskListPageModule)
           }
         ]
       },

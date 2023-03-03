@@ -40,7 +40,7 @@ export class TeamService {
         tap((teams) => {
           this.teamsList = teams;
         }),
-        debounceTime(350)
+        debounceTime(500)
       );
   }
 

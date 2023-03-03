@@ -4,5 +4,14 @@
       <ion-back-button defaultHref="/tabs/lists"></ion-back-button>
     </ion-buttons>
     <ion-title class="fw-bold header-title">{{ title }}</ion-title>
+
+    <ion-buttons *ngIf="showMoreOptions || showPreferences" slot="secondary">
+      <ion-button *ngIf="showPreferences" (click)="preferences.emit()">
+        <ion-icon slot="icon-only" name="options-outline"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="showMoreOptions" (click)="moreOptions.emit()">
+        <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>

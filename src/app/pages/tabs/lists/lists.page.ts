@@ -151,8 +151,8 @@ export class ListsPage implements OnInit {
     actionSheet.present();
   }
 
-  handleItemClick(taskListId: string) {
-    this.router.navigate([`/tabs/lists/task-list/${taskListId}`]);
+  handleItemClick(idTeam: string, idTaskList: string) {
+    this.router.navigate([`/tabs/lists/task-list/${idTeam}/${idTaskList}`]);
   }
 
   toggleShowTaskLists(teamId: string) {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-back-header',
@@ -7,6 +7,11 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class BackHeaderComponent implements OnInit {
   @Input() title: string = '';
+  @Input() showMoreOptions: boolean = false;
+  @Input() showPreferences: boolean = false;
+
+  @Output() moreOptions: EventEmitter<any> = new EventEmitter();
+  @Output() preferences: EventEmitter<any> = new EventEmitter();
 
   constructor() {}
 

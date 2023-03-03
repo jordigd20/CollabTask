@@ -12,7 +12,7 @@
     (search)="handleSearch($event)"
   ></app-toolbar-searchbar>
 
-  <div class="main ion-padding">
+  <div class="main-container ion-padding">
     <ion-spinner
       *ngIf="isLoading"
       class="loading-content"
@@ -60,14 +60,19 @@
 
         <ion-item *ngIf="showTaskLists[team.id]" class="container-list" color="tertiary">
           <ion-list class="sub-list" color="tertiary" lines="none">
-            <ion-item *ngFor="let list of team.taskLists | objValues" button class="sub-item">
-              <div (click)="handleItemClick(list.id)">
+            <ion-item
+              *ngFor="let list of team.taskLists | objValues"
+              button
+              class="sub-item"
+              (click)="handleItemClick(team.id, list.id)"
+            >
+              <div>
                 <div [ngClass]="'square-color ' + assignedColors[list.id]" slot="start">
                   <span class="letter">{{ list.name.charAt(0) }}</span>
                 </div>
               </div>
 
-              <div class="medium-part" (click)="handleItemClick(list.id)">
+              <div class="medium-part">
                 <ion-label class="fw-bold">{{ list.name }}</ion-label>
                 <div class="d-flex align-items-center" style="gap: 5px">
                   <div class="score">
@@ -82,7 +87,7 @@
               </div>
 
               <ion-button
-                (click)="presentTaskListActionSheet(team.id, list.id)"
+                (click)="presentTaskListActionSheet(team.id, list.id);$event.stopPropagation();"
                 fill="clear"
                 color="secondary"
                 slot="end"
