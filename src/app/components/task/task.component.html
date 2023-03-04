@@ -1,0 +1,40 @@
+<ion-item class="task-item" button>
+  <div class="main-container">
+    <div [ngClass]="isFromAnotherUser ? 'top-container' : 'top-container-from-user'">
+        <ion-button fill="clear" shape="round" class="check-button" *ngIf="!isFromAnotherUser">
+          <ion-icon
+            slot="icon-only"
+            src="../../../assets/icons/task-check.svg"
+            color="primary"
+            size="large"
+          ></ion-icon>
+        </ion-button>
+        <ion-label class="title-container">
+          <h3 class="fw-bold">{{ title }}</h3>
+          <ion-text class="d-flex align-items-center" color="medium" style="gap: 3px">
+            <ion-icon src="../../../assets/icons/calendar.svg" style="margin-bottom: 2px"></ion-icon>
+            <span style="font-size: 14px">{{ date | date : 'd MMM y' }}</span>
+          </ion-text>
+        </ion-label>
+      <ion-text class="team-name-container" color="medium">
+        <p class="team-name" style="font-size: 12px">{{ teamName }}</p>
+      </ion-text>
+    </div>
+
+    <div class="bottom-container">
+        <ion-avatar>
+          <img [src]="photoURL" [alt]="'Avatar de ' + username" referrerpolicy="no-referrer"/>
+        </ion-avatar>
+        <p class="username-container username">
+          {{ username }}
+        </p>
+      <div class="score">
+        <ion-icon
+          src="../../../../assets/icons/score.svg"
+          style="margin-bottom: 3px"
+        ></ion-icon>
+        <span>{{ score }}</span>
+      </div>
+    </div>
+  </div>
+</ion-item>

@@ -1,0 +1,105 @@
+ion-item.task-item {
+  --border-radius: 6px;
+  margin-bottom: 10px;
+  --inner-padding-end: 0px;
+  --padding-start: 10px;
+  --padding-end: 10px;
+
+  .main-container {
+    width: 100%;
+  }
+
+  .top-container-from-user {
+    margin: 5px 0;
+    display: grid;
+    grid-template-columns: 0.5fr 5fr 1.5fr;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .top-container {
+    margin: 5px 0;
+    display: grid;
+    grid-template-columns: 5fr 1.25fr;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .start-slot {
+    display: flex;
+    align-items: center;
+  }
+
+  .title-container {
+    max-width: 100%;
+    min-width: 0;
+
+    h3 {
+      letter-spacing: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+  }
+
+  .team-name-container {
+    min-width: 0;
+    max-width: 100%;
+    text-align: center;
+
+    .team-name {
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      margin: 0;
+    }
+  }
+
+  .bottom-container {
+    gap: 5px;
+    border-top: 1px solid var(--ion-color-border);
+    display: grid;
+    grid-template-columns: 0.5fr 5fr 1fr;
+    align-items: center;
+
+      ion-avatar {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        min-height: 30px;
+        margin: 7px 0;
+      }
+
+    .username-container {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .score {
+      background-color: var(--ion-color-score);
+      color: var(--ion-color-score-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      padding: 0 8px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+  }
+}
+
+ion-button.check-button {
+  height: 30px;
+  margin: 0;
+  margin-right: 6px;
+
+  &::part(native) {
+    padding: 0;
+  }
+}

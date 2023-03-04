@@ -2,8 +2,7 @@
   margin-top: 115px;
 }
 
-ion-fab.fab-horizontal-center {
-  margin: 0 !important;
-  bottom: -10px;
-  transform: translateX(-50%) translateY(-50%);
+.list-container {
+  background-color: var(--ion-color-tertiary);
+  padding: 0;
 }

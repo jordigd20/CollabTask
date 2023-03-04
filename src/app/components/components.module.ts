@@ -8,6 +8,7 @@ import { BackHeaderComponent } from './back-header/back-header.component';
 import { JoinTeamComponent } from './join-team/join-team.component';
 import { ConfirmationModalComponent } from './confirmation-modal/confirmation-modal.component';
 import { ToolbarSearchbarComponent } from './toolbar-searchbar/toolbar-searchbar.component';
+import { TaskComponent } from './task/task.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { ToolbarSearchbarComponent } from './toolbar-searchbar/toolbar-searchbar
     BackHeaderComponent,
     JoinTeamComponent,
     ConfirmationModalComponent,
-    ToolbarSearchbarComponent
+    ToolbarSearchbarComponent,
+    TaskComponent
   ],
   imports: [
     CommonModule,
@@ -29,7 +31,8 @@ import { ToolbarSearchbarComponent } from './toolbar-searchbar/toolbar-searchbar
     BackHeaderComponent,
     JoinTeamComponent,
     ConfirmationModalComponent,
-    ToolbarSearchbarComponent
+    ToolbarSearchbarComponent,
+    TaskComponent
   ]
 })
 export class ComponentsModule { }

@@ -302,6 +302,12 @@ ion-searchbar {
   }
 }
 
+ion-fab.fab-horizontal-center {
+  margin: 0 !important;
+  bottom: -10px;
+  transform: translateX(-50%) translateY(-50%);
+}
+
 ion-list.settings-list {
   background: var(--ion-color-tertiary);
 
