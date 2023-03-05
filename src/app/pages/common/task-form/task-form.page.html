@@ -1,0 +1,82 @@
+<app-back-header title="Crear una tarea nueva"></app-back-header>
+
+<ion-content class="ion-padding">
+
+  <form (ngSubmit)="createTask()" [formGroup]="taskForm">
+    <ion-item mode="md" class="item-form">
+      <ion-label position="stacked">Título</ion-label>
+      <ion-input
+        type="text"
+        placeholder="Introduce el título de la tarea"
+        formControlName="title"
+      ></ion-input>
+      <ion-note slot="error" *ngIf="title?.touched && title?.errors">
+        Debes introducir un título de almenos 3 carácteres
+      </ion-note>
+    </ion-item>
+
+    <ion-item mode="md" class="item-form">
+      <ion-label position="stacked">Descripción</ion-label>
+      <ion-textarea
+        class="custom-textarea"
+        placeholder="Introduce una descripción de la tarea"
+        formControlName="description"
+      ></ion-textarea>
+    </ion-item>
+
+    <ion-list class="list-radio">
+      <ion-radio-group name="date" value="date">
+        <ion-list-header>
+          <ion-label class="fw-bold">Tipo de fecha</ion-label>
+        </ion-list-header>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Fecha a realizar</ion-label>
+          <ion-radio value="date"></ion-radio>
+        </ion-item>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Fecha límite</ion-label>
+          <ion-radio value="dateLimit"></ion-radio>
+        </ion-item>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Fecha periódica</ion-label>
+          <ion-radio value="datePeriodic"></ion-radio>
+        </ion-item>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Sin fecha</ion-label>
+          <ion-radio value="withoutDate"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-list>
+
+    <div class="d-flex align-items-center ion-margin-top" style="gap: 5px;">
+      <ion-button class="secondary-button fw-regular" color="light" shape="round">
+        <ion-icon slot="start" src="../../../assets/icons/calendar.svg"></ion-icon>
+        Fecha
+      </ion-button>
+      <ion-chip class="info-chip" [disabled]="true">
+        <ion-icon src="../../../assets/icons/calendar.svg"></ion-icon>
+        Sin fecha
+      </ion-chip>
+    </div>
+
+    <div class="d-flex align-items-center ion-margin-bottom" style="gap: 5px;">
+      <ion-button class="secondary-button fw-regular" color="light" shape="round">
+        <ion-icon slot="start" src="../../../assets/icons/score.svg"></ion-icon>
+        Puntos
+      </ion-button>
+      <ion-chip class="info-chip" [disabled]="true">
+        <ion-icon src="../../../assets/icons/score.svg"></ion-icon>
+        0 Puntos
+      </ion-chip>
+    </div>
+
+
+    <ion-button type="submit" expand="block" shape="round">
+      Crear tarea
+    </ion-button>
+  </form>
+</ion-content>

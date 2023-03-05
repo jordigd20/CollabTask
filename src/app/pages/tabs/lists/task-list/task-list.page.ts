@@ -17,7 +17,9 @@ export class TaskListPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  ngOnInit() {}
+
+  ionViewWillEnter() {
     this.idTeam = this.activeRoute.snapshot.paramMap.get('idTeam');
     this.idTaskList = this.activeRoute.snapshot.paramMap.get('idTaskList');
   }

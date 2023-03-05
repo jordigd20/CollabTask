@@ -40,6 +40,14 @@ const routes: Routes = [
     ...canActivate(redirectUnauthorizedToLogin)
   },
   {
+    path: 'create-task/:idTeam/:idTaskList',
+    loadChildren: () => import('./pages/common/task-form/task-form.module').then( m => m.TaskFormPageModule)
+  },
+  {
+    path: 'edit-task/:idTask',
+    loadChildren: () => import('./pages/common/task-form/task-form.module').then( m => m.TaskFormPageModule)
+  },
+  {
     path: '**',
     redirectTo: 'intro',
     pathMatch: 'full'

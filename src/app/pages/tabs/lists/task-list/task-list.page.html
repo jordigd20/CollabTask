@@ -23,7 +23,7 @@
     </ion-list>
 
     <ion-fab vertical="bottom" horizontal="center" slot="fixed" style="position: fixed">
-      <ion-button color="primary" shape="round"> Reparto de tareas </ion-button>
+      <ion-button [routerLink]="['/create-task', idTeam, idTaskList]" color="primary" shape="round">Reparto de tareas</ion-button>
     </ion-fab>
   </div>
 </ion-content>
