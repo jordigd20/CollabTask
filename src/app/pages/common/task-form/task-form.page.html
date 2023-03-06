@@ -64,7 +64,7 @@
       </ion-button>
       <ion-chip
         class="info-chip"
-        [ngClass]="{ 'chip--disabled' : selectedDate?.value === 'withoutDate' }"
+        [ngClass]="selectedDate?.value === 'withoutDate' ? 'chip--disabled' : 'chip-active'"
         [disabled]="true"
       >
         <ion-icon src="../../../assets/icons/calendar.svg"></ion-icon>
@@ -73,13 +73,18 @@
     </div>
 
     <div class="d-flex align-items-center ion-margin-bottom" style="gap: 5px">
-      <ion-button class="secondary-button fw-regular" color="light" shape="round">
-        <ion-icon slot="start" src="../../../assets/icons/score.svg"></ion-icon>
+      <ion-button
+        (click)="displayScoreModal()"
+        class="secondary-button fw-regular"
+        color="light"
+        shape="round"
+      >
+        <ion-icon slot="start" src="../../../assets/icons/score.svg" class="score-icon"></ion-icon>
         Puntos
       </ion-button>
-      <ion-chip class="info-chip" [disabled]="true">
-        <ion-icon src="../../../assets/icons/score.svg"></ion-icon>
-        0 Puntos
+      <ion-chip class="info-chip chip-active" [disabled]="true">
+        <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 6px;"></ion-icon>
+        {{ score?.value }} Puntos
       </ion-chip>
     </div>
 

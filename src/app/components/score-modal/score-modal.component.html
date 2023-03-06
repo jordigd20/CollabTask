@@ -1,0 +1,30 @@
+<ion-content>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <div class="d-flex align-items-center justify-center ion-margin-start" style="gap: 5px;">
+      <ion-icon src="../../../assets/icons/score.svg" class="score-icon"></ion-icon>
+      <ion-title class="ion-no-padding">
+        <h3>Puntos de la tarea</h3>
+      </ion-title>
+    </div>
+  </ion-toolbar>
+
+  <ion-grid fixed>
+    <ion-row *ngFor="let row of enabledScores">
+      <ion-col *ngFor="let score of row" size="4">
+        <ion-button
+          (click)="selectScore(score)"
+          [color]="selectedScore === score ? 'primary' : 'white'"
+          expand="full"
+        >
+          {{ score }}
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

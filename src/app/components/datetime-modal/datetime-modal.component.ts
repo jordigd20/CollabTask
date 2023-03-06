@@ -15,11 +15,6 @@ export class DatetimeModalComponent implements OnInit {
 
   ngOnInit() {}
 
-  ionViewWillEnter() {
-    console.log(this.previousDate);
-
-  }
-
   onChangeDate(event: any) {
     this.dateValue = event.detail.value;
   }

@@ -10,6 +10,7 @@ import { ConfirmationModalComponent } from './confirmation-modal/confirmation-mo
 import { ToolbarSearchbarComponent } from './toolbar-searchbar/toolbar-searchbar.component';
 import { TaskComponent } from './task/task.component';
 import { DatetimeModalComponent } from './datetime-modal/datetime-modal.component';
+import { ScoreModalComponent } from './score-modal/score-modal.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { DatetimeModalComponent } from './datetime-modal/datetime-modal.componen
     ToolbarSearchbarComponent,
     TaskComponent,
     DatetimeModalComponent,
+    ScoreModalComponent,
   ],
   imports: [
     CommonModule,
@@ -36,6 +38,7 @@ import { DatetimeModalComponent } from './datetime-modal/datetime-modal.componen
     ToolbarSearchbarComponent,
     TaskComponent,
     DatetimeModalComponent,
+    ScoreModalComponent,
   ]
 })
 export class ComponentsModule { }

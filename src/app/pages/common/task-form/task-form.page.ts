@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { DatetimeModalComponent } from '../../../components/datetime-modal/datetime-modal.component';
+import { ScoreModalComponent } from '../../../components/score-modal/score-modal.component';
 
 @Component({
   selector: 'app-task-form',
@@ -40,11 +41,15 @@ export class TaskFormPage implements OnInit {
     return this.taskForm.get('date');
   }
 
+  get score() {
+    return this.taskForm.get('score');
+  }
+
   ngOnInit() {
     this.taskForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
-      score: [10, [Validators.required, Validators.min(0), Validators.max(100)]],
+      score: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
       selectedDate: ['withoutDate', Validators.required],
       dateLimit: [undefined],
       datePeriodic: [undefined],
@@ -69,14 +74,14 @@ export class TaskFormPage implements OnInit {
   }
 
   async displayDateModal() {
-    const date = this.selectedDateValue;
+    const previousDate = this.selectedDateValue;
     const modal = await this.modalController.create({
       component: DatetimeModalComponent,
       componentProps: {
-        previousDate: date
+        previousDate
       },
       backdropDismiss: false,
-      cssClass: 'modal-datetime'
+      cssClass: 'modal-transparent'
     });
 
     await modal.present();
@@ -89,10 +94,33 @@ export class TaskFormPage implements OnInit {
     this.setDateValue(data.date);
   }
 
+  async displayScoreModal() {
+    const previousScore = this.taskForm.get('score')?.value;
+     const modal = await this.modalController.create({
+      component: ScoreModalComponent,
+      componentProps: {
+        previousScore
+      },
+      cssClass: 'modal-transparent'
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data.canceled) {
+      return;
+    }
+
+    this.taskForm.patchValue({
+      score: data.selectedScore
+    });
+  }
+
   setDateValue(dateValue: string) {
     const selectedDate = this.taskForm.get('selectedDate')?.value;
     this.taskForm.patchValue({
       [selectedDate]: dateValue
     });
   }
+
 }
