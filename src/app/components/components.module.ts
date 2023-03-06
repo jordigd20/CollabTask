@@ -9,6 +9,7 @@ import { JoinTeamComponent } from './join-team/join-team.component';
 import { ConfirmationModalComponent } from './confirmation-modal/confirmation-modal.component';
 import { ToolbarSearchbarComponent } from './toolbar-searchbar/toolbar-searchbar.component';
 import { TaskComponent } from './task/task.component';
+import { DatetimeModalComponent } from './datetime-modal/datetime-modal.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { TaskComponent } from './task/task.component';
     JoinTeamComponent,
     ConfirmationModalComponent,
     ToolbarSearchbarComponent,
-    TaskComponent
+    TaskComponent,
+    DatetimeModalComponent,
   ],
   imports: [
     CommonModule,
@@ -32,7 +34,8 @@ import { TaskComponent } from './task/task.component';
     JoinTeamComponent,
     ConfirmationModalComponent,
     ToolbarSearchbarComponent,
-    TaskComponent
+    TaskComponent,
+    DatetimeModalComponent,
   ]
 })
 export class ComponentsModule { }

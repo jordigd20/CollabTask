@@ -1,7 +1,6 @@
 <app-back-header title="Crear una tarea nueva"></app-back-header>
 
 <ion-content class="ion-padding">
-
   <form (ngSubmit)="createTask()" [formGroup]="taskForm">
     <ion-item mode="md" class="item-form">
       <ion-label position="stacked">Título</ion-label>
@@ -25,10 +24,15 @@
     </ion-item>
 
     <ion-list class="list-radio">
-      <ion-radio-group name="date" value="date">
+      <ion-radio-group name="date" value="withoutDate" formControlName="selectedDate">
         <ion-list-header>
           <ion-label class="fw-bold">Tipo de fecha</ion-label>
         </ion-list-header>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Sin fecha</ion-label>
+          <ion-radio value="withoutDate"></ion-radio>
+        </ion-item>
 
         <ion-item mode="md" class="item-radio">
           <ion-label>Fecha a realizar</ion-label>
@@ -44,26 +48,31 @@
           <ion-label>Fecha periódica</ion-label>
           <ion-radio value="datePeriodic"></ion-radio>
         </ion-item>
-
-        <ion-item mode="md" class="item-radio">
-          <ion-label>Sin fecha</ion-label>
-          <ion-radio value="withoutDate"></ion-radio>
-        </ion-item>
       </ion-radio-group>
     </ion-list>
 
-    <div class="d-flex align-items-center ion-margin-top" style="gap: 5px;">
-      <ion-button class="secondary-button fw-regular" color="light" shape="round">
+    <div class="d-flex align-items-center ion-margin-top" style="gap: 5px">
+      <ion-button
+        (click)="displayDateModal()"
+        [disabled]="selectedDate?.value === 'withoutDate'"
+        class="secondary-button fw-regular"
+        color="light"
+        shape="round"
+      >
         <ion-icon slot="start" src="../../../assets/icons/calendar.svg"></ion-icon>
         Fecha
       </ion-button>
-      <ion-chip class="info-chip" [disabled]="true">
+      <ion-chip
+        class="info-chip"
+        [ngClass]="{ 'chip--disabled' : selectedDate?.value === 'withoutDate' }"
+        [disabled]="true"
+      >
         <ion-icon src="../../../assets/icons/calendar.svg"></ion-icon>
-        Sin fecha
+        {{ selectedDateValue ? [selectedDateValue | date : 'd MMM y'] : 'Sin fecha' }}
       </ion-chip>
     </div>
 
-    <div class="d-flex align-items-center ion-margin-bottom" style="gap: 5px;">
+    <div class="d-flex align-items-center ion-margin-bottom" style="gap: 5px">
       <ion-button class="secondary-button fw-regular" color="light" shape="round">
         <ion-icon slot="start" src="../../../assets/icons/score.svg"></ion-icon>
         Puntos
@@ -74,8 +83,17 @@
       </ion-chip>
     </div>
 
+    <ion-text *ngIf="showDateError" color="danger" class="small-text">
+      <p style="margin-left: 5px">Debes introducir una fecha para poder crear la tarea</p>
+    </ion-text>
 
-    <ion-button type="submit" expand="block" shape="round">
+    <ion-button
+      [disabled]="(!taskForm.valid && !isLoading) || (taskForm.valid && isLoading)"
+      type="submit"
+      expand="block"
+      shape="round"
+    >
+      <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
       Crear tarea
     </ion-button>
   </form>

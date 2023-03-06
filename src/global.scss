@@ -193,6 +193,10 @@ ion-item.item-radio {
   }
 }
 
+.chip--disabled {
+  opacity: 0.5;
+}
+
 .hr {
   margin: 50px 0;
   border: 1px solid var(--ion-color-border);
@@ -293,6 +297,22 @@ ion-item.item-radio {
 
 .leave-team-modal {
   --height: 25%;
+}
+
+ion-modal.modal-datetime {
+  --background: rgba(44, 39, 45, 0.2);
+
+  ion-content {
+    --background: transparent;
+    --padding-top: 15vh;
+    --padding-start: 20px;
+    --padding-end: 20px;
+
+    ion-datetime {
+      border-radius: 8px;
+      margin: auto;
+    }
+  }
 }
 
 ion-alert.alert-error .alert-title {
