@@ -21,8 +21,8 @@ export interface Task {
   description: string;
   score: number;
   selectedDate: string;
-  date: firebase.firestore.Timestamp;
-  dateLimit: firebase.firestore.Timestamp;
+  date: firebase.firestore.Timestamp | string;
+  dateLimit: firebase.firestore.Timestamp | string;
   datePeriodic: string;
   imageURL: string;
   completed: boolean;
@@ -30,6 +30,6 @@ export interface Task {
     id: string;
     name: string;
     photoURL: string;
-    date: firebase.firestore.Timestamp;
+    date: firebase.firestore.Timestamp | string;
   };
 }

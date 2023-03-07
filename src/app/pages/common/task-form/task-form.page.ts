@@ -5,7 +5,8 @@ import { DatetimeModalComponent } from '../../../components/datetime-modal/datet
 import { ScoreModalComponent } from '../../../components/score-modal/score-modal.component';
 import { PeriodicDateModalComponent } from '../../../components/periodic-date-modal/periodic-date-modal.component';
 import { TaskService } from '../../../services/task.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Task } from '../../../interfaces';
 
 @Component({
   selector: 'app-task-form',
@@ -14,16 +15,21 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class TaskFormPage implements OnInit {
   taskForm!: FormGroup;
+  headerTitle: string = 'Crear una tarea nueva';
+  buttonText: string = 'Crear tarea';
   idTeam: string | null = null;
   idTaskList: string | null = null;
+  idTask: string | null = null;
   showDateError: boolean = false;
   isLoading: boolean = false;
+  task: Task | undefined;
 
   constructor(
     private fb: FormBuilder,
     private modalController: ModalController,
     private activeRoute: ActivatedRoute,
-    private taskService: TaskService
+    private taskService: TaskService,
+    private router: Router
   ) {}
 
   get title() {
@@ -58,6 +64,7 @@ export class TaskFormPage implements OnInit {
   ngOnInit() {
     this.idTeam = this.activeRoute.snapshot.paramMap.get('idTeam');
     this.idTaskList = this.activeRoute.snapshot.paramMap.get('idTaskList');
+    this.idTask = this.activeRoute.snapshot.paramMap.get('idTask');
 
     this.taskForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
@@ -68,6 +75,30 @@ export class TaskFormPage implements OnInit {
       datePeriodic: ['lunes'],
       date: [new Date().toISOString()]
     });
+
+    if (this.idTask) {
+      this.headerTitle = 'Editar tarea';
+      this.buttonText = 'Guardar cambios';
+
+      this.taskService.getTaskById(this.idTask).subscribe((task) => {
+        if (!task) {
+          this.router.navigate(['/tabs/home']);
+        } else {
+          console.log(task);
+          this.task = task;
+
+          this.taskForm.patchValue({
+            title: task.title,
+            description: task.description,
+            score: task.score,
+            selectedDate: task.selectedDate,
+            dateLimit: task.dateLimit,
+            datePeriodic: task.datePeriodic,
+            date: task.date
+          });
+        }
+      });
+    }
   }
 
   async createTask() {
@@ -82,7 +113,6 @@ export class TaskFormPage implements OnInit {
 
     this.showDateError = false;
     this.isLoading = true;
-    console.log(this.taskForm);
 
     await this.taskService.createTask({
       idTeam: this.idTeam,
@@ -90,6 +120,16 @@ export class TaskFormPage implements OnInit {
       ...this.taskForm.value
     });
 
+    this.isLoading = false;
+  }
+
+  async updateTask() {
+    if (this.taskForm.invalid || !this.task) {
+      return;
+    }
+
+    this.isLoading = true;
+    await this.taskService.updateTask({ idTask: this.idTask, ...this.taskForm.value });
     this.isLoading = false;
   }
 

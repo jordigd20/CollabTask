@@ -1,7 +1,7 @@
-<app-back-header title="Crear una tarea nueva"></app-back-header>
+<app-back-header [title]="headerTitle"></app-back-header>
 
 <ion-content class="ion-padding">
-  <form (ngSubmit)="createTask()" [formGroup]="taskForm">
+  <form (ngSubmit)="idTask ? updateTask() : createTask()" [formGroup]="taskForm">
     <ion-item mode="md" class="item-form">
       <ion-label position="stacked">Título</ion-label>
       <ion-input
@@ -124,7 +124,7 @@
       shape="round"
     >
       <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
-      Crear tarea
+      {{ buttonText }}
     </ion-button>
   </form>
 </ion-content>

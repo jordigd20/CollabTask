@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
 import { TeamService } from './team.service';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, map, tap } from 'rxjs';
 import { ToastController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
 
@@ -17,6 +17,35 @@ export class TaskService {
     private teamService: TeamService,
     private toastController: ToastController
   ) {}
+
+  getTaskById(id: string) {
+    return this.afs
+      .doc<Task>(`tasks/${id}`)
+      .get()
+      .pipe(
+        map((task) => {
+          const data: Task | undefined = task.data();
+
+          if (data) {
+            const date = data.date as firebase.firestore.Timestamp;
+            const dateLimit = data.dateLimit as firebase.firestore.Timestamp;
+
+            data.date = this.convertTimestampToString(date);
+            data.dateLimit = this.convertTimestampToString(dateLimit);
+          }
+
+          return data;
+        })
+      );
+  }
+
+  getAllTasksByTaskList(idTaskList: string) {
+    return this.afs
+      .collection<Task>('tasks', (ref) =>
+        ref.where('idTaskList', '==', idTaskList).orderBy('date', 'asc')
+      )
+      .valueChanges();
+  }
 
   async createTask({
     idTaskList,
@@ -32,18 +61,18 @@ export class TaskService {
     try {
       // TODO: Get the user data from user service to keep the data updated
       const { id: userId, username, photoURL } = await this.storageService.get('user');
-      const teamFound = await this.getTeamData(idTeam);
-      const dateLimitTimestamp = firebase.firestore.Timestamp.fromDate(new Date(dateLimit));
-      const dateTimestamp = firebase.firestore.Timestamp.fromDate(new Date(date));
+      const teamFound = await this.getTeamData(idTeam!);
+      const dateTimestamp = this.convertStringToTimestamp(date as string);
+      const dateLimitTimestamp = this.convertStringToTimestamp(dateLimit as string);
       const id = this.afs.createId();
 
       const task: Task = {
         id,
         team: {
-          id: idTeam,
+          id: idTeam!,
           name: teamFound.name
         },
-        idTaskList,
+        idTaskList: idTaskList!,
         userAsigned: { id: '', name: '', photoURL: '' },
         temporalUserAsigned: { id: '', name: '', photoURL: '' },
         title,
@@ -66,6 +95,19 @@ export class TaskService {
       await this.afs.doc<Task>(`tasks/${id}`).set(task);
 
       this.showToast('Tarea creada correctamente');
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async updateTask({ idTask, ...taskData }: TaskData) {
+    try {
+      taskData.date = this.convertStringToTimestamp(taskData.date as string);
+      taskData.dateLimit = this.convertStringToTimestamp(taskData.dateLimit as string);
+
+      await this.afs.doc<Task>(`tasks/${idTask}`).update(taskData);
+      this.showToast('Tarea actualizada correctamente');
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -110,5 +152,14 @@ export class TaskService {
     });
 
     await toast.present();
+  }
+
+  private convertStringToTimestamp(date: string) {
+    const convertedDate = new Date(date);
+    return firebase.firestore.Timestamp.fromDate(convertedDate);
+  }
+
+  private convertTimestampToString(date: firebase.firestore.Timestamp) {
+    return date.toDate().toISOString();
   }
 }
