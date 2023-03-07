@@ -11,6 +11,7 @@ import { ToolbarSearchbarComponent } from './toolbar-searchbar/toolbar-searchbar
 import { TaskComponent } from './task/task.component';
 import { DatetimeModalComponent } from './datetime-modal/datetime-modal.component';
 import { ScoreModalComponent } from './score-modal/score-modal.component';
+import { PeriodicDateModalComponent } from './periodic-date-modal/periodic-date-modal.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { ScoreModalComponent } from './score-modal/score-modal.component';
     TaskComponent,
     DatetimeModalComponent,
     ScoreModalComponent,
+    PeriodicDateModalComponent
   ],
   imports: [
     CommonModule,
@@ -39,6 +41,7 @@ import { ScoreModalComponent } from './score-modal/score-modal.component';
     TaskComponent,
     DatetimeModalComponent,
     ScoreModalComponent,
+    PeriodicDateModalComponent
   ]
 })
 export class ComponentsModule { }

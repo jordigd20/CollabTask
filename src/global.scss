@@ -227,6 +227,10 @@ ion-item.item-radio {
   font-size: 12px !important;
 }
 
+.regular-text {
+  font-size: 14px !important;
+}
+
 .medium-text {
   font-size: 16px !important;
 }
@@ -275,6 +279,10 @@ ion-item.item-radio {
   margin-bottom: 2px;
 }
 
+.icon-size-title {
+  font-size: 28px;
+}
+
 .modal-sheet {
   --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
   --backdrop-opacity: var(--ion-backdrop-opacity, 0.9);
@@ -301,6 +309,12 @@ ion-item.item-radio {
 .confirmation-modal {
   --width: 90%;
   --border-radius: 10px;
+}
+
+.periodic-date-modal {
+  ion-content {
+    --padding-top: 25vh !important;
+  }
 }
 
 .leave-team-modal {

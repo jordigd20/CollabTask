@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { DatetimeModalComponent } from '../../../components/datetime-modal/datetime-modal.component';
 import { ScoreModalComponent } from '../../../components/score-modal/score-modal.component';
+import { PeriodicDateModalComponent } from '../../../components/periodic-date-modal/periodic-date-modal.component';
 
 @Component({
   selector: 'app-task-form',
@@ -52,7 +53,7 @@ export class TaskFormPage implements OnInit {
       score: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
       selectedDate: ['withoutDate', Validators.required],
       dateLimit: [undefined],
-      datePeriodic: [undefined],
+      datePeriodic: ['lunes'],
       date: [undefined]
     });
   }
@@ -96,7 +97,7 @@ export class TaskFormPage implements OnInit {
 
   async displayScoreModal() {
     const previousScore = this.taskForm.get('score')?.value;
-     const modal = await this.modalController.create({
+    const modal = await this.modalController.create({
       component: ScoreModalComponent,
       componentProps: {
         previousScore
@@ -116,11 +117,32 @@ export class TaskFormPage implements OnInit {
     });
   }
 
+  async displayPeriodicDateModal() {
+    const previousSelectedDay = this.taskForm.get('datePeriodic')?.value;
+    const modal = await this.modalController.create({
+      component: PeriodicDateModalComponent,
+      componentProps: {
+        previousSelectedDay
+      },
+      cssClass: 'modal-transparent periodic-date-modal'
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data.canceled) {
+      return;
+    }
+
+    this.taskForm.patchValue({
+      datePeriodic: data.selectedDay
+    });
+  }
+
   setDateValue(dateValue: string) {
     const selectedDate = this.taskForm.get('selectedDate')?.value;
     this.taskForm.patchValue({
       [selectedDate]: dateValue
     });
   }
-
 }

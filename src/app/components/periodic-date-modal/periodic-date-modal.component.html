@@ -1,0 +1,40 @@
+<ion-content class="ion-padding">
+  <div class="main-container">
+    <div class="d-flex align-items-center justify-center" style="gap: 5px">
+      <ion-icon class="icon-size-title" src="../../../assets/icons/periodic.svg"></ion-icon>
+      <h3 class="ion-no-margin">Fecha periódica</h3>
+    </div>
+
+    <p class="regular-text ion-text-center" style="margin: 5px">Repetir semanalmente los días:</p>
+
+    <div class="hr"></div>
+
+    <div class="d-flex align-items-center justify-center">
+      <ion-button
+        *ngFor="let day of daysList"
+        (click)="selectDay(day)"
+        class="day-button"
+        [ngClass]="{ 'secondary-button': selectedDay !== day }"
+        [color]="selectedDay === day ? 'primary' : 'light'"
+      >
+        {{ shortDays[day] | titlecase }}
+      </ion-button>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="d-flex align-items-center justify-center">
+      <ion-button
+        (click)="cancel()"
+        class="secondary-button"
+        color="light"
+        expand="block"
+        shape="round"
+      >
+        Cancelar
+      </ion-button>
+
+      <ion-button (click)="accept()" expand="block" shape="round"> Aceptar </ion-button>
+    </div>
+  </div>
+</ion-content>

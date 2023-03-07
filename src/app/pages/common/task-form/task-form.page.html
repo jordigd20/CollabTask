@@ -51,7 +51,11 @@
       </ion-radio-group>
     </ion-list>
 
-    <div class="d-flex align-items-center ion-margin-top" style="gap: 5px">
+    <div
+      *ngIf="selectedDate?.value !== 'datePeriodic'"
+      class="d-flex align-items-center ion-margin-top"
+      style="gap: 5px"
+    >
       <ion-button
         (click)="displayDateModal()"
         [disabled]="selectedDate?.value === 'withoutDate'"
@@ -72,6 +76,26 @@
       </ion-chip>
     </div>
 
+    <div
+      *ngIf="selectedDate?.value === 'datePeriodic'"
+      class="d-flex align-items-center ion-margin-top"
+      style="gap: 5px"
+    >
+      <ion-button
+        (click)="displayPeriodicDateModal()"
+        class="secondary-button fw-regular"
+        color="light"
+        shape="round"
+      >
+        <ion-icon slot="start" src="../../../../assets/icons/periodic.svg"></ion-icon>
+        Fecha
+      </ion-button>
+      <ion-chip class="info-chip chip-active" [disabled]="true">
+        <ion-icon src="../../../../assets/icons/periodic.svg"></ion-icon>
+        {{ selectedDateValue | titlecase }}
+      </ion-chip>
+    </div>
+
     <div class="d-flex align-items-center ion-margin-bottom" style="gap: 5px">
       <ion-button
         (click)="displayScoreModal()"
@@ -83,7 +107,7 @@
         Puntos
       </ion-button>
       <ion-chip class="info-chip chip-active" [disabled]="true">
-        <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 6px;"></ion-icon>
+        <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 6px"></ion-icon>
         {{ score?.value }} Puntos
       </ion-chip>
     </div>
