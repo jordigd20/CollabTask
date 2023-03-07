@@ -1,10 +1,12 @@
+import firebase from 'firebase/compat/app';
+
 export interface Task {
   id: string;
-  idTeam: string;
-  taskList: {
+  team: {
     id: string;
     name: string;
   };
+  idTaskList: string;
   userAsigned: {
     id: string;
     name: string;
@@ -18,16 +20,16 @@ export interface Task {
   title: string;
   description: string;
   score: number;
-  selectedDate: 'withoutDate' | 'dateLimit' | 'datePeriodic' | 'date';
-  dateLimit: string | undefined;
-  datePeriodic: string | undefined;
-  date: string | undefined;
+  selectedDate: string;
+  date: firebase.firestore.Timestamp;
+  dateLimit: firebase.firestore.Timestamp;
+  datePeriodic: string;
   imageURL: string;
   completed: boolean;
   createdByUser: {
     id: string;
     name: string;
     photoURL: string;
-    date: string;
+    date: firebase.firestore.Timestamp;
   };
 }

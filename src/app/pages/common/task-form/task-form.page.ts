@@ -4,6 +4,8 @@ import { ModalController } from '@ionic/angular';
 import { DatetimeModalComponent } from '../../../components/datetime-modal/datetime-modal.component';
 import { ScoreModalComponent } from '../../../components/score-modal/score-modal.component';
 import { PeriodicDateModalComponent } from '../../../components/periodic-date-modal/periodic-date-modal.component';
+import { TaskService } from '../../../services/task.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-task-form',
@@ -12,10 +14,17 @@ import { PeriodicDateModalComponent } from '../../../components/periodic-date-mo
 })
 export class TaskFormPage implements OnInit {
   taskForm!: FormGroup;
+  idTeam: string | null = null;
+  idTaskList: string | null = null;
   showDateError: boolean = false;
   isLoading: boolean = false;
 
-  constructor(private fb: FormBuilder, private modalController: ModalController) {}
+  constructor(
+    private fb: FormBuilder,
+    private modalController: ModalController,
+    private activeRoute: ActivatedRoute,
+    private taskService: TaskService
+  ) {}
 
   get title() {
     return this.taskForm.get('title');
@@ -47,6 +56,9 @@ export class TaskFormPage implements OnInit {
   }
 
   ngOnInit() {
+    this.idTeam = this.activeRoute.snapshot.paramMap.get('idTeam');
+    this.idTaskList = this.activeRoute.snapshot.paramMap.get('idTaskList');
+
     this.taskForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.maxLength(200)],
@@ -58,7 +70,7 @@ export class TaskFormPage implements OnInit {
     });
   }
 
-  createTask() {
+  async createTask() {
     if (this.taskForm.invalid) {
       return;
     }
@@ -71,6 +83,13 @@ export class TaskFormPage implements OnInit {
     this.showDateError = false;
     this.isLoading = true;
     console.log(this.taskForm);
+
+    await this.taskService.createTask({
+      idTeam: this.idTeam,
+      idTaskList: this.idTaskList,
+      ...this.taskForm.value
+    });
+
     this.isLoading = false;
   }
 
