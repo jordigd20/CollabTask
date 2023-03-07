@@ -1,15 +1,13 @@
 <ion-content>
-  <ion-datetime #datetime locale="es-ES" (ionChange)="onChangeDate($event)" [value]="previousDate">
+  <ion-datetime
+    #datetime
+    locale="es-ES"
+    [min]="minDate"
+    (ionChange)="onChangeDate($event)"
+    [value]="previousDate"
+  >
     <span slot="time-label">Tiempo</span>
     <ion-buttons slot="buttons">
-      <ion-button
-        (click)="datetime.reset()"
-        class="datetime-buttons"
-        color="danger"
-        shape="round"
-      >
-        Reset
-      </ion-button>
       <ion-button
         (click)="cancel()"
         class="datetime-buttons secondary-button fw-regular"

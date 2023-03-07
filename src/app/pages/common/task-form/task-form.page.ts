@@ -52,9 +52,9 @@ export class TaskFormPage implements OnInit {
       description: ['', Validators.maxLength(200)],
       score: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
       selectedDate: ['withoutDate', Validators.required],
-      dateLimit: [undefined],
+      dateLimit: [new Date().toISOString()],
       datePeriodic: ['lunes'],
-      date: [undefined]
+      date: [new Date().toISOString()]
     });
   }
 
