@@ -10,20 +10,42 @@
   <app-toolbar-searchbar
     title="Lista de tareas"
     placeholder="Buscar tareas"
-    [totalItems]="0"
+    type="tareas"
+    [totalItems]="tasks.length"
     (search)="handleSearch($event)"
   ></app-toolbar-searchbar>
 
   <div class="main-container ion-padding">
+    <ion-spinner
+      *ngIf="isLoading"
+      class="loading-content"
+      name="circles"
+      color="primary"
+    ></ion-spinner>
+
     <ion-list class="list-container" lines="none">
-      <app-task [isFromAnotherUser]="false"></app-task>
-      <app-task [isFromAnotherUser]="true"></app-task>
-      <app-task [isFromAnotherUser]="false"></app-task>
-      <app-task [isFromAnotherUser]="true"></app-task>
+
+      <ion-item *ngIf="!isLoading && tasks.length === 0" class="root-helper helper sub-item" style="z-index: 0">
+        <ion-label>Esta lista todavía no tiene ninguna tarea. ¡Reúnete con tus compañeros de equipo y empieza a organizar el reparto!</ion-label>
+      </ion-item>
+
+      <!--TODO: User info when assigned -->
+      <app-task
+        *ngFor="let task of tasks"
+        [title]="task.title"
+        [teamName]="task.team.name"
+        [score]="task.score"
+        [selectedDate]="task.selectedDate"
+        [date]="getSelectedDate(task.id)"
+        [isFromAnotherUser]="false"
+      ></app-task>
+
     </ion-list>
 
     <ion-fab vertical="bottom" horizontal="center" slot="fixed" style="position: fixed">
-      <ion-button [routerLink]="['/create-task', idTeam, idTaskList]" color="primary" shape="round">Reparto de tareas</ion-button>
+      <ion-button [routerLink]="['/create-task', idTeam, idTaskList]" color="primary" shape="round"
+        >Reparto de tareas</ion-button
+      >
     </ion-fab>
   </div>
 </ion-content>

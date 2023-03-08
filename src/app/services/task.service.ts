@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
 import { TeamService } from './team.service';
-import { lastValueFrom, map, tap } from 'rxjs';
+import { lastValueFrom, map, debounceTime } from 'rxjs';
 import { ToastController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
 
@@ -44,7 +44,20 @@ export class TaskService {
       .collection<Task>('tasks', (ref) =>
         ref.where('idTaskList', '==', idTaskList).orderBy('date', 'asc')
       )
-      .valueChanges();
+      .valueChanges().pipe(
+        map((tasks) => {
+          return tasks.map((task) => {
+            const date = task.date as firebase.firestore.Timestamp;
+            const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+
+            task.date = this.convertTimestampToString(date);
+            task.dateLimit = this.convertTimestampToString(dateLimit);
+
+            return task;
+          })
+        }),
+        debounceTime(350)
+      );
   }
 
   async createTask({

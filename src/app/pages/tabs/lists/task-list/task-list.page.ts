@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
+import { TaskService } from '../../../../services/task.service';
+import { Task } from '../../../../interfaces';
+import { Subscription } from 'rxjs';
+import { StorageService } from '../../../../services/storage.service';
 
 @Component({
   selector: 'app-task-list',
@@ -10,18 +14,42 @@ import { Router, ActivatedRoute } from '@angular/router';
 export class TaskListPage implements OnInit {
   idTeam: string | null = null;
   idTaskList: string | null = null;
+  userId: string = '';
+  isLoading: boolean = true;
+  tasks: Task[] = [];
+  getTasks$: Subscription = new Subscription();
 
   constructor(
     private actionSheetController: ActionSheetController,
     private activeRoute: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private storageService: StorageService,
+    private taskService: TaskService
   ) {}
 
-  ngOnInit() {}
+  async ngOnInit() {
+    this.isLoading = true;
 
-  ionViewWillEnter() {
+    const { id } = await this.storageService.get('user');
+    this.userId = id;
+
     this.idTeam = this.activeRoute.snapshot.paramMap.get('idTeam');
     this.idTaskList = this.activeRoute.snapshot.paramMap.get('idTaskList');
+    this.getTasks();
+  }
+
+  ngOnDestroy() {
+    console.log('ngOnDestroy task list page');
+    this.getTasks$.unsubscribe();
+  }
+
+  getTasks() {
+    const result = this.taskService.getAllTasksByTaskList(this.idTaskList!);
+    this.getTasks$ = result.subscribe((tasks) => {
+      console.log('Tasks: ', tasks);
+      this.tasks = tasks;
+      this.isLoading = false;
+    });
   }
 
   handlePreferences() {}
@@ -60,5 +88,16 @@ export class TaskListPage implements OnInit {
     });
 
     actionSheet.present();
+  }
+
+  getSelectedDate(idTask: string): string {
+    const task = this.tasks.find((task) => task.id === idTask)!;
+    const selectedDate = task.selectedDate;
+    return selectedDate !== 'withoutDate' ? (task[selectedDate] as string) : '';
+  }
+
+  getIsFromAnotherUser(idTask: string): boolean {
+    const task = this.tasks.find((task) => task.id === idTask)!;
+    return task.userAsigned.id !== this.userId;
   }
 }

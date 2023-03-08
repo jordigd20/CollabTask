@@ -32,4 +32,5 @@ export interface Task {
     photoURL: string;
     date: firebase.firestore.Timestamp | string;
   };
+  [key: string]: firebase.firestore.Timestamp | string | boolean | number | {};
 }

@@ -9,6 +9,7 @@ export class ToolbarSearchbarComponent implements OnInit {
   @Input() title: string = '';
   @Input() totalItems: number = 0;
   @Input() placeholder: string = '';
+  @Input() type: string = 'equipos';
 
   @Output() search: EventEmitter<any> = new EventEmitter();
 

@@ -32,7 +32,6 @@ export class ListsPage implements OnInit {
   async ngOnInit() {
     this.isLoading = true;
 
-    await this.storageService.init();
     const { id } = await this.storageService.get('user');
     this.userId = id;
     this.getTeamsList();

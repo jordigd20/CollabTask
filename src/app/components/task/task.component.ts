@@ -11,8 +11,9 @@ export class TaskComponent implements OnInit {
   @Input() photoURL: string =
     'https://lh3.googleusercontent.com/a/AGNmyxYUo0tTz7NRBLzkhcBBeFBp5t6eix5IT614ftjc=s96-c';
   @Input() username: string = 'Jordi Gómez Devesa';
-  @Input() score: string = '100';
-  @Input() date: Date = new Date();
+  @Input() score: number = 100;
+  @Input() date: string = new Date().toISOString();
+  @Input() selectedDate: string = 'date';
   @Input() isFromAnotherUser: boolean = false;
 
   constructor() {}
