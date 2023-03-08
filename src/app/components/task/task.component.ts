@@ -14,7 +14,9 @@ export class TaskComponent implements OnInit {
   @Input() score: number = 100;
   @Input() date: string = new Date().toISOString();
   @Input() selectedDate: string = 'date';
-  @Input() isFromAnotherUser: boolean = false;
+  @Input() withoutUserAssigned: boolean = false;
+  @Input() showCompleteButton: boolean = true;
+  @Input() showTeamName: boolean = true;
 
   constructor() {}
 

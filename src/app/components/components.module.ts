@@ -12,6 +12,8 @@ import { TaskComponent } from './task/task.component';
 import { DatetimeModalComponent } from './datetime-modal/datetime-modal.component';
 import { ScoreModalComponent } from './score-modal/score-modal.component';
 import { PeriodicDateModalComponent } from './periodic-date-modal/periodic-date-modal.component';
+import { TaskSlideComponent } from './task-slide/task-slide.component';
+import { SwiperModule } from 'swiper/angular';
 
 @NgModule({
   declarations: [
@@ -24,12 +26,14 @@ import { PeriodicDateModalComponent } from './periodic-date-modal/periodic-date-
     TaskComponent,
     DatetimeModalComponent,
     ScoreModalComponent,
-    PeriodicDateModalComponent
+    PeriodicDateModalComponent,
+    TaskSlideComponent,
   ],
   imports: [
     CommonModule,
     IonicModule,
     ReactiveFormsModule,
+    SwiperModule
   ],
   exports: [
     IntroHeaderComponent,
@@ -41,7 +45,8 @@ import { PeriodicDateModalComponent } from './periodic-date-modal/periodic-date-
     TaskComponent,
     DatetimeModalComponent,
     ScoreModalComponent,
-    PeriodicDateModalComponent
+    PeriodicDateModalComponent,
+    TaskSlideComponent,
   ]
 })
 export class ComponentsModule { }

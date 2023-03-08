@@ -1,7 +1,19 @@
-<ion-item class="task-item" button>
+<ion-item
+  (click)="click()"
+  class="task-item"
+  [ngClass]="{ 'disable-ripple-touch': !showTeamName && !showCompleteButton }"
+  button
+  [ngStyle]="{ 'margin-bottom': !showTeamName && !showCompleteButton ? '0px' : '10px' }"
+>
   <div class="main-container">
-    <div [ngClass]="isFromAnotherUser ? 'top-container' : 'top-container-from-user'">
-      <ion-button fill="clear" shape="round" class="check-button" *ngIf="!isFromAnotherUser">
+    <div
+      [ngClass]="{
+        'top-container': !showCompleteButton,
+        'top-container-without-button': showCompleteButton,
+        'top-container-more-opts': !showTeamName && !showCompleteButton
+      }"
+    >
+      <ion-button *ngIf="showCompleteButton" fill="clear" shape="round" class="check-button">
         <ion-icon
           slot="icon-only"
           src="../../../assets/icons/task-check.svg"
@@ -37,23 +49,35 @@
           <span style="font-size: 14px">{{ date | titlecase }}</span>
         </ion-text>
       </ion-label>
+
       <ion-text
+        *ngIf="showTeamName"
         class="team-name-container"
         color="medium"
         [ngStyle]="{ 'margin-top': selectedDate === 'withoutDate' ? '5px' : '0' }"
       >
         <p class="team-name" style="font-size: 12px">{{ teamName }}</p>
       </ion-text>
+
+      <ion-button
+        *ngIf="!showTeamName"
+        class="more-opts-btn"
+        fill="clear"
+        color="secondary"
+        slot="end"
+      >
+        <ion-icon name="ellipsis-vertical"></ion-icon>
+      </ion-button>
     </div>
 
-    <div class="bottom-container">
-      <ion-avatar>
+    <div [ngClass]="withoutUserAssigned ? 'bottom-container-without-user' : 'bottom-container'">
+      <ion-avatar *ngIf="!withoutUserAssigned" class="user-task-avatar">
         <img [src]="photoURL" [alt]="'Avatar de ' + username" referrerpolicy="no-referrer" />
       </ion-avatar>
       <p class="username-container username">
-        {{ username }}
+        {{ withoutUserAssigned ? 'Sin asignar' : username }}
       </p>
-      <div class="score">
+      <div class="score-task">
         <ion-icon src="../../../../assets/icons/score.svg" style="margin-bottom: 1px"></ion-icon>
         <span>{{ score }}</span>
       </div>

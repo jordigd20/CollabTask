@@ -179,6 +179,44 @@ ion-item.item-radio {
   }
 }
 
+ion-item.explanation-item {
+  --inner-padding-end: 0;
+  --inner-padding-start: 0;
+  --padding-end: 0;
+  --padding-start: 0;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+  color: var(--ion-color-secondary);
+
+  ion-label {
+    margin: 5px 0;
+    overflow: unset !important;
+    white-space: unset !important;
+  }
+}
+
+.list-title {
+  margin: 0;
+  font-weight: bold !important;
+  font-size: 20px !important;
+}
+
+.slide-container {
+  background-color: var(--ion-color-tertiary);
+  padding: 10px;
+}
+
+ion-item.disable-ripple-touch {
+  --ripple-color: transparent;
+  --background-hover: transparent;
+}
+
+ion-item.disable-ripple-touch:active {
+  --ripple-color: var(--ion-color-ripple);
+  --background-hover: var(--ion-color-ripple);
+}
+
 ion-list.root-list ion-item,
 ion-list.sub-list ion-item,
 ion-item.root-helper {

@@ -9,7 +9,15 @@ ion-item.task-item {
     width: 100%;
   }
 
-  .top-container-from-user {
+  .top-container {
+    margin: 5px 0;
+    display: grid;
+    grid-template-columns: 5fr 1.25fr;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .top-container-without-button {
     margin: 5px 0;
     display: grid;
     grid-template-columns: 0.5fr 5fr 1.5fr;
@@ -17,12 +25,17 @@ ion-item.task-item {
     gap: 2px;
   }
 
-  .top-container {
+  .top-container-more-opts {
     margin: 5px 0;
     display: grid;
-    grid-template-columns: 5fr 1.25fr;
+    grid-template-columns: 5fr 0.5fr;
     align-items: flex-start;
     gap: 2px;
+  }
+
+  .more-opts-btn {
+    --padding-start: 5px;
+    --padding-end: 5px;
   }
 
   .start-slot {
@@ -37,7 +50,7 @@ ion-item.task-item {
     h3 {
       letter-spacing: 0;
       text-overflow: ellipsis;
-      white-space: nowrap;
+      white-space: break-spaces;
       overflow: hidden;
       margin-top: 0;
     }
@@ -64,35 +77,43 @@ ion-item.task-item {
     display: grid;
     grid-template-columns: 0.5fr 5fr 1fr;
     align-items: center;
+  }
 
-      ion-avatar {
-        width: 30px;
-        height: 30px;
-        min-width: 30px;
-        min-height: 30px;
-        margin: 7px 0;
-      }
+  .bottom-container-without-user {
+    gap: 10px;
+    border-top: 1px solid var(--ion-color-border);
+    display: grid;
+    grid-template-columns: 5fr 1fr;
+    align-items: center;
+    padding: 10px 0;
+  }
 
-    .username-container {
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-      font-size: 14px;
-      margin: 0;
-    }
+  ion-avatar.user-task-avatar {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    margin: 7px 0;
+  }
 
-    .score {
-      background-color: var(--ion-color-score);
-      color: var(--ion-color-score-text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1px;
-      padding: 0 8px;
-      border-radius: 6px;
-      font-size: 14px;
-    }
+  .username-container {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 14px;
+    margin: 0;
+  }
 
+  .score-task {
+    background-color: var(--ion-color-score);
+    color: var(--ion-color-score-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 14px;
   }
 }
 

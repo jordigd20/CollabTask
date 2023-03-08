@@ -49,11 +49,22 @@ const routes: Routes = [
           },
           {
             path: 'team-settings/:id',
-            loadChildren: () => import('../lists/team-settings/team-settings.module').then( m => m.TeamSettingsPageModule)
+            loadChildren: () =>
+              import('../lists/team-settings/team-settings.module').then(
+                (m) => m.TeamSettingsPageModule
+              )
           },
           {
             path: 'task-list/:idTeam/:idTaskList',
-            loadChildren: () => import('../lists/task-list/task-list.module').then( m => m.TaskListPageModule)
+            loadChildren: () =>
+              import('../lists/task-list/task-list.module').then((m) => m.TaskListPageModule)
+          },
+          {
+            path: 'manual-distribution/:idTeam/:idTaskList',
+            loadChildren: () =>
+              import('../lists/manual-distribution/manual-distribution.module').then(
+                (m) => m.ManualDistributionPageModule
+              )
           }
         ]
       },

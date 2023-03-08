@@ -67,8 +67,8 @@ export class TaskFormPage implements OnInit {
     this.idTask = this.activeRoute.snapshot.paramMap.get('idTask');
 
     this.taskForm = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', Validators.maxLength(200)],
+      title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(75)]],
+      description: ['', Validators.maxLength(250)],
       score: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
       selectedDate: ['withoutDate', Validators.required],
       dateLimit: [new Date().toISOString()],

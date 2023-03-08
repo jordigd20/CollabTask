@@ -1,0 +1,16 @@
+<swiper #swiper class="slide-container" [config]="slideOpts">
+  <ng-template swiperSlide>
+    <app-task
+      [showCompleteButton]="false"
+      [showTeamName]="false"
+      [withoutUserAssigned]="true"
+    ></app-task>
+  </ng-template>
+  <ng-template swiperSlide>
+    <app-task
+      [showCompleteButton]="false"
+      [showTeamName]="false"
+      [withoutUserAssigned]="true"
+    ></app-task>
+  </ng-template>
+</swiper>

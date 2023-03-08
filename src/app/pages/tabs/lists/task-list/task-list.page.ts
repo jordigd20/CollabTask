@@ -96,7 +96,7 @@ export class TaskListPage implements OnInit {
     return selectedDate !== 'withoutDate' ? (task[selectedDate] as string) : '';
   }
 
-  getIsFromAnotherUser(idTask: string): boolean {
+  getShowCompleteButton(idTask: string): boolean {
     const task = this.tasks.find((task) => task.id === idTask)!;
     return task.userAsigned.id !== this.userId;
   }
