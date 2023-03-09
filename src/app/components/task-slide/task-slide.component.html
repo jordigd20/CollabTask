@@ -1,15 +1,12 @@
 <swiper #swiper class="slide-container" [config]="slideOpts">
-  <ng-template swiperSlide>
+  <ng-template swiperSlide *ngFor="let task of tasks">
     <app-task
+      [title]="task.title"
+      [score]="task.score"
+      [selectedDate]="task.selectedDate"
       [showCompleteButton]="false"
-      [showTeamName]="false"
-      [withoutUserAssigned]="true"
-    ></app-task>
-  </ng-template>
-  <ng-template swiperSlide>
-    <app-task
-      [showCompleteButton]="false"
-      [showTeamName]="false"
+      [date]="getSelectedDate(task.id)"
+      [showTeamName]="!withoutUsers"
       [withoutUserAssigned]="true"
     ></app-task>
   </ng-template>

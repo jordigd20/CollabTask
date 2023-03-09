@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
 import { TeamService } from './team.service';
-import { lastValueFrom, map, debounceTime } from 'rxjs';
+import { lastValueFrom, map, debounceTime, tap } from 'rxjs';
 import { ToastController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
 
@@ -11,12 +11,18 @@ import firebase from 'firebase/compat/app';
   providedIn: 'root'
 })
 export class TaskService {
+  taskList: Task[] = [];
+
   constructor(
     private afs: AngularFirestore,
     private storageService: StorageService,
     private teamService: TeamService,
     private toastController: ToastController
   ) {}
+
+  get tasks() {
+    return this.taskList;
+  }
 
   getTaskById(id: string) {
     return this.afs
@@ -42,9 +48,10 @@ export class TaskService {
   getAllTasksByTaskList(idTaskList: string) {
     return this.afs
       .collection<Task>('tasks', (ref) =>
-        ref.where('idTaskList', '==', idTaskList).orderBy('date', 'asc')
+        ref.where('idTaskList', '==', idTaskList).orderBy('createdByUser.date', 'asc')
       )
-      .valueChanges().pipe(
+      .valueChanges()
+      .pipe(
         map((tasks) => {
           return tasks.map((task) => {
             const date = task.date as firebase.firestore.Timestamp;
@@ -54,7 +61,10 @@ export class TaskService {
             task.dateLimit = this.convertTimestampToString(dateLimit);
 
             return task;
-          })
+          });
+        }),
+        tap((tasks) => {
+          this.taskList = tasks;
         }),
         debounceTime(350)
       );

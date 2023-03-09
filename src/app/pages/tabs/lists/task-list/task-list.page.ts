@@ -5,6 +5,7 @@ import { TaskService } from '../../../../services/task.service';
 import { Task } from '../../../../interfaces';
 import { Subscription } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
+import { getSelectedDate } from '../../../../helpers/common-functions';
 
 @Component({
   selector: 'app-task-list',
@@ -91,9 +92,7 @@ export class TaskListPage implements OnInit {
   }
 
   getSelectedDate(idTask: string): string {
-    const task = this.tasks.find((task) => task.id === idTask)!;
-    const selectedDate = task.selectedDate;
-    return selectedDate !== 'withoutDate' ? (task[selectedDate] as string) : '';
+    return getSelectedDate(idTask, this.tasks);
   }
 
   getShowCompleteButton(idTask: string): boolean {
