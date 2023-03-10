@@ -4,7 +4,7 @@ import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { from, Subject, takeUntil, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-lists',
@@ -20,7 +20,7 @@ export class ListsPage implements OnInit {
   colors: string[] = ['yellow', 'blue', 'purple', 'green', 'red'];
   assignedColors: { [key: string]: string } = {};
   searchText: string = '';
-  getTeams$: Subscription = new Subscription();
+  destroy$ = new Subject<void>();
 
   constructor(
     private actionSheetController: ActionSheetController,
@@ -31,21 +31,14 @@ export class ListsPage implements OnInit {
 
   async ngOnInit() {
     this.isLoading = true;
+    const result = from(this.storageService.get('user')).pipe(
+      switchMap((user) => {
+        this.userId = user.id;
+        return this.teamService.getAllUserTeams(this.userId);
+      })
+    );
 
-    const { id } = await this.storageService.get('user');
-    this.userId = id;
-    this.getTeamsList();
-  }
-
-  ngOnDestroy() {
-    console.log('ngOnDestroy lists page');
-    this.getTeams$.unsubscribe();
-  }
-
-  getTeamsList() {
-    const result = this.teamService.getAllUserTeams(this.userId);
-
-    this.getTeams$ = result.subscribe((teams) => {
+    result.pipe(takeUntil(this.destroy$)).subscribe((teams) => {
       if (teams.length > 0) {
         this.fillComponentData(teams);
       } else {
@@ -53,6 +46,11 @@ export class ListsPage implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  ngOnDestroy() {
+    console.log('ngOnDestroy lists page');
+    this.destroy$.next();
   }
 
   fillComponentData(teams: Team[]) {

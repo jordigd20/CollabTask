@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
 import { TeamService } from './team.service';
-import { lastValueFrom, map, debounceTime, tap } from 'rxjs';
+import { map, debounceTime, tap, Observable, shareReplay, take } from 'rxjs';
 import { ToastController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
 
@@ -11,7 +11,8 @@ import firebase from 'firebase/compat/app';
   providedIn: 'root'
 })
 export class TaskService {
-  taskList: Task[] = [];
+  private tasks$: Observable<Task[]> | undefined;
+  private currentIdTaskList: string = '';
 
   constructor(
     private afs: AngularFirestore,
@@ -20,38 +21,24 @@ export class TaskService {
     private toastController: ToastController
   ) {}
 
-  get tasks() {
-    return this.taskList;
-  }
-
-  getTaskById(id: string) {
-    return this.afs
-      .doc<Task>(`tasks/${id}`)
-      .get()
-      .pipe(
-        map((task) => {
-          const data: Task | undefined = task.data();
-
-          if (data) {
-            const date = data.date as firebase.firestore.Timestamp;
-            const dateLimit = data.dateLimit as firebase.firestore.Timestamp;
-
-            data.date = this.convertTimestampToString(date);
-            data.dateLimit = this.convertTimestampToString(dateLimit);
-          }
-
-          return data;
-        })
-      );
+  getTask(id: string, idTaskList: string) {
+    return this.getAllTasksByTaskList(idTaskList).pipe(
+      take(1),
+      map((tasks) => tasks.find((task) => task.id === id))
+    );
   }
 
   getAllTasksByTaskList(idTaskList: string) {
-    return this.afs
-      .collection<Task>('tasks', (ref) =>
-        ref.where('idTaskList', '==', idTaskList).orderBy('createdByUser.date', 'asc')
-      )
-      .valueChanges()
-      .pipe(
+    if (!this.tasks$ || this.currentIdTaskList !== idTaskList) {
+      console.log('this.tasks$ is undefined');
+      const result = this.afs
+        .collection<Task>('tasks', (ref) =>
+          ref.where('idTaskList', '==', idTaskList).orderBy('createdByUser.date', 'asc')
+        )
+        .valueChanges();
+
+      this.tasks$ = result.pipe(
+        debounceTime(350),
         map((tasks) => {
           return tasks.map((task) => {
             const date = task.date as firebase.firestore.Timestamp;
@@ -63,14 +50,17 @@ export class TaskService {
             return task;
           });
         }),
-        tap((tasks) => {
-          this.taskList = tasks;
-        }),
-        debounceTime(350)
+        shareReplay({ bufferSize: 1, refCount: true })
       );
+
+      this.currentIdTaskList = idTaskList;
+    }
+
+    console.log('this.tasks$ is defined');
+    return this.tasks$;
   }
 
-  async createTask({
+  createTask({
     idTaskList,
     idTeam,
     title,
@@ -81,47 +71,55 @@ export class TaskService {
     datePeriodic,
     date
   }: TaskData) {
-    try {
-      // TODO: Get the user data from user service to keep the data updated
-      const { id: userId, username, photoURL } = await this.storageService.get('user');
-      const teamFound = await this.getTeamData(idTeam!);
-      const dateTimestamp = this.convertStringToTimestamp(date as string);
-      const dateLimitTimestamp = this.convertStringToTimestamp(dateLimit as string);
-      const id = this.afs.createId();
+    return this.teamService.getTeam(idTeam!).pipe(
+      tap(async (team) => {
+        try {
+          if (!team) {
+            throw new Error('El equipo no existe');
+          }
 
-      const task: Task = {
-        id,
-        team: {
-          id: idTeam!,
-          name: teamFound.name
-        },
-        idTaskList: idTaskList!,
-        userAsigned: { id: '', name: '', photoURL: '' },
-        temporalUserAsigned: { id: '', name: '', photoURL: '' },
-        title,
-        description,
-        score,
-        selectedDate,
-        date: dateTimestamp,
-        dateLimit: dateLimitTimestamp,
-        datePeriodic,
-        imageURL: '',
-        completed: false,
-        createdByUser: {
-          id: userId,
-          name: username,
-          photoURL,
-          date: firebase.firestore.Timestamp.now()
+          // TODO: Get the user data from user service to keep the data updated
+          const { id: userId, username, photoURL } = await this.storageService.get('user');
+
+          const dateTimestamp = this.convertStringToTimestamp(date as string);
+          const dateLimitTimestamp = this.convertStringToTimestamp(dateLimit as string);
+          const id = this.afs.createId();
+
+          const task: Task = {
+            id,
+            team: {
+              id: idTeam!,
+              name: team.name
+            },
+            idTaskList: idTaskList!,
+            userAsigned: { id: '', name: '', photoURL: '' },
+            temporalUserAsigned: { id: '', name: '', photoURL: '' },
+            title,
+            description,
+            score,
+            selectedDate,
+            date: dateTimestamp,
+            dateLimit: dateLimitTimestamp,
+            datePeriodic,
+            imageURL: '',
+            completed: false,
+            createdByUser: {
+              id: userId,
+              name: username,
+              photoURL,
+              date: firebase.firestore.Timestamp.now()
+            }
+          };
+
+          await this.afs.doc<Task>(`tasks/${id}`).set(task);
+
+          this.showToast('Tarea creada correctamente');
+        } catch (error) {
+          console.error(error);
+          this.handleError(error);
         }
-      };
-
-      await this.afs.doc<Task>(`tasks/${id}`).set(task);
-
-      this.showToast('Tarea creada correctamente');
-    } catch (error) {
-      console.error(error);
-      this.handleError(error);
-    }
+      })
+    );
   }
 
   async updateTask({ idTask, ...taskData }: TaskData) {
@@ -135,21 +133,6 @@ export class TaskService {
       console.error(error);
       this.handleError(error);
     }
-  }
-
-  async getTeamData(idTeam: string) {
-    let teamFound = this.teamService.teams.find((team) => team.id === idTeam);
-    if (!teamFound) {
-      const team = await lastValueFrom(this.teamService.getTeam(idTeam));
-
-      if (!team) {
-        throw new Error('No se ha encontrado el equipo');
-      }
-
-      teamFound = team;
-    }
-
-    return teamFound;
   }
 
   handleError(error: any) {

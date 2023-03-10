@@ -1,23 +1,31 @@
 <app-back-header title="Opciones del equipo"></app-back-header>
 
 <ion-content color="tertiary" class="ion-padding">
-
-  <ion-list class="settings-list ion-no-padding" lines="none">
+  <ion-list
+    *ngIf="team$ | async as team; else loading"
+    class="settings-list ion-no-padding"
+    lines="none"
+  >
     <ion-list-header color="primary">
       <ion-label>
-        <h2>{{ teamName }}</h2>
+        <h2>{{ team.name }}</h2>
       </ion-label>
     </ion-list-header>
 
     <ion-item class="settings-item code-item">
-      <ion-avatar slot="start" style="background-color: var(--ion-color-primary);">
-        <ion-icon color="white" name="share-social-outline"  style="padding: 8px 7px;"></ion-icon>
+      <ion-avatar slot="start" style="background-color: var(--ion-color-primary)">
+        <ion-icon color="white" name="share-social-outline" style="padding: 8px 7px"></ion-icon>
       </ion-avatar>
       <ion-label>
         <h3 class="fw-bold">Código de invitación</h3>
         <div class="code-wrapper">
-          <p class="invitation-code">{{ invitationCode }}</p>
-          <ion-button (click)="copyCodeToClipboard()" class="secondary-button" color="white" shape="round">
+          <p class="invitation-code">{{ team.invitationCode }}</p>
+          <ion-button
+            (click)="copyCodeToClipboard()"
+            class="secondary-button"
+            color="white"
+            shape="round"
+          >
             <ion-icon slot="icon-only" src="../../../../../assets/icons/copy.svg"></ion-icon>
           </ion-button>
         </div>
@@ -25,8 +33,8 @@
     </ion-item>
 
     <ion-item (click)="navigateToEditTeam()" class="settings-item" detail="true" button>
-      <ion-avatar slot="start" style="background-color: var(--ion-color-primary);">
-        <ion-icon color="white" name="create-outline"  style="padding: 7px 9px;"></ion-icon>
+      <ion-avatar slot="start" style="background-color: var(--ion-color-primary)">
+        <ion-icon color="white" name="create-outline" style="padding: 7px 9px"></ion-icon>
       </ion-avatar>
       <ion-label>
         <h3 class="fw-bold">Editar propiedades</h3>
@@ -35,15 +43,17 @@
     </ion-item>
 
     <ion-item (click)="presentConfirmation()" class="settings-item" button>
-      <ion-avatar slot="start" style="background-color: var(--ion-color-danger);">
-        <ion-icon color="white" name="log-out-outline" style="padding: 8px 9px;"></ion-icon>
+      <ion-avatar slot="start" style="background-color: var(--ion-color-danger)">
+        <ion-icon color="white" name="log-out-outline" style="padding: 8px 9px"></ion-icon>
       </ion-avatar>
       <ion-label>
         <h3 class="fw-bold">Abandonar equipo</h3>
         <p>Perderás los datos del equipo en tu perfil y se te desasignará de tus tareas</p>
       </ion-label>
     </ion-item>
-
   </ion-list>
 
+  <ng-template #loading>
+    <ion-spinner class="loading-content" name="circles" color="primary"></ion-spinner>
+  </ng-template>
 </ion-content>

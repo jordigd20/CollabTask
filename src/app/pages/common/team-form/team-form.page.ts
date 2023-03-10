@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
+import { switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-team-form',
@@ -10,18 +11,20 @@ import { Team } from '../../../interfaces';
   styleUrls: ['./team-form.page.scss']
 })
 export class TeamFormPage implements OnInit {
-  teamForm!: FormGroup;
+  teamForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    allowNewMembers: [true, Validators.required]
+  });
   headerTitle: string = 'Crear equipo nuevo';
   buttonText: string = 'Crear equipo';
   isLoading: boolean = false;
-  idTeam: string | null = null;
+  idTeam: string | undefined;
   team: Team | undefined;
 
   constructor(
     private fb: FormBuilder,
     private activeRoute: ActivatedRoute,
-    private teamService: TeamService,
-    private router: Router
+    private teamService: TeamService
   ) {}
 
   get name() {
@@ -29,46 +32,35 @@ export class TeamFormPage implements OnInit {
   }
 
   ngOnInit() {
-    this.teamForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      allowNewMembers: [true, Validators.required]
-    });
+    this.activeRoute.paramMap
+      .pipe(
+        switchMap((params) => {
+          this.idTeam = params.get('id') as string;
 
-    this.idTeam = this.activeRoute.snapshot.paramMap.get('id');
+          if (this.idTeam) {
+            this.headerTitle = 'Editar equipo';
+            this.buttonText = 'Guardar cambios';
+            return this.teamService.getTeam(this.idTeam);
+          }
 
-    if (this.idTeam) {
-      this.headerTitle = 'Editar equipo';
-      this.buttonText = 'Guardar cambios';
-
-      const teamsNotFound = this.teamService.teams.length === 0;
-      if (teamsNotFound) {
-        this.getTeamFirstTime();
-        return;
-      }
-
-      const team = this.teamService.teams.find((team) => team.id === this.idTeam);
-      this.fillComponentData(team);
-    }
-  }
-
-  getTeamFirstTime() {
-    this.teamService.getTeam(this.idTeam!).subscribe((team) => {
-      this.fillComponentData(team);
-    });
-  }
-
-  fillComponentData(team: Team | undefined) {
-    if (!team) {
-      this.router.navigate([`/tabs/lists/team-settings/${this.idTeam}`]);
-    } else {
-      this.team = team;
-      const { name, allowNewMembers } = { ...team };
-
-      this.teamForm.setValue({
-        name,
-        allowNewMembers
+          return of(undefined);
+        }),
+      )
+      .subscribe((team) => {
+        if (team) {
+          this.fillComponentData(team);
+        }
       });
-    }
+  }
+
+  fillComponentData(team: Team) {
+    this.team = team;
+    const { name, allowNewMembers } = { ...team };
+
+    this.teamForm.setValue({
+      name,
+      allowNewMembers
+    });
   }
 
   async createTeam() {

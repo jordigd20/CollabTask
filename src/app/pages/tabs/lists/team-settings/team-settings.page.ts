@@ -5,6 +5,7 @@ import { Team } from '../../../../interfaces';
 import { Clipboard } from '@capacitor/clipboard';
 import { ModalController } from '@ionic/angular';
 import { ConfirmationModalComponent } from '../../../../components/confirmation-modal/confirmation-modal.component';
+import { Observable, switchMap, tap, of } from 'rxjs';
 
 @Component({
   selector: 'app-team-settings',
@@ -12,10 +13,11 @@ import { ConfirmationModalComponent } from '../../../../components/confirmation-
   styleUrls: ['./team-settings.page.scss']
 })
 export class TeamSettingsPage implements OnInit {
-  idTeam: string | null = null;
+  idTeam: string | undefined;
   teamName: string = '';
   invitationCode: string = '';
   modal: HTMLIonModalElement | undefined;
+  team$: Observable<Team | undefined> | undefined;
 
   constructor(
     private activeRoute: ActivatedRoute,
@@ -24,27 +26,19 @@ export class TeamSettingsPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.team$ = this.activeRoute.paramMap.pipe(
+      switchMap((params) => {
+        this.idTeam = params.get('id') as string;
+        const result = this.teamService.getTeam(this.idTeam);
 
-  ionViewWillEnter() {
-    this.idTeam = this.activeRoute.snapshot.paramMap.get('id');
-    const teamsNotFound = this.teamService.teams.length === 0;
+        if (!result) {
+          this.router.navigate(['/tabs/lists']);
+        }
 
-    if (teamsNotFound) {
-      this.getTeamFirstTime();
-      return;
-    }
-
-    console.log('get teams from service');
-    const team = this.teamService.teams.find((team) => team.id === this.idTeam);
-    this.fillComponentData(team);
-  }
-
-  getTeamFirstTime() {
-    this.teamService.getTeam(this.idTeam!).subscribe((team) => {
-      console.log('subscribing to getTeam');
-      this.fillComponentData(team);
-    });
+        return result;
+      })
+    );
   }
 
   fillComponentData(team: Team | undefined) {

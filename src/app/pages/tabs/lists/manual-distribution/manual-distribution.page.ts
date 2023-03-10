@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Task, Team } from '../../../../interfaces';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil, switchMap, merge, concat, tap } from 'rxjs';
 
 @Component({
   selector: 'app-manual-distribution',
@@ -11,12 +11,12 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./manual-distribution.page.scss']
 })
 export class ManualDistributionPage implements OnInit {
-  idTeam: string | null = null;
-  idTaskList: string | null = null;
+  idTeam: string | undefined;
+  idTaskList: string | undefined;
   tasks: Task[] = [];
   tasksUnassigned: Task[] = [];
   team: Team | undefined;
-  getTasks$: Subscription = new Subscription();
+  destroy$ = new Subject<void>();
 
   constructor(
     private activeRoute: ActivatedRoute,
@@ -25,53 +25,38 @@ export class ManualDistributionPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.idTeam = this.activeRoute.snapshot.paramMap.get('idTeam');
-    this.idTaskList = this.activeRoute.snapshot.paramMap.get('idTaskList');
-    const tasksNotFound = this.taskService.tasks.length === 0;
-    const teamsNotFound = this.teamService.teams.length === 0;
+    this.activeRoute.paramMap
+      .pipe(
+        switchMap((params) => {
+          this.idTeam = params.get('idTeam') as string;
+          this.idTaskList = params.get('idTaskList') as string;
 
-    if (tasksNotFound && teamsNotFound) {
-      this.getTasksFirstTime();
-      this.getTeamFirstTime();
-      return;
-    }
+          return merge(
+            this.taskService.getAllTasksByTaskList(this.idTaskList),
+            this.teamService.getTeam(this.idTeam)
+          );
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((data) => {
+        console.log('Manual distribution: ', data);
 
-    if (tasksNotFound) {
-      this.getTasksFirstTime();
-      return;
-    }
-
-    if (teamsNotFound) {
-      this.getTeamFirstTime();
-      return;
-    }
-
-    console.log('get tasks from service');
-    this.tasks = this.taskService.tasks;
-    this.team = this.teamService.teams.find((team) => team.id === this.idTeam);
-    this.tasksUnassigned = this.getUnassignedTasks();
+        // Tasks
+        if (Array.isArray(data)) {
+          this.tasks = data;
+          this.tasksUnassigned = this.getUnassignedTasks();
+        } else {
+          this.team = data;
+        }
+      });
   }
 
-  getTasksFirstTime() {
-    const result = this.taskService.getAllTasksByTaskList(this.idTaskList!);
-    this.getTasks$ = result.subscribe((tasks) => {
-      console.log('Tasks: ', tasks);
-      this.tasks = tasks;
-      this.tasksUnassigned = this.getUnassignedTasks();
-    });
-  }
-
-  getTeamFirstTime() {
-    this.teamService.getTeam(this.idTeam!).subscribe((team) => {
-      console.log('Team: ', team);
-
-      this.team = team;
-    });
+  ngOnDestroy() {
+    console.log('ngOnDestroy manual distribution page');
+    this.destroy$.next();
   }
 
   private getUnassignedTasks() {
-    return this.tasks.filter(
-      (task) => task.temporalUserAsigned.id === '' && !task.completed
-    );
+    return this.tasks.filter((task) => task.temporalUserAsigned.id === '' && !task.completed);
   }
 }

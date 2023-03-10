@@ -5,7 +5,7 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController, ToastController } from '@ionic/angular';
-import { lastValueFrom, mergeMap, of, map } from 'rxjs';
+import { lastValueFrom, of, map, switchMap } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData, AuthErrorCode } from '../interfaces';
 import { Router } from '@angular/router';
@@ -28,7 +28,7 @@ export class AuthService {
     try {
       this.auth.authState
         .pipe(
-          mergeMap((authUser) => {
+          switchMap((authUser) => {
             if (authUser) {
               return this.afs
                 .doc<User>(`users/${authUser?.uid}`)

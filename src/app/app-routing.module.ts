@@ -44,7 +44,7 @@ const routes: Routes = [
     loadChildren: () => import('./pages/common/task-form/task-form.module').then( m => m.TaskFormPageModule)
   },
   {
-    path: 'edit-task/:idTask',
+    path: 'edit-task/:idTaskList/:idTask',
     loadChildren: () => import('./pages/common/task-form/task-form.module').then( m => m.TaskFormPageModule)
   },
   {

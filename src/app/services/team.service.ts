@@ -3,15 +3,31 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TeamData, Team, TeamErrorCodes, UserMember, TaskListData, TaskList } from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
-import { map, throwError, mergeMap, of, lastValueFrom, tap, debounceTime } from 'rxjs';
-import { ToastController } from '@ionic/angular';
+import {
+  map,
+  throwError,
+  of,
+  tap,
+  debounceTime,
+  Observable,
+  shareReplay,
+  take,
+  from,
+  switchMap
+} from 'rxjs';
 import firebase from 'firebase/compat/app';
+import { showToast } from '../helpers/common-functions';
+import { ToastController } from '@ionic/angular';
+
+const MAX_USER_MEMBERS = 10;
+const MAX_TASK_LISTS = 20;
 
 @Injectable({
   providedIn: 'root'
 })
 export class TeamService {
-  teamsList: Team[] = [];
+  private teams$: Observable<Team[]> | undefined;
+  private idUser: string = '';
 
   constructor(
     private afs: AngularFirestore,
@@ -19,29 +35,41 @@ export class TeamService {
     private toastController: ToastController
   ) {}
 
-  get teams() {
-    return this.teamsList;
-  }
-
-  getTeam(id: string) {
-    return this.afs
-      .doc<Team>(`teams/${id}`)
-      .get()
-      .pipe(map((team) => team.data()));
-  }
-
-  getAllUserTeams(userId: string) {
-    return this.afs
-      .collection<Team>('teams', (ref) =>
-        ref.where(`idUserMembers`, 'array-contains', userId).orderBy('dateCreated', 'asc')
-      )
-      .valueChanges()
-      .pipe(
-        tap((teams) => {
-          this.teamsList = teams;
-        }),
-        debounceTime(500)
+  getTeam(id: string, idUser?: string) {
+    if (!idUser) {
+      return from(this.storageService.get('user')).pipe(
+        switchMap((user) => {
+          return this.getAllUserTeams(user.id).pipe(
+            take(1),
+            map((teams) => teams.find((team) => team.id === id))
+          );
+        })
       );
+    } else {
+      return this.getAllUserTeams(idUser).pipe(
+        take(1),
+        map((teams) => teams.find((team) => team.id === id))
+      );
+    }
+  }
+
+  getAllUserTeams(idUser: string) {
+    if (!this.teams$ || this.idUser !== idUser) {
+      console.log('this.teams$ is undefined');
+
+      const result = this.afs
+        .collection<Team>('teams', (ref) =>
+          ref.where(`idUserMembers`, 'array-contains', idUser).orderBy('dateCreated', 'asc')
+        )
+        .valueChanges();
+
+      this.teams$ = result.pipe(debounceTime(350), shareReplay({ bufferSize: 1, refCount: true }));
+
+      this.idUser = idUser;
+    }
+
+    console.log('this.teams$ is defined');
+    return this.teams$;
   }
 
   async createTeam({ name, allowNewMembers }: TeamData) {
@@ -71,7 +99,7 @@ export class TeamService {
         dateCreated: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      this.showToast(`${name} se ha creado correctamente`);
+      showToast(`${name} se ha creado correctamente`, this.toastController);
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -91,46 +119,48 @@ export class TeamService {
       }
 
       await this.afs.doc<Team>(`teams/${id}`).update({ name, allowNewMembers });
-      this.showToast(`${name} se ha actualizado correctamente`);
+      showToast(`${name} se ha actualizado correctamente`, this.toastController);
     } catch (error) {
       console.error(error);
       this.handleError(error);
     }
   }
 
-  async createTaskList(idTeam: string, { name, distributionType }: TaskListData) {
-    try {
-      const team = await lastValueFrom(this.getTeam(idTeam));
+  createTaskList(idTeam: string, { name, distributionType }: TaskListData) {
+    return this.getTeam(idTeam).pipe(
+      tap(async (team) => {
+        try {
+          if (!team) {
+            throw new Error('No se ha encontrado el equipo');
+          }
 
-      if (!team) {
-        throw new Error('No se ha encontrado el equipo');
-      }
+          if (Object.keys(team.taskLists).length >= MAX_TASK_LISTS) {
+            throw new Error(TeamErrorCodes.TeamReachedMaxTaskLists);
+          }
 
-      if (Object.keys(team.taskLists).length >= 5) {
-        throw new Error(TeamErrorCodes.TeamReachedMaxTaskLists);
-      }
+          const id = this.afs.createId();
+          const taskList: TaskList = {
+            id,
+            name: name.trim(),
+            distributionType,
+            userScore: {}
+          };
 
-      const id = this.afs.createId();
-      const taskList: TaskList = {
-        id,
-        name: name.trim(),
-        distributionType,
-        userScore: {}
-      };
+          for (const user of Object.values(team.userMembers)) {
+            taskList.userScore[user.id] = 0;
+          }
 
-      for (const user of Object.values(team.userMembers)) {
-        taskList.userScore[user.id] = 0;
-      }
+          await this.afs.doc<Team>(`teams/${idTeam}`).update({
+            taskLists: { ...team.taskLists, [id]: taskList }
+          });
 
-      await this.afs.doc<Team>(`teams/${idTeam}`).update({
-        taskLists: { ...team.taskLists, [id]: taskList }
-      });
-
-      this.showToast(`${name} se ha creado correctamente`);
-    } catch (error) {
-      console.error(error);
-      this.handleError(error);
-    }
+          showToast(`${name} se ha creado correctamente`, this.toastController);
+        } catch (error) {
+          console.error(error);
+          this.handleError(error);
+        }
+      })
+    );
   }
 
   async updateTaskListProperties(
@@ -144,7 +174,7 @@ export class TeamService {
         [`taskLists.${idTaskList}.distributionType`]: distributionType
       });
 
-      this.showToast(`${name} se ha actualizado correctamente`);
+      showToast(`${name} se ha actualizado correctamente`, this.toastController);
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -153,28 +183,13 @@ export class TeamService {
 
   //TODO:
   async leaveTeam(idTeam: string) {
-    try {
-      let teamFound = this.teamsList.find((team) => team.id === idTeam);
-
-      if (!teamFound) {
-        const team = await lastValueFrom(this.getTeam(idTeam));
-
-        if (!team) {
-          throw new Error('No se ha encontrado el equipo');
-        }
-
-        teamFound = team;
-      }
-
-      if (Object.keys(teamFound!.userMembers).length === 1) {
+    this.getTeam(idTeam).subscribe((team) => {
+      if (Object.keys(team!.userMembers).length === 1) {
         this.deleteTeam(idTeam);
       } else {
         this.removeUserFromTeam(idTeam);
       }
-    } catch (error) {
-      console.error(error);
-      this.handleError(error);
-    }
+    });
   }
 
   //TODO:
@@ -182,7 +197,7 @@ export class TeamService {
     try {
       await this.afs.doc<Team>(`teams/${idTeam}`).delete();
 
-      this.showToast('Has abandonado el equipo');
+      showToast('Has abandonado el equipo', this.toastController);
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -199,7 +214,7 @@ export class TeamService {
         [`idUserMembers`]: firebase.firestore.FieldValue.arrayRemove(userId) as unknown as string[]
       });
 
-      this.showToast('Has abandonado el equipo');
+      showToast('Has abandonado el equipo', this.toastController);
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -214,7 +229,7 @@ export class TeamService {
     const { id: userId, username } = await this.storageService.get('user');
 
     return teamsCollection.get().pipe(
-      mergeMap((teamFound) => {
+      switchMap((teamFound) => {
         if (teamFound.empty) {
           return throwError(() => new Error(TeamErrorCodes.TeamInvitationCodeNotFound));
         }
@@ -226,7 +241,7 @@ export class TeamService {
           return throwError(() => new Error(TeamErrorCodes.TeamDoesNotAllowNewMembers));
         }
 
-        if (userMembersListById.length > 10) {
+        if (userMembersListById.length > MAX_USER_MEMBERS) {
           return throwError(() => new Error(TeamErrorCodes.TeamReachedMaxMembers));
         }
 
@@ -262,7 +277,7 @@ export class TeamService {
             taskLists: { ...taskLists }
           });
 
-          this.showToast('¡Te has unido al equipo correctamente!');
+          showToast('¡Te has unido al equipo correctamente!', this.toastController);
         } catch (error: any) {
           const { code } = { error }.error;
           console.error(error);
@@ -302,19 +317,6 @@ export class TeamService {
         break;
     }
 
-    this.showToast(message);
-  }
-
-  async showToast(message: string) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color: 'secondary',
-      keyboardClose: true,
-      cssClass: 'custom-toast'
-    });
-
-    await toast.present();
+    showToast(message, this.toastController);
   }
 }

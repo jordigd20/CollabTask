@@ -3,7 +3,7 @@ import { ActionSheetController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../../services/task.service';
 import { Task } from '../../../../interfaces';
-import { Subscription } from 'rxjs';
+import { from, switchMap, takeUntil, Subject } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { getSelectedDate } from '../../../../helpers/common-functions';
 
@@ -13,12 +13,12 @@ import { getSelectedDate } from '../../../../helpers/common-functions';
   styleUrls: ['./task-list.page.scss']
 })
 export class TaskListPage implements OnInit {
-  idTeam: string | null = null;
-  idTaskList: string | null = null;
+  idTeam: string | undefined;
+  idTaskList: string | undefined;
   userId: string = '';
   isLoading: boolean = true;
   tasks: Task[] = [];
-  getTasks$: Subscription = new Subscription();
+  destroy$ = new Subject<void>();
 
   constructor(
     private actionSheetController: ActionSheetController,
@@ -31,26 +31,29 @@ export class TaskListPage implements OnInit {
   async ngOnInit() {
     this.isLoading = true;
 
-    const { id } = await this.storageService.get('user');
-    this.userId = id;
-
-    this.idTeam = this.activeRoute.snapshot.paramMap.get('idTeam');
-    this.idTaskList = this.activeRoute.snapshot.paramMap.get('idTaskList');
-    this.getTasks();
+    this.activeRoute.paramMap
+      .pipe(
+        switchMap((params) => {
+          this.idTeam = params.get('idTeam') as string;
+          this.idTaskList = params.get('idTaskList') as string;
+          return from(this.storageService.get('user'));
+        }),
+        switchMap((user) => {
+          this.userId = user.id;
+          return this.taskService.getAllTasksByTaskList(this.idTaskList!);
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((tasks) => {
+        console.log('Tasks: ', tasks);
+        this.tasks = tasks;
+        this.isLoading = false;
+      });
   }
 
   ngOnDestroy() {
     console.log('ngOnDestroy task list page');
-    this.getTasks$.unsubscribe();
-  }
-
-  getTasks() {
-    const result = this.taskService.getAllTasksByTaskList(this.idTaskList!);
-    this.getTasks$ = result.subscribe((tasks) => {
-      console.log('Tasks: ', tasks);
-      this.tasks = tasks;
-      this.isLoading = false;
-    });
+    this.destroy$.next();
   }
 
   handlePreferences() {}

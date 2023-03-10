@@ -5,8 +5,9 @@ import { DatetimeModalComponent } from '../../../components/datetime-modal/datet
 import { ScoreModalComponent } from '../../../components/score-modal/score-modal.component';
 import { PeriodicDateModalComponent } from '../../../components/periodic-date-modal/periodic-date-modal.component';
 import { TaskService } from '../../../services/task.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Task } from '../../../interfaces';
+import { switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-task-form',
@@ -17,9 +18,9 @@ export class TaskFormPage implements OnInit {
   taskForm!: FormGroup;
   headerTitle: string = 'Crear una tarea nueva';
   buttonText: string = 'Crear tarea';
-  idTeam: string | null = null;
-  idTaskList: string | null = null;
-  idTask: string | null = null;
+  idTeam: string | undefined;
+  idTaskList: string | undefined;
+  idTask: string | undefined;
   showDateError: boolean = false;
   isLoading: boolean = false;
   task: Task | undefined;
@@ -28,8 +29,7 @@ export class TaskFormPage implements OnInit {
     private fb: FormBuilder,
     private modalController: ModalController,
     private activeRoute: ActivatedRoute,
-    private taskService: TaskService,
-    private router: Router
+    private taskService: TaskService
   ) {}
 
   get title() {
@@ -62,10 +62,6 @@ export class TaskFormPage implements OnInit {
   }
 
   ngOnInit() {
-    this.idTeam = this.activeRoute.snapshot.paramMap.get('idTeam');
-    this.idTaskList = this.activeRoute.snapshot.paramMap.get('idTaskList');
-    this.idTask = this.activeRoute.snapshot.paramMap.get('idTask');
-
     this.taskForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(75)]],
       description: ['', Validators.maxLength(250)],
@@ -76,32 +72,44 @@ export class TaskFormPage implements OnInit {
       date: [new Date().toISOString()]
     });
 
-    if (this.idTask) {
-      this.headerTitle = 'Editar tarea';
-      this.buttonText = 'Guardar cambios';
+    this.activeRoute.paramMap
+      .pipe(
+        switchMap((params) => {
+          this.idTeam = params.get('idTeam') as string;
+          this.idTaskList = params.get('idTaskList') as string;
+          this.idTask = params.get('idTask') as string;
 
-      this.taskService.getTaskById(this.idTask).subscribe((task) => {
-        if (!task) {
-          this.router.navigate(['/tabs/home']);
-        } else {
-          console.log(task);
-          this.task = task;
+          if (this.idTask && this.idTaskList) {
+            this.headerTitle = 'Editar tarea';
+            this.buttonText = 'Guardar cambios';
+            return this.taskService.getTask(this.idTask, this.idTaskList);
+          }
 
-          this.taskForm.patchValue({
-            title: task.title,
-            description: task.description,
-            score: task.score,
-            selectedDate: task.selectedDate,
-            dateLimit: task.dateLimit,
-            datePeriodic: task.datePeriodic,
-            date: task.date
-          });
+          return of(undefined);
+        })
+      )
+      .subscribe((task) => {
+        if (task) {
+          this.fillComponentData(task);
         }
       });
-    }
   }
 
-  async createTask() {
+  fillComponentData(task: Task) {
+    this.task = task;
+
+    this.taskForm.patchValue({
+      title: task.title,
+      description: task.description,
+      score: task.score,
+      selectedDate: task.selectedDate,
+      dateLimit: task.dateLimit,
+      datePeriodic: task.datePeriodic,
+      date: task.date
+    });
+  }
+
+  createTask() {
     if (this.taskForm.invalid) {
       return;
     }
@@ -114,13 +122,15 @@ export class TaskFormPage implements OnInit {
     this.showDateError = false;
     this.isLoading = true;
 
-    await this.taskService.createTask({
-      idTeam: this.idTeam,
-      idTaskList: this.idTaskList,
-      ...this.taskForm.value
-    });
-
-    this.isLoading = false;
+    this.taskService
+      .createTask({
+        idTeam: this.idTeam,
+        idTaskList: this.idTaskList,
+        ...this.taskForm.value
+      })
+      .subscribe(() => {
+        this.isLoading = false;
+      });
   }
 
   async updateTask() {

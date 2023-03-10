@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
-import { TaskList } from '../../../interfaces';
+import { TaskList, Team } from '../../../interfaces';
+import { switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-task-list-form',
@@ -10,19 +11,21 @@ import { TaskList } from '../../../interfaces';
   styleUrls: ['./task-list-form.page.scss']
 })
 export class TaskListFormPage implements OnInit {
-  taskListForm!: FormGroup;
+  taskListForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    distributionType: ['manual', Validators.required]
+  });
   headerTitle: string = 'Crear lista de tareas';
   buttonText: string = 'Crear lista de tareas';
   isLoading: boolean = false;
-  idTeam: string | null = null;
-  idTaskList: string | null = null;
+  idTeam: string | undefined;
+  idTaskList: string | undefined;
   taskList: TaskList | undefined;
 
   constructor(
     private fb: FormBuilder,
     private activeRoute: ActivatedRoute,
-    private teamService: TeamService,
-    private router: Router
+    private teamService: TeamService
   ) {}
 
   get name() {
@@ -34,43 +37,45 @@ export class TaskListFormPage implements OnInit {
   }
 
   ngOnInit() {
-    this.taskListForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      distributionType: ['manual', Validators.required]
-    });
-  }
+    this.activeRoute.paramMap
+      .pipe(
+        switchMap((params) => {
+          this.idTeam = params.get('idTeam') as string;
+          this.idTaskList = params.get('idTaskList') as string;
 
-  ionViewWillEnter() {
-    this.idTeam = this.activeRoute.snapshot.paramMap.get('idTeam');
-    this.idTaskList = this.activeRoute.snapshot.paramMap.get('idTaskList');
+          if (this.idTeam && this.idTaskList) {
+            this.headerTitle = 'Editar equipo';
+            this.buttonText = 'Guardar cambios';
+            return this.teamService.getTeam(this.idTeam);
+          }
 
-    if (this.idTeam && this.idTaskList) {
-      this.headerTitle = 'Editar equipo';
-      this.buttonText = 'Guardar cambios';
-
-      this.teamService.getTeam(this.idTeam).subscribe((team) => {
-        if (!team) {
-          this.router.navigate(['/tabs/home']);
-        } else {
-          console.log(team);
-          this.taskList = team.taskLists[this.idTaskList!];
-          const { name, distributionType } = this.taskList;
-
-          this.taskListForm.setValue({
-            name,
-            distributionType
-          });
+          return of(undefined);
+        }),
+      )
+      .subscribe((team) => {
+        if (team) {
+          this.fillComponentData(team);
         }
       });
-    }
+  }
+
+  fillComponentData(team: Team) {
+    this.taskList = team.taskLists[this.idTaskList!];
+    const { name, distributionType } = this.taskList;
+
+    this.taskListForm.setValue({
+      name,
+      distributionType
+    });
   }
 
   async createTaskList() {
     if (!this.taskListForm.valid) return;
 
     this.isLoading = true;
-    await this.teamService.createTaskList(this.idTeam!, this.taskListForm.value)
-    this.isLoading = false;
+    this.teamService.createTaskList(this.idTeam!, this.taskListForm.value).subscribe(() => {
+      this.isLoading = false;
+    });
   }
 
   async updateTaskList() {
@@ -80,7 +85,7 @@ export class TaskListFormPage implements OnInit {
     await this.teamService.updateTaskListProperties(
       this.idTeam!,
       this.idTaskList!,
-      this.taskListForm.value,
+      this.taskListForm.value
     );
     this.isLoading = false;
   }

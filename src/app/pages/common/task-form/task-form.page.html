@@ -1,7 +1,7 @@
 <app-back-header [title]="headerTitle"></app-back-header>
 
 <ion-content class="ion-padding">
-  <form (ngSubmit)="idTask ? updateTask() : createTask()" [formGroup]="taskForm">
+  <form (ngSubmit)="idTask && idTaskList ? updateTask() : createTask()" [formGroup]="taskForm">
     <ion-item mode="md" class="item-form">
       <ion-label position="stacked">Título</ion-label>
       <ion-input
