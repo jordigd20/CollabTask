@@ -66,3 +66,31 @@ export const toastleaveAnimation = (baseEl: any, animationController: AnimationC
     .duration(500)
     .addAnimation(wrapperAnimation);
 };
+
+export const fadeOutUpAnimation = (
+  baseEl: any,
+  duration: number,
+  animationController: AnimationController
+) => {
+  return animationController
+    .create()
+    .addElement(baseEl)
+    .duration(duration)
+    .iterations(1)
+    .fromTo('opacity', '1', '0')
+    .fromTo('transform', 'translateY(0)', 'translateY(-100%)');
+};
+
+export const fadeInDownAnimation = (
+  baseEl: any,
+  duration: number,
+  animationController: AnimationController
+) => {
+  return animationController
+    .create()
+    .addElement(baseEl)
+    .duration(duration)
+    .iterations(1)
+    .fromTo('opacity', '0', '1')
+    .fromTo('transform', 'translateY(-100%)', 'translateY(0)');
+};

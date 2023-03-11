@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { ActionSheetController } from '@ionic/angular';
+import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { ActionSheetController, AnimationController } from '@ionic/angular';
 import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
 import { Router } from '@angular/router';
 import { from, Subject, takeUntil, switchMap } from 'rxjs';
+import { fadeInDownAnimation, fadeOutUpAnimation } from '../../../helpers/animations';
 
 @Component({
   selector: 'app-lists',
@@ -12,6 +13,8 @@ import { from, Subject, takeUntil, switchMap } from 'rxjs';
   styleUrls: ['./lists.page.scss']
 })
 export class ListsPage implements OnInit {
+  @ViewChildren('showListContainers') showListContainers!: QueryList<any>;
+
   teamsList: Team[] = [];
   isLoading: boolean = true;
   isSearching: boolean = false;
@@ -26,7 +29,8 @@ export class ListsPage implements OnInit {
     private actionSheetController: ActionSheetController,
     private storageService: StorageService,
     private teamService: TeamService,
-    private router: Router
+    private router: Router,
+    private animationController: AnimationController
   ) {}
 
   async ngOnInit() {
@@ -153,7 +157,23 @@ export class ListsPage implements OnInit {
   }
 
   toggleShowTaskLists(teamId: string) {
-    this.showTaskLists[teamId] = !this.showTaskLists[teamId];
+    const newToggleValue = !this.showTaskLists[teamId];
+    const taskListContainer = this.showListContainers
+      .toArray()
+      .find((t) => t.el.attributes.getNamedItem('container-task-lists').value === teamId);
+
+    if (newToggleValue) {
+      taskListContainer.el.style.display = 'block';
+      fadeInDownAnimation(taskListContainer.el, 150, this.animationController).play();
+    } else {
+      fadeOutUpAnimation(taskListContainer.el, 150, this.animationController).play();
+
+      setTimeout(() => {
+        taskListContainer.el.style.display = 'none';
+      }, 150);
+    }
+
+    this.showTaskLists[teamId] = newToggleValue;
   }
 
   taskListIsEmpty(team: Team) {

@@ -58,7 +58,13 @@
           </ion-button>
         </ion-item>
 
-        <ion-item *ngIf="showTaskLists[team.id]" class="container-list" color="tertiary">
+        <ion-item
+          class="container-list"
+          [ngClass]="'item-' + team.id"
+          [attr.container-task-lists]="team.id"
+          color="tertiary"
+          #showListContainers
+        >
           <ion-list class="sub-list" color="tertiary" lines="none">
             <ion-item
               *ngFor="let list of team.taskLists | objValues"
