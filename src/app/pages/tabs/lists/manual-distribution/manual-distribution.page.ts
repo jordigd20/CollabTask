@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Task, Team } from '../../../../interfaces';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { Subject, takeUntil, switchMap, merge, concat, tap } from 'rxjs';
+import { Subject, takeUntil, switchMap, Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-manual-distribution',
@@ -13,10 +13,13 @@ import { Subject, takeUntil, switchMap, merge, concat, tap } from 'rxjs';
 export class ManualDistributionPage implements OnInit {
   idTeam: string | undefined;
   idTaskList: string | undefined;
-  tasks: Task[] = [];
-  tasksUnassigned: Task[] = [];
-  team: Team | undefined;
-  destroy$ = new Subject<void>();
+  // team: Team | undefined;
+  // destroy$ = new Subject<void>();
+  tasksUnassigned$: Observable<Task[]> | undefined;
+  team$: Observable<{
+    team: Team | undefined;
+    [key: string]: any;
+  }> | undefined;
 
   constructor(
     private activeRoute: ActivatedRoute,
@@ -25,38 +28,34 @@ export class ManualDistributionPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.activeRoute.paramMap
-      .pipe(
-        switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+    this.team$ = this.activeRoute.paramMap.pipe(
+      switchMap((params) => {
+        this.idTeam = params.get('idTeam') as string;
+        this.idTaskList = params.get('idTaskList') as string;
 
-          return merge(
-            this.taskService.getAllTasksByTaskList(this.idTaskList),
-            this.teamService.getTeam(this.idTeam)
-          );
-        }),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((data) => {
-        console.log('Manual distribution: ', data);
+        this.tasksUnassigned$ = this.taskService.getAllUnassignedTasks(this.idTaskList);
+        return this.teamService.getTeam(this.idTeam);
+      }),
+      map((team) => {
+        const result: {
+          team: Team | undefined;
+          [key: string]: Team | undefined | Observable<Task[]>;
+        } = { team };
 
-        // Tasks
-        if (Array.isArray(data)) {
-          this.tasks = data;
-          this.tasksUnassigned = this.getUnassignedTasks();
-        } else {
-          this.team = data;
+        for (let user of Object.values(team!.userMembers)) {
+          result[user.id] = this.taskService.getTemporalUserTasks(this.idTaskList!, user.id);
         }
-      });
+
+        console.log(result);
+
+        return result;
+      })
+      // takeUntil(this.destroy$)
+    );
   }
 
-  ngOnDestroy() {
-    console.log('ngOnDestroy manual distribution page');
-    this.destroy$.next();
-  }
-
-  private getUnassignedTasks() {
-    return this.tasks.filter((task) => task.temporalUserAsigned.id === '' && !task.completed);
-  }
+  // ngOnDestroy() {
+  //   console.log('ngOnDestroy manual distribution page');
+  //   this.destroy$.next();
+  // }
 }

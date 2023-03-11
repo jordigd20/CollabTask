@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { getSelectedDate } from '../../../app/helpers/common-functions';
 import { Task } from '../../interfaces';
 import { SwiperOptions } from 'swiper';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-task-slide',
@@ -9,8 +9,9 @@ import { SwiperOptions } from 'swiper';
   styleUrls: ['./task-slide.component.scss']
 })
 export class TaskSlideComponent implements OnInit {
-  @Input() tasks: Task[] = [];
+  @Input() tasks$: Observable<Task[]> | undefined;
   @Input() withoutUsers: boolean = false;
+  @Input() noTasksMessage: string = 'No hay tareas para asignar';
 
   slideOpts: SwiperOptions = {
     slidesPerView: 1.4,
@@ -22,7 +23,8 @@ export class TaskSlideComponent implements OnInit {
 
   ngOnInit() {}
 
-  getSelectedDate(date: string) {
-    return getSelectedDate(date, this.tasks);
+  getSelectedDate(task: Task) {
+    const selectedDate = task.selectedDate;
+    return selectedDate !== 'withoutDate' ? (task[selectedDate] as string) : '';
   }
 }

@@ -1,13 +1,29 @@
-<swiper #swiper class="slide-container" [config]="slideOpts">
-  <ng-template swiperSlide *ngFor="let task of tasks">
-    <app-task
-      [title]="task.title"
-      [score]="task.score"
-      [selectedDate]="task.selectedDate"
-      [showCompleteButton]="false"
-      [date]="getSelectedDate(task.id)"
-      [showTeamName]="!withoutUsers"
-      [withoutUserAssigned]="true"
-    ></app-task>
+<div class="swiper-container" *ngIf="tasks$ | async as tasks; else loading">
+  <ng-container *ngIf="tasks.length > 0; else noTasks">
+    <swiper class="slide-container" [config]="slideOpts">
+      <ng-template swiperSlide *ngFor="let task of tasks">
+        <app-task
+          [title]="task.title"
+          [score]="task.score"
+          [selectedDate]="task.selectedDate"
+          [showCompleteButton]="false"
+          [date]="getSelectedDate(task)"
+          [showTeamName]="!withoutUsers"
+          [withoutUserAssigned]="true"
+        ></app-task>
+      </ng-template>
+    </swiper>
+  </ng-container>
+
+  <ng-template #noTasks>
+    <div class="slide-container">
+      <ion-item class="no-item">
+        <ion-label class="regular-text" style="white-space: normal">{{ noTasksMessage }}</ion-label>
+      </ion-item>
+    </div>
   </ng-template>
-</swiper>
+</div>
+
+<ng-template #loading>
+  <ion-spinner class="loading-content" name="circles" color="primary"></ion-spinner>
+</ng-template>

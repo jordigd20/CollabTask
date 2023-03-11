@@ -30,6 +30,18 @@ export class TaskService {
     );
   }
 
+  getTemporalUserTasks(idTaskList: string, idUser: string) {
+    return this.getAllTasksByTaskList(idTaskList).pipe(
+      map((tasks) => tasks.filter((task) => task.temporalUserAsigned.id === idUser))
+    );
+  }
+
+  getAllUnassignedTasks(idTaskList: string) {
+    return this.getAllTasksByTaskList(idTaskList).pipe(
+      map((tasks) => tasks.filter((task) => task.temporalUserAsigned.id === '' && !task.completed))
+    );
+  }
+
   getAllTasksByTaskList(idTaskList: string) {
     if (!this.tasks$ || this.currentIdTaskList !== idTaskList) {
       console.log('this.tasks$ is undefined');
