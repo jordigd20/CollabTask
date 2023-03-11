@@ -17,7 +17,7 @@ import {
 } from 'rxjs';
 import firebase from 'firebase/compat/app';
 import { showToast } from '../helpers/common-functions';
-import { ToastController } from '@ionic/angular';
+import { ToastController, AnimationController } from '@ionic/angular';
 
 const MAX_USER_MEMBERS = 10;
 const MAX_TASK_LISTS = 20;
@@ -32,7 +32,8 @@ export class TeamService {
   constructor(
     private afs: AngularFirestore,
     private storageService: StorageService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private animationController: AnimationController
   ) {}
 
   getTeam(id: string, idUser?: string) {
@@ -99,7 +100,13 @@ export class TeamService {
         dateCreated: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      showToast(`${name} se ha creado correctamente`, this.toastController);
+      showToast({
+        message: 'El equipo se ha creado correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -119,7 +126,13 @@ export class TeamService {
       }
 
       await this.afs.doc<Team>(`teams/${id}`).update({ name, allowNewMembers });
-      showToast(`${name} se ha actualizado correctamente`, this.toastController);
+      showToast({
+        message: 'El equipo se ha actualizado correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -154,7 +167,13 @@ export class TeamService {
             taskLists: { ...team.taskLists, [id]: taskList }
           });
 
-          showToast(`${name} se ha creado correctamente`, this.toastController);
+          showToast({
+            message: 'La lista de tareas se ha creado correctamente',
+            icon: 'checkmark-circle',
+            cssClass: 'toast-success',
+            toastController: this.toastController,
+            animationController: this.animationController
+          });
         } catch (error) {
           console.error(error);
           this.handleError(error);
@@ -174,7 +193,13 @@ export class TeamService {
         [`taskLists.${idTaskList}.distributionType`]: distributionType
       });
 
-      showToast(`${name} se ha actualizado correctamente`, this.toastController);
+      showToast({
+        message: 'La lista de tareas se ha actualizado correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -197,7 +222,13 @@ export class TeamService {
     try {
       await this.afs.doc<Team>(`teams/${idTeam}`).delete();
 
-      showToast('Has abandonado el equipo', this.toastController);
+      showToast({
+        message: 'Has abandonado el equipo correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -214,7 +245,13 @@ export class TeamService {
         [`idUserMembers`]: firebase.firestore.FieldValue.arrayRemove(userId) as unknown as string[]
       });
 
-      showToast('Has abandonado el equipo', this.toastController);
+      showToast({
+        message: 'Has abandonado el equipo correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -277,7 +314,13 @@ export class TeamService {
             taskLists: { ...taskLists }
           });
 
-          showToast('¡Te has unido al equipo correctamente!', this.toastController);
+          showToast({
+            message: 'Te has unido al equipo correctamente',
+            icon: 'checkmark-circle',
+            cssClass: 'toast-success',
+            toastController: this.toastController,
+            animationController: this.animationController
+          });
         } catch (error: any) {
           const { code } = { error }.error;
           console.error(error);
@@ -317,6 +360,12 @@ export class TeamService {
         break;
     }
 
-    showToast(message, this.toastController);
+    showToast({
+      message,
+      icon: 'close-circle',
+      cssClass: 'toast-error',
+      toastController: this.toastController,
+      animationController: this.animationController
+    });
   }
 }

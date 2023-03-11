@@ -4,8 +4,9 @@ import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
 import { TeamService } from './team.service';
 import { map, debounceTime, tap, Observable, shareReplay, take } from 'rxjs';
-import { ToastController } from '@ionic/angular';
+import { ToastController, AnimationController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
+import { showToast } from '../helpers/common-functions';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,8 @@ export class TaskService {
     private afs: AngularFirestore,
     private storageService: StorageService,
     private teamService: TeamService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private animationController: AnimationController
   ) {}
 
   getTask(id: string, idTaskList: string) {
@@ -113,7 +115,13 @@ export class TaskService {
 
           await this.afs.doc<Task>(`tasks/${id}`).set(task);
 
-          this.showToast('Tarea creada correctamente');
+          showToast({
+            message: 'Tarea creada correctamente',
+            icon: 'checkmark-circle',
+            cssClass: 'toast-success',
+            toastController: this.toastController,
+            animationController: this.animationController
+          });
         } catch (error) {
           console.error(error);
           this.handleError(error);
@@ -128,7 +136,14 @@ export class TaskService {
       taskData.dateLimit = this.convertStringToTimestamp(taskData.dateLimit as string);
 
       await this.afs.doc<Task>(`tasks/${idTask}`).update(taskData);
-      this.showToast('Tarea actualizada correctamente');
+
+      showToast({
+        message: 'Tarea actualizada correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -144,20 +159,13 @@ export class TaskService {
         break;
     }
 
-    this.showToast(message);
-  }
-
-  async showToast(message: string) {
-    const toast = await this.toastController.create({
+    showToast({
       message,
-      duration: 3000,
-      position: 'bottom',
-      color: 'secondary',
-      keyboardClose: true,
-      cssClass: 'custom-toast'
+      icon: 'close-circle',
+      cssClass: 'toast-error',
+      toastController: this.toastController,
+      animationController: this.animationController
     });
-
-    await toast.present();
   }
 
   private convertStringToTimestamp(date: string) {

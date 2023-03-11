@@ -463,7 +463,27 @@ ion-searchbar {
 }
 
 .custom-toast {
-  top: -57px;
+  color: var(--ion-text-color);
+  --border-radius: 8px;
+  --start: 35px;
+  --end: 35px;
+  --box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1), 0 3px 3px rgba(0, 0, 0, 0.05);
+
+  &::part(icon) {
+    font-size: 25px;
+  }
+}
+
+.toast-success {
+  &::part(icon) {
+    color: var(--ion-color-success);
+  }
+}
+
+.toast-error {
+  &::part(icon) {
+    color: var(--ion-color-danger);
+  }
 }
 
 .secondary-button {

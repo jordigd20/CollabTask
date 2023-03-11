@@ -1,5 +1,14 @@
 import { Task } from '../interfaces/models/task.interface';
-import { ToastController } from '@ionic/angular';
+import { ToastController, AnimationController } from '@ionic/angular';
+import { toastEnterAnimation, toastleaveAnimation } from './animations';
+
+interface ToastOptions {
+  message: string;
+  icon: string;
+  cssClass: string;
+  toastController: ToastController;
+  animationController: AnimationController;
+}
 
 export function getSelectedDate(idTask: string, tasks: Task[]): string {
   const task = tasks.find((task) => task.id === idTask)!;
@@ -7,14 +16,28 @@ export function getSelectedDate(idTask: string, tasks: Task[]): string {
   return selectedDate !== 'withoutDate' ? (task[selectedDate] as string) : '';
 }
 
-export async function showToast(message: string, toastController: ToastController) {
+export async function showToast({
+  message,
+  icon,
+  cssClass = '',
+  toastController,
+  animationController
+}: ToastOptions) {
   const toast = await toastController.create({
     message,
+    icon,
     duration: 2000,
     position: 'bottom',
-    color: 'secondary',
+    color: 'white',
+    animated: true,
     keyboardClose: true,
-    cssClass: 'custom-toast'
+    cssClass: `custom-toast ${cssClass}`,
+    enterAnimation: (baseEl: any, position: string) => {
+      return toastEnterAnimation(baseEl, position, animationController);
+    },
+    leaveAnimation: (baseEl: any) => {
+      return toastleaveAnimation(baseEl, animationController);
+    }
   });
 
   await toast.present();
