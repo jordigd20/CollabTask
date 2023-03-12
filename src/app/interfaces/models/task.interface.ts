@@ -2,21 +2,10 @@ import firebase from 'firebase/compat/app';
 
 export interface Task {
   id: string;
-  team: {
-    id: string;
-    name: string;
-  };
+  idTeam: string;
   idTaskList: string;
-  userAsigned: {
-    id: string;
-    name: string;
-    photoURL: string;
-  };
-  temporalUserAsigned: {
-    id: string;
-    name: string;
-    photoURL: string;
-  };
+  idUserAsigned: string;
+  idTemporalUserAsigned: string;
   title: string;
   description: string;
   score: number;
@@ -28,8 +17,6 @@ export interface Task {
   completed: boolean;
   createdByUser: {
     id: string;
-    name: string;
-    photoURL: string;
     date: firebase.firestore.Timestamp | string;
   };
   [key: string]: firebase.firestore.Timestamp | string | boolean | number | {};

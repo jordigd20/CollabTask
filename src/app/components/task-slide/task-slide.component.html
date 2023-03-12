@@ -5,11 +5,14 @@
         <app-task
           [title]="task.title"
           [score]="task.score"
+          [idTeam]="task.idTeam"
+          [idTaskList]="task.idTaskList"
+          [idTask]="task.id"
           [selectedDate]="task.selectedDate"
           [showCompleteButton]="false"
           [date]="getSelectedDate(task)"
-          [showTeamName]="!withoutUsers"
-          [withoutUserAssigned]="true"
+          [showDistributionMode]="true"
+          [withoutUserAssigned]="withoutUsers"
         ></app-task>
       </ng-template>
     </swiper>

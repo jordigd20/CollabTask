@@ -453,8 +453,17 @@ ion-searchbar {
   border-top-right-radius: 20px;
 }
 
+.action-sheet-large {
+  --max-height: calc(100% - 100px - (var(--ion-safe-area-top) + var(--ion-safe-area-bottom)));
+}
+
 .action-sheet-custom-icon ion-icon {
   color: var(--ion-text-color) !important;
+}
+
+.action-sheet-danger-icon {
+  --button-color: var(--ion-text-color) !important;
+  --color: var(--ion-color-danger) !important;
 }
 
 .action-sheet-tasklist-icon ion-icon {

@@ -1,16 +1,16 @@
 <ion-item
   (click)="click()"
   class="task-item"
-  [ngClass]="{ 'disable-ripple-touch': !showTeamName && !showCompleteButton }"
+  [ngClass]="{ 'disable-ripple-touch': showDistributionMode && !showCompleteButton }"
   button
-  [ngStyle]="{ 'margin-bottom': !showTeamName && !showCompleteButton ? '0px' : '10px' }"
+  [ngStyle]="{ 'margin-bottom': showDistributionMode && !showCompleteButton ? '0px' : '10px' }"
 >
   <div class="main-container">
     <div
       [ngClass]="{
         'top-container': !showCompleteButton,
         'top-container-without-button': showCompleteButton,
-        'top-container-more-opts': !showTeamName && !showCompleteButton
+        'top-container-more-opts': showDistributionMode && !showCompleteButton
       }"
     >
       <ion-button *ngIf="showCompleteButton" fill="clear" shape="round" class="check-button">
@@ -51,7 +51,7 @@
       </ion-label>
 
       <ion-text
-        *ngIf="showTeamName"
+        *ngIf="!showDistributionMode"
         class="team-name-container"
         color="medium"
         [ngStyle]="{ 'margin-top': selectedDate === 'withoutDate' ? '5px' : '0' }"
@@ -60,7 +60,8 @@
       </ion-text>
 
       <ion-button
-        *ngIf="!showTeamName"
+        *ngIf="showDistributionMode"
+        (click)="moreOptions();$event.stopPropagation();"
         class="more-opts-btn"
         fill="clear"
         color="secondary"

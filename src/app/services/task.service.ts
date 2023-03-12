@@ -32,13 +32,13 @@ export class TaskService {
 
   getTemporalUserTasks(idTaskList: string, idUser: string) {
     return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) => tasks.filter((task) => task.temporalUserAsigned.id === idUser))
+      map((tasks) => tasks.filter((task) => task.idTemporalUserAsigned === idUser))
     );
   }
 
   getAllUnassignedTasks(idTaskList: string) {
     return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) => tasks.filter((task) => task.temporalUserAsigned.id === '' && !task.completed))
+      map((tasks) => tasks.filter((task) => task.idTemporalUserAsigned === '' && !task.completed))
     );
   }
 
@@ -101,13 +101,10 @@ export class TaskService {
 
           const task: Task = {
             id,
-            team: {
-              id: idTeam!,
-              name: team.name
-            },
+            idTeam: idTeam!,
             idTaskList: idTaskList!,
-            userAsigned: { id: '', name: '', photoURL: '' },
-            temporalUserAsigned: { id: '', name: '', photoURL: '' },
+            idUserAsigned: '',
+            idTemporalUserAsigned: '',
             title,
             description,
             score,
@@ -119,8 +116,6 @@ export class TaskService {
             completed: false,
             createdByUser: {
               id: userId,
-              name: username,
-              photoURL,
               date: firebase.firestore.Timestamp.now()
             }
           };
@@ -156,6 +151,26 @@ export class TaskService {
         toastController: this.toastController,
         animationController: this.animationController
       });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async temporarilyAssignTask(idTask: string, idUser: string) {
+    try {
+      await this.afs.doc<Task>(`tasks/${idTask}`).update({
+        idTemporalUserAsigned: idUser
+      });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async deleteTask(idTask: string) {
+    try {
+      await this.afs.doc<Task>(`tasks/${idTask}`).delete();
     } catch (error) {
       console.error(error);
       this.handleError(error);

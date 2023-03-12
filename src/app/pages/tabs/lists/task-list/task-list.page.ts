@@ -3,9 +3,11 @@ import { ActionSheetController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../../services/task.service';
 import { Task } from '../../../../interfaces';
-import { from, switchMap, takeUntil, Subject } from 'rxjs';
+import { from, switchMap, takeUntil, Subject, Observable } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { getSelectedDate } from '../../../../helpers/common-functions';
+import { TeamService } from '../../../../services/team.service';
+import { Team } from '../../../../interfaces/models/team.interface';
 
 @Component({
   selector: 'app-task-list',
@@ -18,6 +20,7 @@ export class TaskListPage implements OnInit {
   userId: string = '';
   isLoading: boolean = true;
   tasks: Task[] = [];
+  team$: Observable<Team | undefined> | undefined;
   destroy$ = new Subject<void>();
 
   constructor(
@@ -25,6 +28,7 @@ export class TaskListPage implements OnInit {
     private activeRoute: ActivatedRoute,
     private router: Router,
     private storageService: StorageService,
+    private teamService: TeamService,
     private taskService: TaskService
   ) {}
 
@@ -36,6 +40,8 @@ export class TaskListPage implements OnInit {
         switchMap((params) => {
           this.idTeam = params.get('idTeam') as string;
           this.idTaskList = params.get('idTaskList') as string;
+          this.team$ = this.teamService.getTeam(this.idTeam!);
+
           return from(this.storageService.get('user'));
         }),
         switchMap((user) => {
@@ -100,6 +106,6 @@ export class TaskListPage implements OnInit {
 
   getShowCompleteButton(idTask: string): boolean {
     const task = this.tasks.find((task) => task.id === idTask)!;
-    return task.userAsigned.id !== this.userId;
+    return task.idUserAsigned !== this.userId;
   }
 }

@@ -33,7 +33,7 @@
       <app-task
         *ngFor="let task of tasks"
         [title]="task.title"
-        [teamName]="task.team.name"
+        [teamName]="(team$ | async)?.name ?? ''"
         [score]="task.score"
         [selectedDate]="task.selectedDate"
         [date]="getSelectedDate(task.id)"
