@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 })
 export class TaskSlideComponent implements OnInit {
   @Input() tasks$: Observable<Task[]> | undefined;
+  @Input() idUser: string = '';
   @Input() withoutUsers: boolean = false;
   @Input() noTasksMessage: string = 'No hay tareas para asignar';
 

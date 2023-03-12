@@ -13,11 +13,13 @@ import {
   shareReplay,
   take,
   from,
-  switchMap
+  switchMap,
+  firstValueFrom
 } from 'rxjs';
 import firebase from 'firebase/compat/app';
 import { showToast } from '../helpers/common-functions';
 import { ToastController, AnimationController } from '@ionic/angular';
+import { UserService } from './user.service';
 
 const MAX_USER_MEMBERS = 10;
 const MAX_TASK_LISTS = 20;
@@ -33,7 +35,8 @@ export class TeamService {
     private afs: AngularFirestore,
     private storageService: StorageService,
     private toastController: ToastController,
-    private animationController: AnimationController
+    private animationController: AnimationController,
+    private userService: UserService
   ) {}
 
   getTeam(id: string, idUser?: string) {
@@ -91,12 +94,14 @@ export class TeamService {
       const id = this.afs.createId();
       const invitationCode = nanoid(12);
 
-      const { id: userId, username } = await this.storageService.get('user');
+      const { id: idUser } = await this.storageService.get('user');
+      const user = await firstValueFrom(this.userService.getUser(idUser));
 
       const userMembers: { [key: string]: UserMember } = {
-        [userId]: {
-          id: userId,
-          name: username,
+        [idUser]: {
+          id: idUser,
+          name: user.username,
+          photoURL: user.photoURL,
           role: 'admin',
           userTotalScore: 0
         }
@@ -107,7 +112,7 @@ export class TeamService {
         name: name.trim(),
         allowNewMembers,
         invitationCode,
-        idUserMembers: [userId],
+        idUserMembers: [idUser],
         userMembers,
         taskLists: {},
         dateCreated: firebase.firestore.FieldValue.serverTimestamp()
@@ -253,6 +258,8 @@ export class TeamService {
     try {
       const { id: userId } = await this.storageService.get('user');
 
+      //TODO: Get all tasklists and delete the user score
+
       await this.afs.doc<Team>(`teams/${idTeam}`).update({
         [`userMembers.${userId}`]: firebase.firestore.FieldValue.delete(),
         [`idUserMembers`]: firebase.firestore.FieldValue.arrayRemove(userId) as unknown as string[]
@@ -276,7 +283,8 @@ export class TeamService {
       ref.where('invitationCode', '==', invitationCode)
     );
 
-    const { id: userId, username } = await this.storageService.get('user');
+    const { id: idUser } = await this.storageService.get('user');
+    const { username, photoURL } = await firstValueFrom(this.userService.getUser(idUser));
 
     return teamsCollection.get().pipe(
       switchMap((teamFound) => {
@@ -296,7 +304,7 @@ export class TeamService {
         }
 
         for (const id of userMembersListById) {
-          if (id === userId) {
+          if (id === idUser) {
             return throwError(() => new Error(TeamErrorCodes.TeamUserIsAlreadyMember));
           }
         }
@@ -309,21 +317,22 @@ export class TeamService {
           const { id, userMembers, taskLists, idUserMembers } = teamFound.docs[0].data();
 
           const user = {
-            id: userId,
+            id: idUser,
             name: username,
+            photoURL,
             role: 'member',
             userTotalScore: 0
           };
 
           if (Object.values(taskLists).length > 0) {
             for (const list of Object.values(taskLists)) {
-              taskLists[list.id].userScore[userId] = 0;
+              taskLists[list.id].userScore[idUser] = 0;
             }
           }
 
           await teamsCollection.doc(id).update({
-            idUserMembers: [...idUserMembers, userId],
-            userMembers: { ...userMembers, [userId]: user },
+            idUserMembers: [...idUserMembers, idUser],
+            userMembers: { ...userMembers, [idUser]: user },
             taskLists: { ...taskLists }
           });
 

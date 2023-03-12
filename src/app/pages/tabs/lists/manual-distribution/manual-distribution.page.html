@@ -55,6 +55,7 @@
 
       <app-task-slide
         [tasks$]="team[user.id]"
+        [idUser]="user.id"
         [withoutUsers]="false"
         [noTasksMessage]="user.name + ' no tiene ninguna tarea asignada'"
       ></app-task-slide>

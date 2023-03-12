@@ -71,12 +71,22 @@
       </ion-button>
     </div>
 
-    <div [ngClass]="withoutUserAssigned ? 'bottom-container-without-user' : 'bottom-container'">
-      <ion-avatar *ngIf="!withoutUserAssigned" class="user-task-avatar">
+    <div *ngIf="withoutUserAssigned" class="bottom-container-without-user">
+      <p class="username-container username">
+        Sin asignar
+      </p>
+      <div class="score-task">
+        <ion-icon src="../../../../assets/icons/score.svg" style="margin-bottom: 1px"></ion-icon>
+        <span>{{ score }}</span>
+      </div>
+    </div>
+
+    <div *ngIf="!withoutUserAssigned && photoURL.length !== 0" class="bottom-container">
+      <ion-avatar  class="user-task-avatar">
         <img [src]="photoURL" [alt]="'Avatar de ' + username" referrerpolicy="no-referrer" />
       </ion-avatar>
       <p class="username-container username">
-        {{ withoutUserAssigned ? 'Sin asignar' : username }}
+        {{ username }}
       </p>
       <div class="score-task">
         <ion-icon src="../../../../assets/icons/score.svg" style="margin-bottom: 1px"></ion-icon>

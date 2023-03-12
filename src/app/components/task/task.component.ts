@@ -24,8 +24,9 @@ export class TaskComponent implements OnInit {
   @Input() showCompleteButton: boolean = true;
   @Input() showDistributionMode: boolean = false;
 
-  photoURL: string = 'https://lh3.googleusercontent.com/a/AGNmyxYUo0tTz7NRBLzkhcBBeFBp5t6eix5IT614ftjc=s96-c';
-  username: string = 'Jordi Gómez Devesa';
+  photoURL: string = '';
+  username: string = '';
+  userTeamMembers: UserMember[] = [];
 
   constructor(
     private teamService: TeamService,
@@ -35,9 +36,15 @@ export class TaskComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    //TODO: Get user from user service
-    // if (!this.withoutUserAssigned) {
-    // }
+    this.teamService.getUserMembersFromTeam(this.idTeam).subscribe((users) => {
+      this.userTeamMembers = users;
+
+      const currentUser = this.userTeamMembers.find((user) => user.id === this.idUser);
+      if (currentUser) {
+        this.photoURL = currentUser.photoURL;
+        this.username = currentUser.name;
+      }
+    });
   }
 
   click() {
@@ -55,7 +62,7 @@ export class TaskComponent implements OnInit {
           icon: 'create-outline',
           cssClass: 'action-sheet-custom-icon',
           handler: () => {
-            this.router.navigate([`edit-task/${this.idTaskList}/${this.idTask}`])
+            this.router.navigate([`edit-task/${this.idTaskList}/${this.idTask}`]);
           }
         },
         {
@@ -63,7 +70,7 @@ export class TaskComponent implements OnInit {
           icon: this.withoutUserAssigned ? 'person-add-outline' : 'person-remove-outline',
           cssClass: 'action-sheet-custom-icon ',
           handler: () => {
-            this.withoutUserAssigned ? this.getUserMembers() : this.unassignUser();
+            this.withoutUserAssigned ? this.selectUser(this.userTeamMembers) : this.unassignUser();
             console.log('Asignar a usuario');
           }
         },
@@ -79,12 +86,6 @@ export class TaskComponent implements OnInit {
     });
 
     await actionSheet.present();
-  }
-
-  getUserMembers() {
-    this.teamService.getUserMembersFromTeam(this.idTeam).subscribe((users) => {
-      this.selectUser(users);
-    });
   }
 
   async selectUser(users: UserMember[]) {

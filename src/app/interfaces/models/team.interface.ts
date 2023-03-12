@@ -12,6 +12,7 @@ export interface Team {
 export interface UserMember {
   id: string;
   name: string;
+  photoURL: string;
   role: 'admin' | 'member';
   userTotalScore: number;
 }

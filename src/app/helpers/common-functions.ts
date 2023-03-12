@@ -30,7 +30,6 @@ export async function showToast({
     position: 'bottom',
     color: 'white',
     animated: true,
-    keyboardClose: true,
     cssClass: `custom-toast ${cssClass}`,
     enterAnimation: (baseEl: any, position: string) => {
       return toastEnterAnimation(baseEl, position, animationController);

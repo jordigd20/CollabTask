@@ -11,6 +11,7 @@ import { LoginData, AuthErrorCode } from '../interfaces';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { StorageService } from './storage.service';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +24,7 @@ export class AuthService {
     private loadingController: LoadingController,
     private toastController: ToastController,
     private storageService: StorageService,
+    private userService: UserService,
     private router: Router
   ) {
     try {
@@ -42,6 +44,7 @@ export class AuthService {
         .subscribe(async (user) => {
           console.log('authService', user);
           if (user) {
+            this.userService.init(user.id!);
             await this.setUserInStorage(user);
           }
         });
