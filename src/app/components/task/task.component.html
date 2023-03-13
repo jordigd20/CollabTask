@@ -24,13 +24,13 @@
       <ion-label class="title-container">
         <h3
           class="fw-bold"
-          [ngStyle]="{ 'margin-top': selectedDate === 'withoutDate' ? '5px' : '0' }"
+          [ngStyle]="{ 'margin-top': task.selectedDate === 'withoutDate' ? '5px' : '0' }"
         >
-          {{ title }}
+          {{ task.title }}
         </h3>
 
         <ion-text
-          *ngIf="selectedDate !== 'withoutDate' && selectedDate !== 'datePeriodic'"
+          *ngIf="task.selectedDate !== 'withoutDate' && task.selectedDate !== 'datePeriodic'"
           class="d-flex align-items-center"
           color="medium"
           style="gap: 3px"
@@ -40,7 +40,7 @@
         </ion-text>
 
         <ion-text
-          *ngIf="selectedDate !== 'withoutDate' && selectedDate === 'datePeriodic'"
+          *ngIf="task.selectedDate !== 'withoutDate' && task.selectedDate === 'datePeriodic'"
           class="d-flex align-items-center"
           color="medium"
           style="gap: 3px"
@@ -54,14 +54,14 @@
         *ngIf="!showDistributionMode"
         class="team-name-container"
         color="medium"
-        [ngStyle]="{ 'margin-top': selectedDate === 'withoutDate' ? '5px' : '0' }"
+        [ngStyle]="{ 'margin-top': task.selectedDate === 'withoutDate' ? '5px' : '0' }"
       >
         <p class="team-name" style="font-size: 12px">{{ teamName }}</p>
       </ion-text>
 
       <ion-button
         *ngIf="showDistributionMode"
-        (click)="moreOptions();$event.stopPropagation();"
+        (click)="moreOptions(); $event.stopPropagation()"
         class="more-opts-btn"
         fill="clear"
         color="secondary"
@@ -72,17 +72,15 @@
     </div>
 
     <div *ngIf="withoutUserAssigned" class="bottom-container-without-user">
-      <p class="username-container username">
-        Sin asignar
-      </p>
+      <p class="username-container username">Sin asignar</p>
       <div class="score-task">
         <ion-icon src="../../../../assets/icons/score.svg" style="margin-bottom: 1px"></ion-icon>
-        <span>{{ score }}</span>
+        <span>{{ task.score }}</span>
       </div>
     </div>
 
     <div *ngIf="!withoutUserAssigned && photoURL.length !== 0" class="bottom-container">
-      <ion-avatar  class="user-task-avatar">
+      <ion-avatar class="user-task-avatar">
         <img [src]="photoURL" [alt]="'Avatar de ' + username" referrerpolicy="no-referrer" />
       </ion-avatar>
       <p class="username-container username">
@@ -90,13 +88,15 @@
       </p>
       <div class="score-task">
         <ion-icon src="../../../../assets/icons/score.svg" style="margin-bottom: 1px"></ion-icon>
-        <span>{{ score }}</span>
+        <span>{{ task.score }}</span>
       </div>
     </div>
 
     <ng-container *ngIf="!withoutUserAssigned && photoURL.length === 0">
       <div class="bottom-container">
-        <ion-skeleton-text style="height: 30px; background: var(--ion-color-white);"></ion-skeleton-text>
+        <ion-skeleton-text
+          style="height: 30px; background: var(--ion-color-white)"
+        ></ion-skeleton-text>
       </div>
     </ng-container>
   </div>

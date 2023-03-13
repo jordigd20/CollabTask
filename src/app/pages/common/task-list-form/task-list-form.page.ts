@@ -44,7 +44,7 @@ export class TaskListFormPage implements OnInit {
           this.idTaskList = params.get('idTaskList') as string;
 
           if (this.idTeam && this.idTaskList) {
-            this.headerTitle = 'Editar equipo';
+            this.headerTitle = 'Editar lista de tareas';
             this.buttonText = 'Guardar cambios';
             return this.teamService.getTeam(this.idTeam);
           }

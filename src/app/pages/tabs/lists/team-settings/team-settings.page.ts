@@ -41,15 +41,6 @@ export class TeamSettingsPage implements OnInit {
     );
   }
 
-  fillComponentData(team: Team | undefined) {
-    if (!team) {
-      this.router.navigate(['/tabs/lists']);
-    } else {
-      this.teamName = team.name;
-      this.invitationCode = team.invitationCode;
-    }
-  }
-
   async presentConfirmation() {
     this.modal = await this.modalController.create({
       component: ConfirmationModalComponent,

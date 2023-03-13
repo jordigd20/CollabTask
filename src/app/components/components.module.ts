@@ -14,6 +14,7 @@ import { ScoreModalComponent } from './score-modal/score-modal.component';
 import { PeriodicDateModalComponent } from './periodic-date-modal/periodic-date-modal.component';
 import { TaskSlideComponent } from './task-slide/task-slide.component';
 import { SwiperModule } from 'swiper/angular';
+import { InfoManualDistributionComponent } from './info-manual-distribution/info-manual-distribution.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { SwiperModule } from 'swiper/angular';
     ScoreModalComponent,
     PeriodicDateModalComponent,
     TaskSlideComponent,
+    InfoManualDistributionComponent,
   ],
   imports: [
     CommonModule,
@@ -47,6 +49,7 @@ import { SwiperModule } from 'swiper/angular';
     ScoreModalComponent,
     PeriodicDateModalComponent,
     TaskSlideComponent,
+    InfoManualDistributionComponent,
   ]
 })
 export class ComponentsModule { }

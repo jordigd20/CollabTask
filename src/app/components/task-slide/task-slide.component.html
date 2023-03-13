@@ -3,13 +3,11 @@
     <swiper class="slide-container" [config]="slideOpts">
       <ng-template swiperSlide *ngFor="let task of tasks">
         <app-task
-          [title]="task.title"
-          [score]="task.score"
+          [task]="task"
           [idTeam]="task.idTeam"
           [idTaskList]="task.idTaskList"
           [idTask]="task.id"
           [idUser]="idUser"
-          [selectedDate]="task.selectedDate"
           [showCompleteButton]="false"
           [date]="getSelectedDate(task)"
           [showDistributionMode]="true"

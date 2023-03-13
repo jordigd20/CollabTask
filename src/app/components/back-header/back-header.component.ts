@@ -9,9 +9,11 @@ export class BackHeaderComponent implements OnInit {
   @Input() title: string = '';
   @Input() showMoreOptions: boolean = false;
   @Input() showPreferences: boolean = false;
+  @Input() showMoreInfo: boolean = false;
 
   @Output() moreOptions: EventEmitter<any> = new EventEmitter();
   @Output() preferences: EventEmitter<any> = new EventEmitter();
+  @Output() moreInfo: EventEmitter<any> = new EventEmitter();
 
   constructor() {}
 

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
 import { TeamService } from '../../services/team.service';
-import { UserMember } from '../../interfaces';
+import { Task, UserMember } from '../../interfaces';
 import { TaskService } from '../../services/task.service';
 import { Router } from '@angular/router';
 
@@ -11,15 +11,13 @@ import { Router } from '@angular/router';
   styleUrls: ['./task.component.scss']
 })
 export class TaskComponent implements OnInit {
-  @Input() title: string = 'Ejemplo de tarea a realizar';
+  @Input() task: Task = {} as Task;
   @Input() teamName: string = '';
   @Input() idTeam: string = '';
   @Input() idTaskList: string = '';
   @Input() idTask: string = '';
   @Input() idUser: string = '';
-  @Input() score: number = 100;
   @Input() date: string = new Date().toISOString();
-  @Input() selectedDate: string = 'date';
   @Input() withoutUserAssigned: boolean = false;
   @Input() showCompleteButton: boolean = true;
   @Input() showDistributionMode: boolean = false;

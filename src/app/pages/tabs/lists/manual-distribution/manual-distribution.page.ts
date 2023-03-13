@@ -5,6 +5,8 @@ import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
 import { switchMap, Observable, map, from } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
+import { PopoverController } from '@ionic/angular';
+import { InfoManualDistributionComponent } from '../../../../components/info-manual-distribution/info-manual-distribution.component';
 
 @Component({
   selector: 'app-manual-distribution',
@@ -28,7 +30,8 @@ export class ManualDistributionPage implements OnInit {
     private activeRoute: ActivatedRoute,
     private teamService: TeamService,
     private taskService: TaskService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private popoverController: PopoverController
   ) {}
 
   ngOnInit() {
@@ -58,6 +61,14 @@ export class ManualDistributionPage implements OnInit {
         return result;
       })
     );
+  }
+
+  async displayMoreInfoPopover() {
+    const popover = await this.popoverController.create({
+      component: InfoManualDistributionComponent
+    });
+
+    await popover.present();
   }
 
   async finishDistribution() {
