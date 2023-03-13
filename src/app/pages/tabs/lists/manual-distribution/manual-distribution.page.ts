@@ -22,6 +22,7 @@ export class ManualDistributionPage implements OnInit {
       }>
     | undefined;
   idUser: string = '';
+  isLoading: boolean = false;
 
   constructor(
     private activeRoute: ActivatedRoute,
@@ -57,5 +58,11 @@ export class ManualDistributionPage implements OnInit {
         return result;
       })
     );
+  }
+
+  async finishDistribution() {
+    this.isLoading = true;
+    await this.taskService.finishDistribution(this.idTaskList!);
+    this.isLoading = false;
   }
 }

@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
 import { TeamService } from './team.service';
-import { map, debounceTime, tap, Observable, shareReplay, take } from 'rxjs';
+import { map, debounceTime, tap, Observable, shareReplay, take, firstValueFrom } from 'rxjs';
 import { ToastController, AnimationController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
 import { showToast } from '../helpers/common-functions';
@@ -38,7 +38,18 @@ export class TaskService {
 
   getAllUnassignedTasks(idTaskList: string) {
     return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) => tasks.filter((task) => task.idTemporalUserAsigned === '' && !task.completed))
+      map((tasks) =>
+        tasks.filter(
+          (task) =>
+            task.idTemporalUserAsigned === '' && task.idUserAsigned === '' && !task.completed
+        )
+      )
+    );
+  }
+
+  getAllAssignedTasks(idTaskList: string) {
+    return this.getAllTasksByTaskList(idTaskList).pipe(
+      map((tasks) => tasks.filter((task) => task.idUserAsigned !== ''))
     );
   }
 
@@ -167,9 +178,25 @@ export class TaskService {
   }
 
   async finishDistribution(idTaskList: string) {
-    // this.getAllTasksByTaskList(idTaskList).subscribe(async (tasks) => {
-    //TODO: arreglar primero el cargando
-    // });
+    try {
+      const tasks = await firstValueFrom(this.getAllTasksByTaskList(idTaskList));
+      const batch = this.afs.firestore.batch();
+
+      for (let task of tasks) {
+        if (task.idTemporalUserAsigned !== '') {
+          const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+          batch.update(taskRef, {
+            idUserAsigned: task.idTemporalUserAsigned,
+            idTemporalUserAsigned: ''
+          });
+        }
+      }
+
+      await batch.commit();
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
   }
 
   handleError(error: any) {

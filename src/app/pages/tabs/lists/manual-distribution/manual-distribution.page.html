@@ -62,12 +62,14 @@
     </ion-list>
 
     <ion-button
-      [disabled]="team.team!.userMembers[idUser].role === 'member'"
+      (click)="finishDistribution()"
+      [disabled]="team.team!.userMembers[idUser].role === 'member' || isLoading"
       class="ion-margin"
       expand="block"
       fill="solid"
       shape="round"
     >
+      <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
       Terminar reparto
     </ion-button>
   </ng-container>

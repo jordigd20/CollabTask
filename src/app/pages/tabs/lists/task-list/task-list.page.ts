@@ -46,7 +46,7 @@ export class TaskListPage implements OnInit {
         }),
         switchMap((user) => {
           this.userId = user.id;
-          return this.taskService.getAllTasksByTaskList(this.idTaskList!);
+          return this.taskService.getAllAssignedTasks(this.idTaskList!);
         }),
         takeUntil(this.destroy$)
       )
