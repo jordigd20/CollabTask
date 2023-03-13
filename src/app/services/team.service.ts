@@ -157,47 +157,45 @@ export class TeamService {
     }
   }
 
-  createTaskList(idTeam: string, { name, distributionType }: TaskListData) {
-    return this.getTeam(idTeam).pipe(
-      tap(async (team) => {
-        try {
-          if (!team) {
-            throw new Error('No se ha encontrado el equipo');
-          }
+  async createTaskList(idTeam: string, { name, distributionType }: TaskListData) {
+    try {
+      const team = await firstValueFrom(this.getTeam(idTeam));
 
-          if (Object.keys(team.taskLists).length >= MAX_TASK_LISTS) {
-            throw new Error(TeamErrorCodes.TeamReachedMaxTaskLists);
-          }
+      if (!team) {
+        throw new Error('No se ha encontrado el equipo');
+      }
 
-          const id = this.afs.createId();
-          const taskList: TaskList = {
-            id,
-            name: name.trim(),
-            distributionType,
-            userScore: {}
-          };
+      if (Object.keys(team.taskLists).length >= MAX_TASK_LISTS) {
+        throw new Error(TeamErrorCodes.TeamReachedMaxTaskLists);
+      }
 
-          for (const user of Object.values(team.userMembers)) {
-            taskList.userScore[user.id] = 0;
-          }
+      const id = this.afs.createId();
+      const taskList: TaskList = {
+        id,
+        name: name.trim(),
+        distributionType,
+        userScore: {}
+      };
 
-          await this.afs.doc<Team>(`teams/${idTeam}`).update({
-            taskLists: { ...team.taskLists, [id]: taskList }
-          });
+      for (const user of Object.values(team.userMembers)) {
+        taskList.userScore[user.id] = 0;
+      }
 
-          showToast({
-            message: 'La lista de tareas se ha creado correctamente',
-            icon: 'checkmark-circle',
-            cssClass: 'toast-success',
-            toastController: this.toastController,
-            animationController: this.animationController
-          });
-        } catch (error) {
-          console.error(error);
-          this.handleError(error);
-        }
-      })
-    );
+      await this.afs.doc<Team>(`teams/${idTeam}`).update({
+        taskLists: { ...team.taskLists, [id]: taskList }
+      });
+
+      showToast({
+        message: 'La lista de tareas se ha creado correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
   }
 
   async updateTaskListProperties(

@@ -109,7 +109,7 @@ export class TaskFormPage implements OnInit {
     });
   }
 
-  createTask() {
+  async createTask() {
     if (this.taskForm.invalid) {
       return;
     }
@@ -121,16 +121,12 @@ export class TaskFormPage implements OnInit {
 
     this.showDateError = false;
     this.isLoading = true;
-
-    this.taskService
-      .createTask({
-        idTeam: this.idTeam,
-        idTaskList: this.idTaskList,
-        ...this.taskForm.value
-      })
-      .subscribe(() => {
-        this.isLoading = false;
-      });
+    await this.taskService.createTask({
+      idTeam: this.idTeam,
+      idTaskList: this.idTaskList,
+      ...this.taskForm.value
+    });
+    this.isLoading = false;
   }
 
   async updateTask() {

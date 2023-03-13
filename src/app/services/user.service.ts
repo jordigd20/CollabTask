@@ -30,7 +30,6 @@ export class UserService {
     }
 
     console.log('this.user$ is defined');
-    return this.userLoggedIn$;
   }
 
   getUser(id: string) {

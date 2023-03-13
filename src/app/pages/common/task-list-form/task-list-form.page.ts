@@ -50,7 +50,7 @@ export class TaskListFormPage implements OnInit {
           }
 
           return of(undefined);
-        }),
+        })
       )
       .subscribe((team) => {
         if (team) {
@@ -73,9 +73,8 @@ export class TaskListFormPage implements OnInit {
     if (!this.taskListForm.valid) return;
 
     this.isLoading = true;
-    this.teamService.createTaskList(this.idTeam!, this.taskListForm.value).subscribe(() => {
-      this.isLoading = false;
-    });
+    await this.teamService.createTaskList(this.idTeam!, this.taskListForm.value);
+    this.isLoading = false;
   }
 
   async updateTaskList() {

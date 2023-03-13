@@ -93,5 +93,11 @@
         <span>{{ score }}</span>
       </div>
     </div>
+
+    <ng-container *ngIf="!withoutUserAssigned && photoURL.length === 0">
+      <div class="bottom-container">
+        <ion-skeleton-text style="height: 30px; background: var(--ion-color-white);"></ion-skeleton-text>
+      </div>
+    </ng-container>
   </div>
 </ion-item>

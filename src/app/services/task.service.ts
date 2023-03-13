@@ -74,7 +74,7 @@ export class TaskService {
     return this.tasks$;
   }
 
-  createTask({
+  async createTask({
     idTaskList,
     idTeam,
     title,
@@ -85,56 +85,45 @@ export class TaskService {
     datePeriodic,
     date
   }: TaskData) {
-    return this.teamService.getTeam(idTeam!).pipe(
-      tap(async (team) => {
-        try {
-          if (!team) {
-            throw new Error('El equipo no existe');
-          }
-
-          // TODO: Get the user data from user service to keep the data updated
-          const { id: userId, username, photoURL } = await this.storageService.get('user');
-
-          const dateTimestamp = this.convertStringToTimestamp(date as string);
-          const dateLimitTimestamp = this.convertStringToTimestamp(dateLimit as string);
-          const id = this.afs.createId();
-
-          const task: Task = {
-            id,
-            idTeam: idTeam!,
-            idTaskList: idTaskList!,
-            idUserAsigned: '',
-            idTemporalUserAsigned: '',
-            title,
-            description,
-            score,
-            selectedDate,
-            date: dateTimestamp,
-            dateLimit: dateLimitTimestamp,
-            datePeriodic,
-            imageURL: '',
-            completed: false,
-            createdByUser: {
-              id: userId,
-              date: firebase.firestore.Timestamp.now()
-            }
-          };
-
-          await this.afs.doc<Task>(`tasks/${id}`).set(task);
-
-          showToast({
-            message: 'Tarea creada correctamente',
-            icon: 'checkmark-circle',
-            cssClass: 'toast-success',
-            toastController: this.toastController,
-            animationController: this.animationController
-          });
-        } catch (error) {
-          console.error(error);
-          this.handleError(error);
+    try {
+      const { id: userId } = await this.storageService.get('user');
+      const dateTimestamp = this.convertStringToTimestamp(date as string);
+      const dateLimitTimestamp = this.convertStringToTimestamp(dateLimit as string);
+      const id = this.afs.createId();
+      const task: Task = {
+        id,
+        idTeam: idTeam!,
+        idTaskList: idTaskList!,
+        idUserAsigned: '',
+        idTemporalUserAsigned: '',
+        title: title.trim(),
+        description,
+        score,
+        selectedDate,
+        date: dateTimestamp,
+        dateLimit: dateLimitTimestamp,
+        datePeriodic,
+        imageURL: '',
+        completed: false,
+        createdByUser: {
+          id: userId,
+          date: firebase.firestore.Timestamp.now()
         }
-      })
-    );
+      };
+
+      await this.afs.doc<Task>(`tasks/${id}`).set(task);
+
+      showToast({
+        message: 'Tarea creada correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
   }
 
   async updateTask({ idTask, ...taskData }: TaskData) {
@@ -175,6 +164,12 @@ export class TaskService {
       console.error(error);
       this.handleError(error);
     }
+  }
+
+  async finishDistribution(idTaskList: string) {
+    // this.getAllTasksByTaskList(idTaskList).subscribe(async (tasks) => {
+    //TODO: arreglar primero el cargando
+    // });
   }
 
   handleError(error: any) {

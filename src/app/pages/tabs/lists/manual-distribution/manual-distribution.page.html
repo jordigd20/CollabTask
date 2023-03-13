@@ -60,13 +60,19 @@
         [noTasksMessage]="user.name + ' no tiene ninguna tarea asignada'"
       ></app-task-slide>
     </ion-list>
+
+    <ion-button
+      [disabled]="team.team!.userMembers[idUser].role === 'member'"
+      class="ion-margin"
+      expand="block"
+      fill="solid"
+      shape="round"
+    >
+      Terminar reparto
+    </ion-button>
   </ng-container>
 
   <ng-template #loading>
     <ion-spinner class="loading-content" name="circles" color="primary"></ion-spinner>
   </ng-template>
-
-  <ion-button class="ion-margin" expand="block" fill="solid" shape="round">
-    Terminar reparto
-  </ion-button>
 </ion-content>

@@ -8,7 +8,9 @@ import { TeamService } from '../../services/team.service';
   styleUrls: ['./join-team.component.scss']
 })
 export class JoinTeamComponent implements OnInit {
-  joinTeamForm!: FormGroup;
+  joinTeamForm: FormGroup = this.fb.group({
+    invitationCode: ['', [Validators.required, Validators.minLength(12)]]
+  });
   isLoading: boolean = false;
 
   constructor(private fb: FormBuilder, private teamService: TeamService) {}
@@ -17,11 +19,7 @@ export class JoinTeamComponent implements OnInit {
     return this.joinTeamForm.get('invitationCode');
   }
 
-  ngOnInit() {
-    this.joinTeamForm = this.fb.group({
-      invitationCode: ['', [Validators.required, Validators.minLength(12)]]
-    });
-  }
+  ngOnInit() {}
 
   async joinTeam() {
     if (!this.joinTeamForm.valid) return;
