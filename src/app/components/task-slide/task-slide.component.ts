@@ -23,9 +23,4 @@ export class TaskSlideComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {}
-
-  getSelectedDate(task: Task) {
-    const selectedDate = task.selectedDate;
-    return selectedDate !== 'withoutDate' ? (task[selectedDate] as string) : '';
-  }
 }

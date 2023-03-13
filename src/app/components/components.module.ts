@@ -15,6 +15,7 @@ import { PeriodicDateModalComponent } from './periodic-date-modal/periodic-date-
 import { TaskSlideComponent } from './task-slide/task-slide.component';
 import { SwiperModule } from 'swiper/angular';
 import { InfoManualDistributionComponent } from './info-manual-distribution/info-manual-distribution.component';
+import { PipesModule } from '../pipes/pipes.module';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { InfoManualDistributionComponent } from './info-manual-distribution/info
     CommonModule,
     IonicModule,
     ReactiveFormsModule,
-    SwiperModule
+    SwiperModule,
+    PipesModule
   ],
   exports: [
     IntroHeaderComponent,

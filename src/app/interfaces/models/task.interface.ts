@@ -4,8 +4,8 @@ export interface Task {
   id: string;
   idTeam: string;
   idTaskList: string;
-  idUserAsigned: string;
-  idTemporalUserAsigned: string;
+  idUserAssigned: string;
+  idTemporalUserAssigned: string;
   title: string;
   description: string;
   score: number;

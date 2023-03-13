@@ -32,7 +32,13 @@ export class TaskService {
 
   getTemporalUserTasks(idTaskList: string, idUser: string) {
     return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) => tasks.filter((task) => task.idTemporalUserAsigned === idUser))
+      map((tasks) => tasks.filter((task) => task.idTemporalUserAssigned === idUser))
+    );
+  }
+
+  getAllTemporarilyAssignedTasks(idTaskList: string) {
+    return this.getAllTasksByTaskList(idTaskList).pipe(
+      map((tasks) => tasks.filter((task) => task.idTemporalUserAssigned !== ''))
     );
   }
 
@@ -41,7 +47,7 @@ export class TaskService {
       map((tasks) =>
         tasks.filter(
           (task) =>
-            task.idTemporalUserAsigned === '' && task.idUserAsigned === '' && !task.completed
+            task.idTemporalUserAssigned === '' && task.idUserAssigned === '' && !task.completed
         )
       )
     );
@@ -49,7 +55,7 @@ export class TaskService {
 
   getAllAssignedTasks(idTaskList: string) {
     return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) => tasks.filter((task) => task.idUserAsigned !== ''))
+      map((tasks) => tasks.filter((task) => task.idUserAssigned !== ''))
     );
   }
 
@@ -105,8 +111,8 @@ export class TaskService {
         id,
         idTeam: idTeam!,
         idTaskList: idTaskList!,
-        idUserAsigned: '',
-        idTemporalUserAsigned: '',
+        idUserAssigned: '',
+        idTemporalUserAssigned: '',
         title: title.trim(),
         description,
         score,
@@ -160,7 +166,7 @@ export class TaskService {
   async temporarilyAssignTask(idTask: string, idUser: string) {
     try {
       await this.afs.doc<Task>(`tasks/${idTask}`).update({
-        idTemporalUserAsigned: idUser
+        idTemporalUserAssigned: idUser
       });
     } catch (error) {
       console.error(error);
@@ -179,20 +185,30 @@ export class TaskService {
 
   async finishDistribution(idTaskList: string) {
     try {
-      const tasks = await firstValueFrom(this.getAllTasksByTaskList(idTaskList));
-      const batch = this.afs.firestore.batch();
+      const temporalTasks = await firstValueFrom(this.getAllTemporarilyAssignedTasks(idTaskList));
 
-      for (let task of tasks) {
-        if (task.idTemporalUserAsigned !== '') {
-          const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
-          batch.update(taskRef, {
-            idUserAsigned: task.idTemporalUserAsigned,
-            idTemporalUserAsigned: ''
-          });
-        }
+      if (temporalTasks.length === 0) {
+        return;
+      }
+
+      const batch = this.afs.firestore.batch();
+      for (let task of temporalTasks) {
+        const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+        batch.update(taskRef, {
+          idUserAssigned: task.idTemporalUserAssigned,
+          idTemporalUserAssigned: ''
+        });
       }
 
       await batch.commit();
+
+      showToast({
+        message: 'Reparto realizado correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        toastController: this.toastController,
+        animationController: this.animationController
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);

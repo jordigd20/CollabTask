@@ -5,7 +5,6 @@ import { TaskService } from '../../../../services/task.service';
 import { Task } from '../../../../interfaces';
 import { from, switchMap, takeUntil, Subject, Observable } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
-import { getSelectedDate } from '../../../../helpers/common-functions';
 import { TeamService } from '../../../../services/team.service';
 import { Team } from '../../../../interfaces/models/team.interface';
 
@@ -17,7 +16,7 @@ import { Team } from '../../../../interfaces/models/team.interface';
 export class TaskListPage implements OnInit {
   idTeam: string | undefined;
   idTaskList: string | undefined;
-  userId: string = '';
+  idUser: string = '';
   isLoading: boolean = true;
   tasks: Task[] = [];
   team$: Observable<Team | undefined> | undefined;
@@ -45,7 +44,7 @@ export class TaskListPage implements OnInit {
           return from(this.storageService.get('user'));
         }),
         switchMap((user) => {
-          this.userId = user.id;
+          this.idUser = user.id;
           return this.taskService.getAllAssignedTasks(this.idTaskList!);
         }),
         takeUntil(this.destroy$)
@@ -98,14 +97,5 @@ export class TaskListPage implements OnInit {
     });
 
     actionSheet.present();
-  }
-
-  getSelectedDate(idTask: string): string {
-    return getSelectedDate(idTask, this.tasks);
-  }
-
-  getShowCompleteButton(idTask: string): boolean {
-    const task = this.tasks.find((task) => task.id === idTask)!;
-    return task.idUserAsigned !== this.userId;
   }
 }

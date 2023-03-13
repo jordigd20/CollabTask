@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { TaskListPageRoutingModule } from './task-list-routing.module';
 import { TaskListPage } from './task-list.page';
 import { ComponentsModule } from '../../../../components/components.module';
+import { PipesModule } from '../../../../pipes/pipes.module';
 
 @NgModule({
   imports: [
@@ -12,7 +13,8 @@ import { ComponentsModule } from '../../../../components/components.module';
     FormsModule,
     IonicModule,
     TaskListPageRoutingModule,
-    ComponentsModule
+    ComponentsModule,
+    PipesModule
   ],
   declarations: [TaskListPage]
 })
