@@ -21,7 +21,7 @@
         <div class="code-wrapper">
           <p class="invitation-code">{{ team.invitationCode }}</p>
           <ion-button
-            (click)="copyCodeToClipboard()"
+            (click)="copyCodeToClipboard(team.invitationCode)"
             class="secondary-button"
             color="white"
             shape="round"

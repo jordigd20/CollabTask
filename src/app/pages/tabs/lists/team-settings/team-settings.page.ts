@@ -14,8 +14,6 @@ import { Observable, switchMap, tap, of } from 'rxjs';
 })
 export class TeamSettingsPage implements OnInit {
   idTeam: string | undefined;
-  teamName: string = '';
-  invitationCode: string = '';
   modal: HTMLIonModalElement | undefined;
   team$: Observable<Team | undefined> | undefined;
 
@@ -65,9 +63,9 @@ export class TeamSettingsPage implements OnInit {
     this.router.navigate(['/tabs/lists']);
   }
 
-  async copyCodeToClipboard() {
+  async copyCodeToClipboard(invitationCode: string) {
     await Clipboard.write({
-      string: this.invitationCode
+      string: invitationCode
     });
   }
 
