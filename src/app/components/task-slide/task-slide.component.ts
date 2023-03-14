@@ -23,4 +23,8 @@ export class TaskSlideComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {}
+
+  identify(index: number, item: Task) {
+    return item.id;
+  }
 }

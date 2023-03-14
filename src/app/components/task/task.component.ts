@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-task',
   templateUrl: './task.component.html',
-  styleUrls: ['./task.component.scss']
+  styleUrls: ['./task.component.scss'],
 })
 export class TaskComponent implements OnInit {
   @Input() task: Task = {} as Task;
@@ -35,12 +35,16 @@ export class TaskComponent implements OnInit {
   ngOnInit() {
     this.teamService.getUserMembersFromTeam(this.idTeam).subscribe((users) => {
       this.userTeamMembers = users;
-
       const currentUser = this.userTeamMembers.find((user) => user.id === this.idUser);
-      if (currentUser) {
+
+      if (currentUser && this.photoURL !== currentUser.photoURL) {
         this.photoURL = currentUser.photoURL;
+      }
+
+      if (currentUser && this.username !== currentUser.name) {
         this.username = currentUser.name;
       }
+
     });
   }
 

@@ -60,27 +60,26 @@ export class TaskService {
   getAllTasksByTaskList(idTaskList: string) {
     if (!this.tasks$ || this.currentIdTaskList !== idTaskList) {
       console.log('this.tasks$ is undefined');
-      const result = this.afs
+      this.tasks$ = this.afs
         .collection<Task>('tasks', (ref) =>
           ref.where('idTaskList', '==', idTaskList).orderBy('createdByUser.date', 'asc')
         )
-        .valueChanges();
+        .valueChanges()
+        .pipe(
+          debounceTime(350),
+          map((tasks) => {
+            return tasks.map((task) => {
+              const date = task.date as firebase.firestore.Timestamp;
+              const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
 
-      this.tasks$ = result.pipe(
-        debounceTime(350),
-        map((tasks) => {
-          return tasks.map((task) => {
-            const date = task.date as firebase.firestore.Timestamp;
-            const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+              task.date = this.convertTimestampToString(date);
+              task.dateLimit = this.convertTimestampToString(dateLimit);
 
-            task.date = this.convertTimestampToString(date);
-            task.dateLimit = this.convertTimestampToString(dateLimit);
-
-            return task;
-          });
-        }),
-        shareReplay({ bufferSize: 1, refCount: true })
-      );
+              return task;
+            });
+          }),
+          shareReplay({ bufferSize: 1, refCount: true })
+        );
 
       this.currentIdTaskList = idTaskList;
     }
@@ -94,7 +93,6 @@ export class TaskService {
       .collection<Task>('tasks', (ref) => ref.where('idTeam', '==', idTeam))
       .valueChanges();
   }
-
 
   async createTask({
     idTaskList,

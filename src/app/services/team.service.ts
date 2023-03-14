@@ -30,7 +30,7 @@ const MAX_TASK_LISTS = 20;
 })
 export class TeamService {
   private teams$: Observable<Team[]> | undefined;
-  private idUser: string = '';
+  private currentIdUser: string = '';
 
   constructor(
     private afs: AngularFirestore,
@@ -73,18 +73,17 @@ export class TeamService {
   }
 
   getAllUserTeams(idUser: string) {
-    if (!this.teams$ || this.idUser !== idUser) {
+    if (!this.teams$ || this.currentIdUser !== idUser) {
       console.log('this.teams$ is undefined');
 
-      const result = this.afs
+      this.teams$ = this.afs
         .collection<Team>('teams', (ref) =>
           ref.where(`idUserMembers`, 'array-contains', idUser).orderBy('dateCreated', 'asc')
         )
-        .valueChanges();
+        .valueChanges()
+        .pipe(debounceTime(350), shareReplay({ bufferSize: 1, refCount: true }));
 
-      this.teams$ = result.pipe(debounceTime(350), shareReplay({ bufferSize: 1, refCount: true }));
-
-      this.idUser = idUser;
+      this.currentIdUser = idUser;
     }
 
     console.log('this.teams$ is defined');

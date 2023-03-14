@@ -1,7 +1,7 @@
 <div class="swiper-container" *ngIf="tasks$ | async as tasks; else loading">
   <ng-container *ngIf="tasks.length > 0; else noTasks">
     <swiper class="slide-container" [config]="slideOpts">
-      <ng-template swiperSlide *ngFor="let task of tasks">
+      <ng-template swiperSlide *ngFor="let task of tasks; trackBy: identify">
         <app-task
           [task]="task"
           [idTeam]="task.idTeam"
