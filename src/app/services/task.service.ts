@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
-import { TeamService } from './team.service';
 import { map, debounceTime, tap, Observable, shareReplay, take, firstValueFrom } from 'rxjs';
 import { ToastController, AnimationController } from '@ionic/angular';
 import firebase from 'firebase/compat/app';
@@ -18,7 +17,6 @@ export class TaskService {
   constructor(
     private afs: AngularFirestore,
     private storageService: StorageService,
-    private teamService: TeamService,
     private toastController: ToastController,
     private animationController: AnimationController
   ) {}
@@ -90,6 +88,13 @@ export class TaskService {
     console.log('this.tasks$ is defined');
     return this.tasks$;
   }
+
+  getAllTasksByTeam(idTeam: string) {
+    return this.afs
+      .collection<Task>('tasks', (ref) => ref.where('idTeam', '==', idTeam))
+      .valueChanges();
+  }
+
 
   async createTask({
     idTaskList,

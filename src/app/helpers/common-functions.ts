@@ -1,6 +1,6 @@
-import { Task } from '../interfaces/models/task.interface';
-import { ToastController, AnimationController } from '@ionic/angular';
+import { ToastController, AnimationController, ModalController } from '@ionic/angular';
 import { toastEnterAnimation, toastleaveAnimation } from './animations';
+import { ConfirmationModalComponent } from '../components/confirmation-modal/confirmation-modal.component';
 
 interface ToastOptions {
   message: string;
@@ -10,19 +10,22 @@ interface ToastOptions {
   animationController: AnimationController;
 }
 
-export function getSelectedDate(idTask: string, tasks: Task[]): string {
-  const task = tasks.find((task) => task.id === idTask)!;
-  const selectedDate = task.selectedDate;
-  return selectedDate !== 'withoutDate' ? (task[selectedDate] as string) : '';
+interface ConfirmationModal {
+  title: string;
+  message: string;
+  confirmText: string;
+  dangerType: boolean;
+  mainFunction: () => void;
+  modalController: ModalController;
 }
 
-export async function showToast({
+export const showToast = async ({
   message,
   icon,
   cssClass = '',
   toastController,
   animationController
-}: ToastOptions) {
+}: ToastOptions) => {
   const toast = await toastController.create({
     message,
     icon,
@@ -40,4 +43,28 @@ export async function showToast({
   });
 
   await toast.present();
-}
+};
+
+export const presentConfirmationModal = async ({
+  title,
+  message,
+  confirmText,
+  dangerType,
+  mainFunction,
+  modalController
+}: ConfirmationModal) => {
+  const modal = await modalController.create({
+    component: ConfirmationModalComponent,
+    componentProps: {
+      title,
+      message,
+      confirmText,
+      dangerType,
+      mainFunction
+    },
+    backdropDismiss: false,
+    cssClass: 'confirmation-modal leave-team-modal'
+  });
+
+  modal.present();
+};

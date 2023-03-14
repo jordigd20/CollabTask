@@ -20,6 +20,7 @@ import firebase from 'firebase/compat/app';
 import { showToast } from '../helpers/common-functions';
 import { ToastController, AnimationController } from '@ionic/angular';
 import { UserService } from './user.service';
+import { TaskService } from './task.service';
 
 const MAX_USER_MEMBERS = 10;
 const MAX_TASK_LISTS = 20;
@@ -36,7 +37,8 @@ export class TeamService {
     private storageService: StorageService,
     private toastController: ToastController,
     private animationController: AnimationController,
-    private userService: UserService
+    private userService: UserService,
+    private taskService: TaskService
   ) {}
 
   getTeam(id: string, idUser?: string) {
@@ -222,21 +224,65 @@ export class TeamService {
     }
   }
 
-  //TODO:
-  async leaveTeam(idTeam: string) {
-    this.getTeam(idTeam).subscribe((team) => {
-      if (Object.keys(team!.userMembers).length === 1) {
-        this.deleteTeam(idTeam);
-      } else {
-        this.removeUserFromTeam(idTeam);
+  async deleteTaskList(idTeam: string, idTaskList: string, idUser: string) {
+    try {
+      const team = await firstValueFrom(this.getTeam(idTeam));
+
+      if (team) {
+        if (team.userMembers[idUser].role !== 'admin') {
+          throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
+        }
+
+        const batch = this.afs.firestore.batch();
+        const tasks = await firstValueFrom(this.taskService.getAllTasksByTaskList(idTaskList));
+
+        for (const task of tasks) {
+          const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+          batch.delete(taskRef);
+        }
+
+        const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+        batch.update(teamRef, `taskLists.${idTaskList}`, firebase.firestore.FieldValue.delete());
+
+        await batch.commit();
+
+        showToast({
+          message: 'La lista de tareas se ha eliminado correctamente',
+          icon: 'checkmark-circle',
+          cssClass: 'toast-success',
+          toastController: this.toastController,
+          animationController: this.animationController
+        });
       }
-    });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
   }
 
-  //TODO:
+  async leaveTeam(idTeam: string) {
+    const team = await firstValueFrom(this.getTeam(idTeam));
+    if (Object.keys(team!.userMembers).length === 1) {
+      this.deleteTeam(idTeam);
+    } else {
+      this.removeUserFromTeam(idTeam, team);
+    }
+  }
+
   async deleteTeam(idTeam: string) {
     try {
-      await this.afs.doc<Team>(`teams/${idTeam}`).delete();
+      const tasks = await firstValueFrom(this.taskService.getAllTasksByTeam(idTeam));
+      const batch = this.afs.firestore.batch();
+
+      for (const task of tasks) {
+        const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+        batch.delete(taskRef);
+      }
+
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      batch.delete(teamRef);
+
+      await batch.commit();
 
       showToast({
         message: 'Has abandonado el equipo correctamente',
@@ -251,17 +297,53 @@ export class TeamService {
     }
   }
 
-  //TODO:
-  async removeUserFromTeam(idTeam: string) {
+  async removeUserFromTeam(idTeam: string, team: Team | undefined) {
     try {
-      const { id: userId } = await this.storageService.get('user');
+      const { id: idUser } = await this.storageService.get('user');
+      const tasks = await firstValueFrom(this.taskService.getAllTasksByTeam(idTeam));
 
-      //TODO: Get all tasklists and delete the user score
+      const batch = this.afs.firestore.batch();
 
-      await this.afs.doc<Team>(`teams/${idTeam}`).update({
-        [`userMembers.${userId}`]: firebase.firestore.FieldValue.delete(),
-        [`idUserMembers`]: firebase.firestore.FieldValue.arrayRemove(userId) as unknown as string[]
+      // Unassign the user from all tasks
+      for (const task of tasks) {
+        if (task.idUserAssigned === idUser || task.idTemporalUserAssigned === idUser) {
+          const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+
+          batch.update(taskRef, {
+            idUserAssigned: '',
+            idTemporalUserAssigned: ''
+          });
+        }
+      }
+
+      // Delete user score from all task lists
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      for (const taskList of Object.values(team!.taskLists)) {
+        batch.update(
+          teamRef,
+          `taskLists.${taskList.id}.userScore.${idUser}`,
+          firebase.firestore.FieldValue.delete()
+        );
+      }
+
+      // If the user is the only admin the role is assigned to another user
+      if (team!.userMembers[idUser].role === 'admin') {
+        const admins = Object.values(team!.userMembers).filter((user) => user.role === 'admin');
+
+        if (admins.length === 1) {
+          const randomUser = Object.values(team!.userMembers).find((user) => user.id !== idUser);
+          if (randomUser) {
+            batch.update(teamRef, `userMembers.${randomUser.id}.role`, 'admin');
+          }
+        }
+      }
+
+      batch.update(teamRef, {
+        [`userMembers.${idUser}`]: firebase.firestore.FieldValue.delete(),
+        [`idUserMembers`]: firebase.firestore.FieldValue.arrayRemove(idUser) as unknown as string[]
       });
+
+      await batch.commit();
 
       showToast({
         message: 'Has abandonado el equipo correctamente',

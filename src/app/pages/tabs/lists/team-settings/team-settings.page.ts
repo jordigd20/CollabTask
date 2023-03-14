@@ -5,7 +5,8 @@ import { Team } from '../../../../interfaces';
 import { Clipboard } from '@capacitor/clipboard';
 import { ModalController } from '@ionic/angular';
 import { ConfirmationModalComponent } from '../../../../components/confirmation-modal/confirmation-modal.component';
-import { Observable, switchMap, tap, of } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
+import { presentConfirmationModal } from '../../../../helpers/common-functions';
 
 @Component({
   selector: 'app-team-settings',
@@ -14,7 +15,6 @@ import { Observable, switchMap, tap, of } from 'rxjs';
 })
 export class TeamSettingsPage implements OnInit {
   idTeam: string | undefined;
-  modal: HTMLIonModalElement | undefined;
   team$: Observable<Team | undefined> | undefined;
 
   constructor(
@@ -40,26 +40,18 @@ export class TeamSettingsPage implements OnInit {
   }
 
   async presentConfirmation() {
-    this.modal = await this.modalController.create({
-      component: ConfirmationModalComponent,
-      componentProps: {
-        title: 'Abandonar el equipo',
-        message: '¿Estas seguro de que quieres salir del equipo?',
-        confirmText: 'Eliminar',
-        dangerType: true,
-        dismissModal: () => this.modal!.dismiss(),
-        mainFunction: () => this.leaveTeam()
-      },
-      backdropDismiss: false,
-      cssClass: 'confirmation-modal leave-team-modal'
+    await presentConfirmationModal({
+      title: 'Abandonar el equipo',
+      message: '¿Estas seguro de que quieres salir del equipo?',
+      confirmText: 'Eliminar',
+      dangerType: true,
+      mainFunction: () => this.leaveTeam(),
+      modalController: this.modalController
     });
-
-    this.modal.present();
   }
 
   async leaveTeam() {
     await this.teamService.leaveTeam(this.idTeam!);
-    await this.modal!.dismiss();
     this.router.navigate(['/tabs/lists']);
   }
 

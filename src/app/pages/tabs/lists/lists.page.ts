@@ -1,11 +1,12 @@
 import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { ActionSheetController, AnimationController } from '@ionic/angular';
+import { ActionSheetController, AnimationController, ModalController } from '@ionic/angular';
 import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
 import { Router } from '@angular/router';
 import { from, Subject, takeUntil, switchMap } from 'rxjs';
 import { fadeInDownAnimation, fadeOutUpAnimation } from '../../../helpers/animations';
+import { presentConfirmationModal } from '../../../helpers/common-functions';
 
 @Component({
   selector: 'app-lists',
@@ -30,7 +31,8 @@ export class ListsPage implements OnInit {
     private storageService: StorageService,
     private teamService: TeamService,
     private router: Router,
-    private animationController: AnimationController
+    private animationController: AnimationController,
+    private modalController: ModalController
   ) {}
 
   async ngOnInit() {
@@ -145,11 +147,30 @@ export class ListsPage implements OnInit {
           handler: () => {
             this.router.navigate([`/tabs/lists/edit-task-list/${idTeam}/${idTaskList}`]);
           }
+        },
+        {
+          text: 'Eliminar lista de tareas',
+          icon: 'trash-outline',
+          cssClass: 'action-sheet-danger-icon',
+          handler: async () => {
+            await presentConfirmationModal({
+              title: 'Eliminar lista de tareas',
+              message: '¿Estás seguro de que quieres eliminar esta lista de tareas? Perderás las tareas y los puntos acumulados.',
+              confirmText: 'Eliminar',
+              dangerType: true,
+              mainFunction: () => this.deleteTaskList(idTeam, idTaskList),
+              modalController: this.modalController
+            });
+          }
         }
       ]
     });
 
     actionSheet.present();
+  }
+
+  async deleteTaskList(idTeam: string, idTaskList: string) {
+    await this.teamService.deleteTaskList(idTeam, idTaskList, this.userId);
   }
 
   handleItemClick(idTeam: string, idTaskList: string) {
