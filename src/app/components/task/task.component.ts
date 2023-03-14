@@ -17,7 +17,6 @@ export class TaskComponent implements OnInit {
   @Input() idTaskList: string = '';
   @Input() idTask: string = '';
   @Input() idUser: string = '';
-  @Input() date: string = new Date().toISOString();
   @Input() withoutUserAssigned: boolean = false;
   @Input() showCompleteButton: boolean = true;
   @Input() showDistributionMode: boolean = false;

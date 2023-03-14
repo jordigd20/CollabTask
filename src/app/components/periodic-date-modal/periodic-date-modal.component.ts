@@ -7,9 +7,9 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./periodic-date-modal.component.scss']
 })
 export class PeriodicDateModalComponent implements OnInit {
-  @Input() previousSelectedDay: string = 'lunes';
+  @Input() previousSelectedDays: string[] = ['lunes'];
 
-  selectedDay: string = 'lunes';
+  selectedDays: string[] = ['lunes'];
   daysList: string[] = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
   shortDays: { [key: string]: string } = {
     lunes: 'lun',
@@ -24,11 +24,15 @@ export class PeriodicDateModalComponent implements OnInit {
   constructor(private modalController: ModalController) {}
 
   ngOnInit() {
-    this.selectedDay = this.previousSelectedDay;
+    this.selectedDays = [...this.previousSelectedDays];
   }
 
   selectDay(day: string) {
-    this.selectedDay = day;
+    if (this.selectedDays.includes(day)) {
+      this.selectedDays = this.selectedDays.filter(d => d !== day);
+    } else {
+      this.selectedDays.push(day);
+    }
   }
 
   cancel() {
@@ -39,7 +43,7 @@ export class PeriodicDateModalComponent implements OnInit {
 
   accept() {
     this.modalController.dismiss({
-      selectedDay: this.selectedDay
+      selectedDays: this.selectedDays
     });
   }
 }

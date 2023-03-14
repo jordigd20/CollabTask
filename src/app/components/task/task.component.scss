@@ -71,6 +71,13 @@ ion-item.task-item {
     }
   }
 
+  .date-periodic-info {
+    width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
   .bottom-container {
     gap: 10px;
     border-top: 1px solid var(--ion-color-border);

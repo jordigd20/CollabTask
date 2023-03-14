@@ -12,7 +12,7 @@ export interface Task {
   selectedDate: string;
   date: firebase.firestore.Timestamp | string;
   dateLimit: firebase.firestore.Timestamp | string;
-  datePeriodic: string;
+  datePeriodic: string[];
   imageURL: string;
   completed: boolean;
   createdByUser: {

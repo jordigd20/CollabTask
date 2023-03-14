@@ -92,9 +92,11 @@
         <ion-icon slot="start" src="../../../../assets/icons/periodic.svg"></ion-icon>
         Fecha
       </ion-button>
-      <ion-chip class="info-chip chip-active" [disabled]="true">
-        <ion-icon src="../../../../assets/icons/periodic.svg"></ion-icon>
-        {{ selectedDateValue | titlecase }}
+      <ion-chip class="info-chip chip-active chip-auto-height" [disabled]="true">
+        <ion-icon src="../../../../assets/icons/periodic.svg" style="font-size: 24px"></ion-icon>
+        <p class="ion-no-margin" style="width: 100%; padding: 5px 0">
+          {{ selectedDateValue.join(', ') | titlecase }}
+        </p>
       </ion-chip>
     </div>
 

@@ -15,7 +15,15 @@ import { switchMap, of } from 'rxjs';
   styleUrls: ['./task-form.page.scss']
 })
 export class TaskFormPage implements OnInit {
-  taskForm!: FormGroup;
+  taskForm: FormGroup = this.fb.group({
+    title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(75)]],
+    description: ['', Validators.maxLength(250)],
+    score: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
+    selectedDate: ['withoutDate', Validators.required],
+    dateLimit: [new Date().toISOString()],
+    datePeriodic: [['lunes']],
+    date: [new Date().toISOString()]
+  });
   headerTitle: string = 'Crear una tarea nueva';
   buttonText: string = 'Crear tarea';
   idTeam: string | undefined;
@@ -62,16 +70,6 @@ export class TaskFormPage implements OnInit {
   }
 
   ngOnInit() {
-    this.taskForm = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(75)]],
-      description: ['', Validators.maxLength(250)],
-      score: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
-      selectedDate: ['withoutDate', Validators.required],
-      dateLimit: [new Date().toISOString()],
-      datePeriodic: ['lunes'],
-      date: [new Date().toISOString()]
-    });
-
     this.activeRoute.paramMap
       .pipe(
         switchMap((params) => {
@@ -183,11 +181,11 @@ export class TaskFormPage implements OnInit {
   }
 
   async displayPeriodicDateModal() {
-    const previousSelectedDay = this.taskForm.get('datePeriodic')?.value;
+    const previousSelectedDays = this.taskForm.get('datePeriodic')?.value;
     const modal = await this.modalController.create({
       component: PeriodicDateModalComponent,
       componentProps: {
-        previousSelectedDay
+        previousSelectedDays
       },
       cssClass: 'modal-transparent periodic-date-modal'
     });
@@ -200,7 +198,7 @@ export class TaskFormPage implements OnInit {
     }
 
     this.taskForm.patchValue({
-      datePeriodic: data.selectedDay
+      datePeriodic: data.selectedDays
     });
   }
 

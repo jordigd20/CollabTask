@@ -36,7 +36,7 @@
           style="gap: 3px"
         >
           <ion-icon src="../../../assets/icons/calendar.svg" style="margin-bottom: 2px"></ion-icon>
-          <span style="font-size: 14px">{{ date | date : 'd MMM y' }}</span>
+          <span style="font-size: 14px">{{ task.date + '' | date : 'd MMM y' }}</span>
         </ion-text>
 
         <ion-text
@@ -46,7 +46,7 @@
           style="gap: 3px"
         >
           <ion-icon src="../../../assets/icons/periodic.svg" style="margin-bottom: 2px"></ion-icon>
-          <span style="font-size: 14px">{{ date | titlecase }}</span>
+          <span class="date-periodic-info" style="font-size: 14px">{{ task.datePeriodic.join(', ') | titlecase }}</span>
         </ion-text>
       </ion-label>
 

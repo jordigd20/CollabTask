@@ -10,5 +10,5 @@ export interface TaskData {
   selectedDate: 'withoutDate' | 'dateLimit' | 'datePeriodic' | 'date';
   date: firebase.firestore.Timestamp | string;
   dateLimit: firebase.firestore.Timestamp | string;
-  datePeriodic: string;
+  datePeriodic: string[];
 }

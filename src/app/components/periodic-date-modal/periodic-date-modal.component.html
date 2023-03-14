@@ -14,8 +14,8 @@
         *ngFor="let day of daysList"
         (click)="selectDay(day)"
         class="day-button"
-        [ngClass]="{ 'secondary-button': selectedDay !== day }"
-        [color]="selectedDay === day ? 'primary' : 'light'"
+        [ngClass]="{ 'secondary-button': !selectedDays.includes(day) }"
+        [color]="selectedDays.includes(day) ? 'primary' : 'light'"
       >
         {{ shortDays[day] | titlecase }}
       </ion-button>
