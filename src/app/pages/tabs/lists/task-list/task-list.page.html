@@ -8,55 +8,60 @@
 ></app-back-header>
 
 <ion-content color="tertiary">
-  <app-toolbar-searchbar
-    title="Lista de tareas"
-    placeholder="Buscar tareas"
-    type="tareas"
-    [totalItems]="tasks.length"
-    (search)="handleSearch($event)"
-  ></app-toolbar-searchbar>
+  <ng-container *ngIf="(viewModel$ | async) as vm; else loading">
+    <app-toolbar-searchbar
+      title="Lista de tareas"
+      placeholder="Buscar tareas"
+      type="tareas"
+      [totalItems]="vm.tasks.length"
+      (search)="handleSearch($event)"
+    ></app-toolbar-searchbar>
 
-  <div class="main-container ion-padding">
-    <ion-spinner
-      *ngIf="isLoading"
-      class="loading-content"
-      name="circles"
-      color="primary"
-    ></ion-spinner>
+    <div class="main-container ion-padding">
+      <ion-list class="list-container" lines="none">
+        <ion-item
+          *ngIf="vm.tasks.length === 0"
+          class="root-helper helper sub-item"
+          style="z-index: 0"
+        >
+          <ion-label>
+            Esta lista todavía no tiene ninguna tarea. ¡Reúnete con tus compañeros de equipo y
+            empieza a organizar el reparto!
+          </ion-label>
+        </ion-item>
 
-    <ion-list class="list-container" lines="none">
-      <ion-item
-        *ngIf="!isLoading && tasks.length === 0"
-        class="root-helper helper sub-item"
-        style="z-index: 0"
-      >
-        <ion-label>
-          Esta lista todavía no tiene ninguna tarea. ¡Reúnete con tus compañeros de equipo y empieza
-          a organizar el reparto!
-        </ion-label>
-      </ion-item>
-
-      <ng-container *ngIf="(team$ | async) as team">
         <app-task
-          *ngFor="let task of tasks"
+          *ngFor="let task of vm.tasks"
           [task]="task"
-          [idTeam]="team.id"
-          [teamName]="team.name"
+          [idTeam]="vm.team!.id"
+          [teamName]="vm.team!.name"
           [idUser]="task.idUserAssigned"
           [withoutUserAssigned]="false"
           [showCompleteButton]="idUser === task.idUserAssigned"
         ></app-task>
-      </ng-container>
-    </ion-list>
+      </ion-list>
 
-    <ion-fab vertical="bottom" horizontal="center" slot="fixed" style="position: fixed">
-      <ion-button
-        [routerLink]="['/tabs/lists/manual-distribution', idTeam, idTaskList]"
-        color="primary"
-        shape="round"
-      >
-        Reparto de tareas
-      </ion-button>
-    </ion-fab>
-  </div>
+      <ion-fab vertical="bottom" horizontal="center" slot="fixed" style="position: fixed">
+        <ion-button
+          [routerLink]="
+            vm.team!.taskLists[idTaskList!].distributionType === 'manual'
+            ? ['/tabs/lists/manual-distribution', idTeam, idTaskList]
+            : ['/tabs/lists/preferences-distribution', idTeam, idTaskList]"
+          color="primary"
+          shape="round"
+        >
+          Reparto de tareas
+        </ion-button>
+      </ion-fab>
+    </div>
+  </ng-container>
+
+  <ng-template #loading>
+    <ion-spinner
+      class="loading-content"
+      name="circles"
+      color="primary"
+      style="margin-top: 30px !important"
+    ></ion-spinner>
+  </ng-template>
 </ion-content>

@@ -120,7 +120,7 @@ export class TeamService {
       this.toastService.showToast({
         message: 'El equipo se ha creado correctamente',
         icon: 'checkmark-circle',
-        cssClass: 'toast-success',
+        cssClass: 'toast-success'
       });
     } catch (error) {
       console.error(error);
