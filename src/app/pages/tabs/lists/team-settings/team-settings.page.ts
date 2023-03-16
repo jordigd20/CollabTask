@@ -43,8 +43,9 @@ export class TeamSettingsPage implements OnInit {
     await presentConfirmationModal({
       title: 'Abandonar el equipo',
       message: '¿Estas seguro de que quieres salir del equipo?',
-      confirmText: 'Eliminar',
+      confirmText: 'Abandonar',
       dangerType: true,
+      cssClass:'leave-team-modal',
       mainFunction: () => this.leaveTeam(),
       modalController: this.modalController
     });

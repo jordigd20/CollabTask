@@ -55,15 +55,13 @@ export class ListsPage implements OnInit {
   }
 
   ngOnDestroy() {
-    console.log('ngOnDestroy lists page');
     this.destroy$.next();
   }
 
   fillComponentData(teams: Team[]) {
     this.teamsList = teams;
-    console.log(this.teamsList);
-
     const allTaskLists = [];
+
     for (const team of this.teamsList) {
       this.showTaskLists[team.id] = true;
 
@@ -81,7 +79,6 @@ export class ListsPage implements OnInit {
       i++;
     }
 
-    console.log(this.assignedColors);
     this.isLoading = false;
   }
 
@@ -155,8 +152,10 @@ export class ListsPage implements OnInit {
           handler: async () => {
             await presentConfirmationModal({
               title: 'Eliminar lista de tareas',
-              message: '¿Estás seguro de que quieres eliminar esta lista de tareas? Perderás las tareas y los puntos acumulados.',
+              message:
+                '¿Estás seguro de que quieres eliminar esta lista de tareas? Perderás las tareas y los puntos acumulados.',
               confirmText: 'Eliminar',
+              cssClass: 'delete-task-list-modal',
               dangerType: true,
               mainFunction: () => this.deleteTaskList(idTeam, idTaskList),
               modalController: this.modalController

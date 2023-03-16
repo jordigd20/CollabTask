@@ -15,6 +15,7 @@ interface ConfirmationModal {
   message: string;
   confirmText: string;
   dangerType: boolean;
+  cssClass: string;
   mainFunction: () => void;
   modalController: ModalController;
 }
@@ -51,6 +52,7 @@ export const presentConfirmationModal = async ({
   confirmText,
   dangerType,
   mainFunction,
+  cssClass = '',
   modalController
 }: ConfirmationModal) => {
   const modal = await modalController.create({
@@ -63,7 +65,7 @@ export const presentConfirmationModal = async ({
       mainFunction
     },
     backdropDismiss: false,
-    cssClass: 'confirmation-modal leave-team-modal'
+    cssClass: `confirmation-modal ${cssClass}`,
   });
 
   modal.present();

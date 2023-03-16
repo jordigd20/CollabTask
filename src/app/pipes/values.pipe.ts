@@ -1,10 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'objValues'
+  name: 'objSortedValues'
 })
-export class ValuesPipe implements PipeTransform {
+export class SortedValuesPipe implements PipeTransform {
   transform(value: any, ...args: any[]): any {
-    return Object.values(value);
+    return Object.values(value).sort((a: any, b: any) => a.name.localeCompare(b.name));
   }
 }

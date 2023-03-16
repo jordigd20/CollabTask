@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-task',
   templateUrl: './task.component.html',
-  styleUrls: ['./task.component.scss'],
+  styleUrls: ['./task.component.scss']
 })
 export class TaskComponent implements OnInit {
   @Input() task: Task = {} as Task;
@@ -44,7 +44,6 @@ export class TaskComponent implements OnInit {
       if (currentUser && this.username !== currentUser.name) {
         this.username = currentUser.name;
       }
-
     });
   }
 
@@ -90,15 +89,17 @@ export class TaskComponent implements OnInit {
   }
 
   async selectUser(users: UserMember[]) {
-    const buttons = users.map((user) => {
-      return {
-        text: user.name,
-        cssClass: 'action-sheet-custom-icon',
-        handler: () => {
-          this.taskService.temporarilyAssignTask(this.idTask, user.id);
-        }
-      };
-    });
+    const buttons = users
+      .map((user) => {
+        return {
+          text: user.name,
+          cssClass: 'action-sheet-custom-icon',
+          handler: () => {
+            this.taskService.temporarilyAssignTask(this.idTask, user.id);
+          }
+        };
+      })
+      .sort((a, b) => a.text.localeCompare(b.text));
 
     const actionSheet = await this.actionSheetController.create({
       htmlAttributes: {

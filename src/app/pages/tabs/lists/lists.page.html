@@ -67,7 +67,7 @@
         >
           <ion-list class="sub-list" color="tertiary" lines="none">
             <ion-item
-              *ngFor="let list of team.taskLists | objValues"
+              *ngFor="let list of team.taskLists | objSortedValues"
               button
               class="sub-item"
               (click)="handleItemClick(team.id, list.id)"
