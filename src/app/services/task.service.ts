@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
-import { map, debounceTime, tap, Observable, shareReplay, take, firstValueFrom } from 'rxjs';
-import { ToastController, AnimationController } from '@ionic/angular';
+import { map, debounceTime, Observable, shareReplay, take, firstValueFrom } from 'rxjs';
 import firebase from 'firebase/compat/app';
-import { showToast } from '../helpers/common-functions';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,8 +16,7 @@ export class TaskService {
   constructor(
     private afs: AngularFirestore,
     private storageService: StorageService,
-    private toastController: ToastController,
-    private animationController: AnimationController
+    private toastService: ToastService
   ) {}
 
   getTask(id: string, idTaskList: string) {
@@ -133,12 +131,10 @@ export class TaskService {
 
       await this.afs.doc<Task>(`tasks/${id}`).set(task);
 
-      showToast({
+      this.toastService.showToast({
         message: 'Tarea creada correctamente',
         icon: 'checkmark-circle',
-        cssClass: 'toast-success',
-        toastController: this.toastController,
-        animationController: this.animationController
+        cssClass: 'toast-success'
       });
     } catch (error) {
       console.error(error);
@@ -153,12 +149,10 @@ export class TaskService {
 
       await this.afs.doc<Task>(`tasks/${idTask}`).update(taskData);
 
-      showToast({
+      this.toastService.showToast({
         message: 'Tarea actualizada correctamente',
         icon: 'checkmark-circle',
-        cssClass: 'toast-success',
-        toastController: this.toastController,
-        animationController: this.animationController
+        cssClass: 'toast-success'
       });
     } catch (error) {
       console.error(error);
@@ -205,12 +199,10 @@ export class TaskService {
 
       await batch.commit();
 
-      showToast({
+      this.toastService.showToast({
         message: 'Reparto realizado correctamente',
         icon: 'checkmark-circle',
-        cssClass: 'toast-success',
-        toastController: this.toastController,
-        animationController: this.animationController
+        cssClass: 'toast-success'
       });
     } catch (error) {
       console.error(error);
@@ -227,12 +219,10 @@ export class TaskService {
         break;
     }
 
-    showToast({
+    this.toastService.showToast({
       message,
       icon: 'close-circle',
-      cssClass: 'toast-error',
-      toastController: this.toastController,
-      animationController: this.animationController
+      cssClass: 'toast-error'
     });
   }
 

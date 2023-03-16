@@ -4,7 +4,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { AlertController, ToastController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 import { lastValueFrom, of, map, switchMap } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData, AuthErrorCode } from '../interfaces';
@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { StorageService } from './storage.service';
 import { UserService } from './user.service';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,7 @@ export class AuthService {
     private afs: AngularFirestore,
     private alertController: AlertController,
     private loadingController: LoadingController,
-    private toastController: ToastController,
+    private toastService: ToastService,
     private storageService: StorageService,
     private userService: UserService,
     private router: Router
@@ -160,15 +161,11 @@ export class AuthService {
     try {
       await this.auth.sendPasswordResetEmail(email);
 
-      const toast = await this.toastController.create({
+      this.toastService.showToast({
         message: `Se ha enviado un correo electrónico a ${email} para restablecer tu contraseña.`,
-        duration: 5000,
-        position: 'bottom',
-        color: 'secondary',
-        cssClass: 'custom-toast'
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success'
       });
-
-      await toast.present();
 
       return;
     } catch (error) {

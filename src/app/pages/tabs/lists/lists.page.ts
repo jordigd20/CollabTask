@@ -1,12 +1,12 @@
-import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { ActionSheetController, AnimationController, ModalController } from '@ionic/angular';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ActionSheetController, ModalController } from '@ionic/angular';
 import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
 import { Router } from '@angular/router';
 import { from, Subject, takeUntil, switchMap } from 'rxjs';
-import { fadeInDownAnimation, fadeOutUpAnimation } from '../../../helpers/animations';
 import { presentConfirmationModal } from '../../../helpers/common-functions';
+import { AnimationsService } from '../../../services/animations.service';
 
 @Component({
   selector: 'app-lists',
@@ -31,7 +31,7 @@ export class ListsPage implements OnInit {
     private storageService: StorageService,
     private teamService: TeamService,
     private router: Router,
-    private animationController: AnimationController,
+    private animationService: AnimationsService,
     private modalController: ModalController
   ) {}
 
@@ -184,9 +184,9 @@ export class ListsPage implements OnInit {
 
     if (newToggleValue) {
       taskListContainer.el.style.display = 'block';
-      fadeInDownAnimation(taskListContainer.el, 150, this.animationController).play();
+      this.animationService.fadeInDownAnimation(taskListContainer.el, 150).play();
     } else {
-      fadeOutUpAnimation(taskListContainer.el, 150, this.animationController).play();
+      this.animationService.fadeOutUpAnimation(taskListContainer.el, 150).play();
 
       setTimeout(() => {
         taskListContainer.el.style.display = 'none';
