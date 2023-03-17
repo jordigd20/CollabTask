@@ -9,9 +9,10 @@ import { Observable } from 'rxjs';
   styleUrls: ['./task-slide.component.scss']
 })
 export class TaskSlideComponent implements OnInit {
-  @Input() tasks$: Observable<Task[]> | undefined;
+  @Input() tasks: Task[] = [];
   @Input() idUser: string = '';
   @Input() withoutUsers: boolean = false;
+  @Input() distributionMode: 'preferences' | 'manual' = 'manual';
   @Input() noTasksMessage: string = 'No hay tareas para asignar';
 
   slideOpts: SwiperOptions = {

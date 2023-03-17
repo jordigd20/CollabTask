@@ -4,8 +4,8 @@ export interface Team {
   allowNewMembers: boolean;
   invitationCode: string;
   idUserMembers: string[];
-  userMembers: { [key: string] : UserMember };
-  taskLists: { [key: string] : TaskList };
+  userMembers: { [key: string]: UserMember };
+  taskLists: { [key: string]: TaskList };
   dateCreated: any;
 }
 
@@ -21,5 +21,6 @@ export interface TaskList {
   id: string;
   name: string;
   distributionType: 'manual' | 'preferences';
-  userScore: { [key: string] : number };
+  userScore: { [key: string]: number };
+  userPreferencesSelected: { [key: string]: string[] };
 }

@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Task, Team } from '../../../../interfaces';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { switchMap, Observable, map, from } from 'rxjs';
+import { switchMap, Observable, map, from, combineLatest } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { PopoverController } from '@ionic/angular';
 import { InfoManualDistributionComponent } from '../../../../components/info-manual-distribution/info-manual-distribution.component';
@@ -16,14 +16,16 @@ import { InfoManualDistributionComponent } from '../../../../components/info-man
 export class ManualDistributionPage implements OnInit {
   idTeam: string | undefined;
   idTaskList: string | undefined;
-  tasksUnassigned$: Observable<Task[]> | undefined;
-  team$:
+  idUser: string = '';
+  viewModel$:
     | Observable<{
-        team: Team | undefined;
-        [key: string]: any;
+        teamVm: {
+          [key: string]: any;
+          team: Team | undefined;
+        };
+        tasksUnassigned: Task[];
       }>
     | undefined;
-  idUser: string = '';
   isLoading: boolean = false;
 
   constructor(
@@ -35,32 +37,41 @@ export class ManualDistributionPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.team$ = this.activeRoute.paramMap.pipe(
-      switchMap((params) => {
-        this.idTeam = params.get('idTeam') as string;
-        this.idTaskList = params.get('idTaskList') as string;
+    this.viewModel$ = combineLatest([
+      this.activeRoute.paramMap.pipe(
+        switchMap((params) => {
+          this.idTeam = params.get('idTeam') as string;
+          this.idTaskList = params.get('idTaskList') as string;
 
-        this.tasksUnassigned$ = this.taskService.getAllUnassignedTasks(this.idTaskList);
-        return from(this.storageService.get('user'));
-      }),
-      switchMap((user) => {
-        this.idUser = user.id;
-        return this.teamService.getTeam(this.idTeam!);
-      }),
-      map((team) => {
-        const result: {
-          team: Team | undefined;
-          [key: string]: Team | undefined | Observable<Task[]>;
-        } = { team };
+          return from(this.storageService.get('user'));
+        }),
+        switchMap((user) => {
+          this.idUser = user.id;
+          return this.teamService.getTeam(this.idTeam!);
+        }),
+        map((team) => {
+          const result: {
+            team: Team | undefined;
+            [key: string]: Team | undefined | Observable<Task[]>;
+          } = { team };
 
-        for (let user of Object.values(team!.userMembers)) {
-          result[user.id] = this.taskService.getTemporalUserTasks(this.idTaskList!, user.id);
-        }
+          for (let user of Object.values(team!.userMembers)) {
+            result[user.id] = this.taskService.getTemporalUserTasks(this.idTaskList!, user.id);
+          }
 
-        console.log(result);
-        return result;
-      })
-    );
+          console.log(result);
+          return result;
+        })
+      ),
+      this.activeRoute.paramMap.pipe(
+        switchMap((params) => {
+          this.idTeam = params.get('idTeam') as string;
+          this.idTaskList = params.get('idTaskList') as string;
+
+          return this.taskService.getAllUnassignedTasks(this.idTaskList);
+        })
+      )
+    ]).pipe(map(([teamVm, tasksUnassigned]) => ({ teamVm, tasksUnassigned })));
   }
 
   async displayMoreInfoPopover() {

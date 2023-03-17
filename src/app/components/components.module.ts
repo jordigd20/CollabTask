@@ -16,6 +16,7 @@ import { TaskSlideComponent } from './task-slide/task-slide.component';
 import { SwiperModule } from 'swiper/angular';
 import { InfoManualDistributionComponent } from './info-manual-distribution/info-manual-distribution.component';
 import { PipesModule } from '../pipes/pipes.module';
+import { InfoPreferencesDistributionComponent } from './info-preferences-distribution/info-preferences-distribution.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { PipesModule } from '../pipes/pipes.module';
     PeriodicDateModalComponent,
     TaskSlideComponent,
     InfoManualDistributionComponent,
+    InfoPreferencesDistributionComponent,
   ],
   imports: [
     CommonModule,
@@ -52,6 +54,7 @@ import { PipesModule } from '../pipes/pipes.module';
     PeriodicDateModalComponent,
     TaskSlideComponent,
     InfoManualDistributionComponent,
+    InfoPreferencesDistributionComponent,
   ]
 })
 export class ComponentsModule { }

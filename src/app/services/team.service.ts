@@ -170,7 +170,8 @@ export class TeamService {
         id,
         name: name.trim(),
         distributionType,
-        userScore: {}
+        userScore: {},
+        userPreferencesSelected: {}
       };
 
       for (const user of Object.values(team.userMembers)) {

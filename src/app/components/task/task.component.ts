@@ -20,6 +20,7 @@ export class TaskComponent implements OnInit {
   @Input() withoutUserAssigned: boolean = false;
   @Input() showCompleteButton: boolean = true;
   @Input() showDistributionMode: boolean = false;
+  @Input() distributionMode: 'none' | 'preferences' | 'manual' = 'none';
 
   photoURL: string = '';
   username: string = '';
@@ -52,36 +53,51 @@ export class TaskComponent implements OnInit {
   }
 
   async moreOptions() {
+    const editTaskButton = {
+      text: 'Editar',
+      icon: 'create-outline',
+      cssClass: 'action-sheet-custom-icon',
+      handler: () => {
+        this.router.navigate([`edit-task/${this.idTaskList}/${this.idTask}`]);
+      }
+    };
+
+    const assignUserButton = {
+      text: this.withoutUserAssigned ? 'Asignar a usuario' : 'Desasignar usuario',
+      icon: this.withoutUserAssigned ? 'person-add-outline' : 'person-remove-outline',
+      cssClass: 'action-sheet-custom-icon ',
+      handler: () => {
+        this.withoutUserAssigned ? this.selectUser(this.userTeamMembers) : this.unassignUser();
+        console.log('Asignar a usuario');
+      }
+    };
+
+    const deleteTaskButton = {
+      text: 'Eliminar',
+      icon: 'trash-outline',
+      cssClass: 'action-sheet-danger-icon',
+      handler: () => {
+        this.taskService.deleteTask(this.idTask);
+      }
+    };
+
+    const markAsPreferredButton = {
+      text: 'Marcar como preferida',
+      icon: 'star-outline',
+      cssClass: 'action-sheet-custom-icon',
+      handler: () => {
+        console.log('Marcar como preferida');
+      }
+    };
+
     const actionSheet = await this.actionSheetController.create({
       htmlAttributes: {
         'aria-label': 'Acciones de la tarea'
       },
       buttons: [
-        {
-          text: 'Editar',
-          icon: 'create-outline',
-          cssClass: 'action-sheet-custom-icon',
-          handler: () => {
-            this.router.navigate([`edit-task/${this.idTaskList}/${this.idTask}`]);
-          }
-        },
-        {
-          text: this.withoutUserAssigned ? 'Asignar a usuario' : 'Desasignar usuario',
-          icon: this.withoutUserAssigned ? 'person-add-outline' : 'person-remove-outline',
-          cssClass: 'action-sheet-custom-icon ',
-          handler: () => {
-            this.withoutUserAssigned ? this.selectUser(this.userTeamMembers) : this.unassignUser();
-            console.log('Asignar a usuario');
-          }
-        },
-        {
-          text: 'Eliminar',
-          icon: 'trash-outline',
-          cssClass: 'action-sheet-danger-icon',
-          handler: () => {
-            this.taskService.deleteTask(this.idTask);
-          }
-        }
+        editTaskButton,
+        this.distributionMode === 'preferences' ? markAsPreferredButton : assignUserButton,
+        deleteTaskButton
       ]
     });
 

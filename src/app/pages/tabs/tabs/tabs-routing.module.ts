@@ -65,6 +65,13 @@ const routes: Routes = [
               import('../lists/manual-distribution/manual-distribution.module').then(
                 (m) => m.ManualDistributionPageModule
               )
+          },
+          {
+            path: 'preferences-distribution/:idTeam/:idTaskList',
+            loadChildren: () =>
+              import('../lists/preferences-distribution/preferences-distribution.module').then(
+                (m) => m.PreferencesDistributionPageModule
+              )
           }
         ]
       },

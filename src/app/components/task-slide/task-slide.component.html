@@ -1,4 +1,4 @@
-<div class="swiper-container" *ngIf="tasks$ | async as tasks; else loading">
+<div class="swiper-container">
   <ng-container *ngIf="tasks.length > 0; else noTasks">
     <swiper class="slide-container" [config]="slideOpts">
       <ng-template swiperSlide *ngFor="let task of tasks; trackBy: identify">
@@ -10,6 +10,7 @@
           [idUser]="idUser"
           [showCompleteButton]="false"
           [showDistributionMode]="true"
+          [distributionMode]="distributionMode"
           [withoutUserAssigned]="withoutUsers"
         ></app-task>
       </ng-template>
@@ -24,7 +25,3 @@
     </div>
   </ng-template>
 </div>
-
-<ng-template #loading>
-  <ion-spinner class="loading-content" name="circles" color="primary"></ion-spinner>
-</ng-template>
