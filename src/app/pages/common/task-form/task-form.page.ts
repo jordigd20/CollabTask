@@ -5,7 +5,7 @@ import { DatetimeModalComponent } from '../../../components/datetime-modal/datet
 import { ScoreModalComponent } from '../../../components/score-modal/score-modal.component';
 import { PeriodicDateModalComponent } from '../../../components/periodic-date-modal/periodic-date-modal.component';
 import { TaskService } from '../../../services/task.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Task } from '../../../interfaces';
 import { switchMap, of } from 'rxjs';
 
@@ -37,7 +37,8 @@ export class TaskFormPage implements OnInit {
     private fb: FormBuilder,
     private modalController: ModalController,
     private activeRoute: ActivatedRoute,
-    private taskService: TaskService
+    private taskService: TaskService,
+    private router: Router
   ) {}
 
   get title() {
@@ -83,12 +84,14 @@ export class TaskFormPage implements OnInit {
             return this.taskService.getTask(this.idTask, this.idTaskList);
           }
 
-          return of(undefined);
+          return of();
         })
       )
       .subscribe((task) => {
         if (task) {
           this.fillComponentData(task);
+        } else {
+          this.router.navigate(['/tabs/lists']);
         }
       });
   }

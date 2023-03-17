@@ -61,6 +61,10 @@ export class TaskListPage implements OnInit {
     ]).pipe(map(([team, tasks]) => ({ team, tasks })));
   }
 
+  identify(index: number, item: Task) {
+    return item.id;
+  }
+
   handlePreferences() {}
 
   handleMoreOptions() {

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
 import { TaskList, Team } from '../../../interfaces';
 import { switchMap, of } from 'rxjs';
@@ -25,7 +25,8 @@ export class TaskListFormPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private activeRoute: ActivatedRoute,
-    private teamService: TeamService
+    private teamService: TeamService,
+    private router: Router
   ) {}
 
   get name() {
@@ -49,12 +50,14 @@ export class TaskListFormPage implements OnInit {
             return this.teamService.getTeam(this.idTeam);
           }
 
-          return of(undefined);
+          return of();
         })
       )
       .subscribe((team) => {
         if (team) {
           this.fillComponentData(team);
+        } else {
+          this.router.navigate(['/tabs/lists']);
         }
       });
   }
