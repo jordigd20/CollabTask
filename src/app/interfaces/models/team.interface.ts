@@ -22,5 +22,6 @@ export interface TaskList {
   name: string;
   distributionType: 'manual' | 'preferences';
   userScore: { [key: string]: number };
-  userPreferencesSelected: { [key: string]: string[] };
+  userTasksPreferred: { [key: string]: string[] };
+  idCompletedUsers: string[];
 }

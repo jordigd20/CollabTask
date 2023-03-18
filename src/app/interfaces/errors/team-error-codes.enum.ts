@@ -6,5 +6,6 @@ export enum TeamErrorCodes {
   TeamReachedMaxMembers = 'team/reached-max-members',
   TeamUserPermissionDenied = 'team/permision-denied',
   TeamReachedMaxTaskLists = 'team/reached-max-task-lists',
+  TeamReachedMaxTasksPreferred = 'team/reached-max-tasks-preferred',
   FirestorePermissionDenied = 'permission-denied',
 }

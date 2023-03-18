@@ -26,7 +26,10 @@
       ></app-task-slide>
     </ion-list>
 
-    <ion-list lines="none" *ngFor="let user of vm.teamVm.team?.userMembers | objSortedValues">
+    <ion-list
+      lines="none"
+      *ngFor="let user of vm.teamVm.team?.userMembers | objSortedValues; trackBy: identify"
+    >
       <ion-list-header class="ion-padding-horizontal">
         <ion-label>
           <h3 class="list-title">Lista de {{ user.name }}</h3>
@@ -43,7 +46,7 @@
     </ion-list>
 
     <ion-button
-      (click)="finishDistribution()"
+      (click)="completeDistribution()"
       [disabled]="vm.teamVm.team!.userMembers[idUser].role === 'member' || isLoading"
       class="ion-margin"
       expand="block"

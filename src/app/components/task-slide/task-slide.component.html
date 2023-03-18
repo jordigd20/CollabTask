@@ -4,9 +4,6 @@
       <ng-template swiperSlide *ngFor="let task of tasks; trackBy: identify">
         <app-task
           [task]="task"
-          [idTeam]="task.idTeam"
-          [idTaskList]="task.idTaskList"
-          [idTask]="task.id"
           [idUser]="idUser"
           [showCompleteButton]="false"
           [showDistributionMode]="true"

@@ -13,9 +13,6 @@ import { Router } from '@angular/router';
 export class TaskComponent implements OnInit {
   @Input() task: Task = {} as Task;
   @Input() teamName: string = '';
-  @Input() idTeam: string = '';
-  @Input() idTaskList: string = '';
-  @Input() idTask: string = '';
   @Input() idUser: string = '';
   @Input() withoutUserAssigned: boolean = false;
   @Input() showCompleteButton: boolean = true;
@@ -25,6 +22,7 @@ export class TaskComponent implements OnInit {
   photoURL: string = '';
   username: string = '';
   userTeamMembers: UserMember[] = [];
+  isTaskPreferred: boolean = false;
 
   constructor(
     private teamService: TeamService,
@@ -34,16 +32,25 @@ export class TaskComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.teamService.getUserMembersFromTeam(this.idTeam).subscribe((users) => {
-      this.userTeamMembers = users;
-      const currentUser = this.userTeamMembers.find((user) => user.id === this.idUser);
+    this.teamService.getTeamObservable(this.task.idTeam).subscribe((team) => {
+      if (team) {
+        const users = Object.values(team.userMembers);
+        this.userTeamMembers = users;
+        const currentUser = this.userTeamMembers.find((user) => user.id === this.idUser);
 
-      if (currentUser && this.photoURL !== currentUser.photoURL) {
-        this.photoURL = currentUser.photoURL;
-      }
+        if (currentUser && this.photoURL !== currentUser.photoURL) {
+          this.photoURL = currentUser.photoURL;
+        }
 
-      if (currentUser && this.username !== currentUser.name) {
-        this.username = currentUser.name;
+        if (currentUser && this.username !== currentUser.name) {
+          this.username = currentUser.name;
+        }
+
+        if (this.distributionMode === 'preferences') {
+          const userTasksPreferred =
+            team.taskLists[this.task.idTaskList].userTasksPreferred[this.idUser] ?? [];
+          this.isTaskPreferred = userTasksPreferred.includes(this.task.id);
+        }
       }
     });
   }
@@ -58,7 +65,7 @@ export class TaskComponent implements OnInit {
       icon: 'create-outline',
       cssClass: 'action-sheet-custom-icon',
       handler: () => {
-        this.router.navigate([`edit-task/${this.idTaskList}/${this.idTask}`]);
+        this.router.navigate([`edit-task/${this.task.idTaskList}/${this.task.id}`]);
       }
     };
 
@@ -77,16 +84,18 @@ export class TaskComponent implements OnInit {
       icon: 'trash-outline',
       cssClass: 'action-sheet-danger-icon',
       handler: () => {
-        this.taskService.deleteTask(this.idTask);
+        this.taskService.deleteTask(this.task.id);
       }
     };
 
     const markAsPreferredButton = {
-      text: 'Marcar como preferida',
-      icon: 'star-outline',
+      text: this.isTaskPreferred
+        ? 'Quitar de la lista de preferencia'
+        : 'Añadir a la lista de preferencia',
+      icon: this.isTaskPreferred ? 'close-circle-outline' : 'add-circle-outline',
       cssClass: 'action-sheet-custom-icon',
       handler: () => {
-        console.log('Marcar como preferida');
+        this.markTaskAsPreferred();
       }
     };
 
@@ -111,7 +120,7 @@ export class TaskComponent implements OnInit {
           text: user.name,
           cssClass: 'action-sheet-custom-icon',
           handler: () => {
-            this.taskService.temporarilyAssignTask(this.idTask, user.id);
+            this.taskService.temporarilyAssignTask(this.task.id, user.id);
           }
         };
       })
@@ -129,6 +138,18 @@ export class TaskComponent implements OnInit {
   }
 
   unassignUser() {
-    this.taskService.temporarilyAssignTask(this.idTask, '');
+    this.taskService.temporarilyAssignTask(this.task.id, '');
+  }
+
+  markTaskAsPreferred() {
+    this.teamService.markTaskAsPreferred({
+      idTeam: this.task.idTeam,
+      idTaskList: this.task.idTaskList,
+      idTask: this.task.id,
+      idUser: this.idUser,
+      isPreferred: !this.isTaskPreferred
+    });
+
+    this.isTaskPreferred = !this.isTaskPreferred;
   }
 }

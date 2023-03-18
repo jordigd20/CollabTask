@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { PreferencesDistributionPageRoutingModule } from './preferences-distribution-routing.module';
 import { PreferencesDistributionPage } from './preferences-distribution.page';
 import { ComponentsModule } from '../../../../components/components.module';
+import { PipesModule } from '../../../../pipes/pipes.module';
 
 @NgModule({
   imports: [
@@ -12,7 +13,8 @@ import { ComponentsModule } from '../../../../components/components.module';
     FormsModule,
     IonicModule,
     PreferencesDistributionPageRoutingModule,
-    ComponentsModule
+    ComponentsModule,
+    PipesModule
   ],
   declarations: [PreferencesDistributionPage]
 })

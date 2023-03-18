@@ -74,6 +74,10 @@ export class ManualDistributionPage implements OnInit {
     ]).pipe(map(([teamVm, tasksUnassigned]) => ({ teamVm, tasksUnassigned })));
   }
 
+  identify(index: number, item: any) {
+    return item.id;
+  }
+
   async displayMoreInfoPopover() {
     const popover = await this.popoverController.create({
       component: InfoManualDistributionComponent
@@ -82,9 +86,9 @@ export class ManualDistributionPage implements OnInit {
     await popover.present();
   }
 
-  async finishDistribution() {
+  async completeDistribution() {
     this.isLoading = true;
-    await this.taskService.finishDistribution(this.idTaskList!);
+    await this.taskService.completeDistribution(this.idTaskList!);
     this.isLoading = false;
   }
 }

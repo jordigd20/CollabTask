@@ -346,6 +346,10 @@ ion-spinner.loading-content {
   display: flex !important;
 }
 
+.flex-column {
+  flex-direction: column !important;
+}
+
 .justify-center {
   justify-content: center !important;
 }

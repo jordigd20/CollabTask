@@ -1,6 +1,14 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { TeamData, Team, TeamErrorCodes, UserMember, TaskListData, TaskList } from '../interfaces';
+import {
+  TeamData,
+  Team,
+  TeamErrorCodes,
+  UserMember,
+  TaskListData,
+  TaskList,
+  MarkTaskData
+} from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
 import {
@@ -14,7 +22,8 @@ import {
   take,
   from,
   switchMap,
-  firstValueFrom
+  firstValueFrom,
+  forkJoin
 } from 'rxjs';
 import firebase from 'firebase/compat/app';
 import { UserService } from './user.service';
@@ -23,12 +32,15 @@ import { ToastService } from './toast.service';
 
 const MAX_USER_MEMBERS = 10;
 const MAX_TASK_LISTS = 20;
+const MAX_LIST_PREFERRED_FACTOR = 0.2;
 
 @Injectable({
   providedIn: 'root'
 })
 export class TeamService {
   private teams$: Observable<Team[]> | undefined;
+  private team$: Observable<Team | undefined> | undefined;
+  private currentIdTeam: string = '';
   private currentIdUser: string = '';
 
   constructor(
@@ -68,6 +80,45 @@ export class TeamService {
         }
       })
     );
+  }
+
+  getUserTasksPreferredFromTaskList(idTeam: string, idTaskList: string, idUser: string) {
+    return this.getTeamObservable(idTeam).pipe(
+      switchMap((team) => {
+        const userTasksPreferred = team?.taskLists[idTaskList]?.userTasksPreferred[idUser] ?? [];
+        let result = userTasksPreferred.map((idTask) =>
+          this.taskService.getTask(idTask, idTaskList)
+        );
+
+        if (result.length === 0) {
+          result = [of(undefined)];
+        }
+
+        return forkJoin(result);
+      }),
+      map((tasks) => {
+        if (!tasks[0]) {
+          return [];
+        }
+        return tasks.sort((a: any, b: any) => a.title.localeCompare(b.title)) ?? [];
+      })
+    );
+  }
+
+  getTeamObservable(id: string) {
+    if (!this.team$ || this.currentIdTeam !== id) {
+      console.log('this.teamObs$ is undefined');
+
+      this.team$ = this.afs
+        .doc<Team>(`teams/${id}`)
+        .valueChanges()
+        .pipe(debounceTime(350), shareReplay({ bufferSize: 1, refCount: true }));
+
+      this.currentIdTeam = id;
+    }
+
+    console.log('this.teamObs$ is defined');
+    return this.team$;
   }
 
   getAllUserTeams(idUser: string) {
@@ -171,11 +222,13 @@ export class TeamService {
         name: name.trim(),
         distributionType,
         userScore: {},
-        userPreferencesSelected: {}
+        userTasksPreferred: {},
+        idCompletedUsers: []
       };
 
       for (const user of Object.values(team.userMembers)) {
         taskList.userScore[user.id] = 0;
+        taskList.userTasksPreferred[user.id] = [];
       }
 
       await this.afs.doc<Team>(`teams/${idTeam}`).update({
@@ -209,6 +262,101 @@ export class TeamService {
         icon: 'checkmark-circle',
         cssClass: 'toast-success'
       });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async markTaskAsPreferred({ idTeam, idTaskList, idTask, idUser, isPreferred }: MarkTaskData) {
+    try {
+      const [team, tasksUnassigned] = await Promise.all([
+        firstValueFrom(this.getTeam(idTeam)),
+        firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))
+      ]);
+
+      const batch = this.afs.firestore.batch();
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+
+      if (!isPreferred && team?.taskLists[idTaskList].idCompletedUsers.includes(idUser)) {
+        batch.update(
+          teamRef,
+          `taskLists.${idTaskList}.idCompletedUsers`,
+          firebase.firestore.FieldValue.arrayRemove(idUser)
+        );
+      }
+
+      if (isPreferred) {
+        const maxNumberOfTasks = Math.floor(tasksUnassigned.length * MAX_LIST_PREFERRED_FACTOR);
+        const tasksPreferred = team?.taskLists[idTaskList].userTasksPreferred[idUser] ?? [];
+
+        if (tasksPreferred.length >= maxNumberOfTasks) {
+          throw new Error(TeamErrorCodes.TeamReachedMaxTasksPreferred);
+        }
+
+        if (tasksPreferred.length >= maxNumberOfTasks - 1) {
+          batch.update(
+            teamRef,
+            `taskLists.${idTaskList}.idCompletedUsers`,
+            firebase.firestore.FieldValue.arrayUnion(idUser)
+          );
+        }
+      }
+
+      batch.update(
+        teamRef,
+        `taskLists.${idTaskList}.userTasksPreferred.${idUser}`,
+        isPreferred
+          ? firebase.firestore.FieldValue.arrayUnion(idTask)
+          : firebase.firestore.FieldValue.arrayRemove(idTask)
+      );
+
+      await batch.commit();
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async checkPreferencesListChanges(
+    idTeam: string,
+    idTaskList: string,
+    addedMoreTasks: boolean,
+    maxNumberOfTasks: number
+  ) {
+    try {
+      if (addedMoreTasks) {
+        await this.afs.doc<Team>(`teams/${idTeam}`).update({
+          [`taskLists.${idTaskList}.idCompletedUsers`]: []
+        });
+
+        return;
+      }
+
+      const team = await firstValueFrom(this.getTeam(idTeam));
+      const batch = this.afs.firestore.batch();
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+
+      for (let [userKey, userValue] of Object.entries(
+        team!.taskLists[idTaskList].userTasksPreferred
+      )) {
+        if (userValue.length > maxNumberOfTasks) {
+          const idTask = userValue[userValue.length - 1]; /// -------------------------------------
+          batch.update(
+            teamRef,
+            `taskLists.${idTaskList}.userTasksPreferred.${userKey}`,
+            firebase.firestore.FieldValue.arrayRemove(idTask)
+          );
+        } else if (userValue.length === maxNumberOfTasks) {
+          batch.update(
+            teamRef,
+            `taskLists.${idTaskList}.idCompletedUsers`,
+            firebase.firestore.FieldValue.arrayUnion(userKey)
+          );
+        }
+      }
+
+      await batch.commit();
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -392,6 +540,7 @@ export class TeamService {
           if (Object.values(taskLists).length > 0) {
             for (const list of Object.values(taskLists)) {
               taskLists[list.id].userScore[idUser] = 0;
+              taskLists[list.id].userTasksPreferred[idUser] = [];
             }
           }
 
@@ -439,6 +588,9 @@ export class TeamService {
         break;
       case TeamErrorCodes.FirestorePermissionDenied:
         message = 'No tienes el permiso suficiente para realizar esta acción';
+        break;
+      case TeamErrorCodes.TeamReachedMaxTasksPreferred:
+        message = 'Has alcanzado el máximo de tareas preferidas permitidas';
         break;
       default:
         message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
