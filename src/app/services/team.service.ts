@@ -252,10 +252,32 @@ export class TeamService {
     { name, distributionType }: TaskListData
   ) {
     try {
-      await this.afs.doc<Team>(`teams/${idTeam}`).update({
+      const team = await firstValueFrom(this.getTeam(idTeam));
+      const batch = this.afs.firestore.batch();
+
+      // If team is changing from manual to preferences, we need to reset
+      // the idTemporalUserAssigned of all tasks
+      if (
+        distributionType === 'preferences' &&
+        team?.taskLists[idTaskList].distributionType === 'manual'
+      ) {
+        const tasks = await firstValueFrom(this.taskService.getAllTasksByTaskList(idTaskList));
+
+        for (const task of tasks) {
+          if (task.idTemporalUserAssigned !== '') {
+            const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+            batch.update(taskRef, { idTemporalUserAssigned: '' });
+          }
+        }
+      }
+
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      batch.update(teamRef, {
         [`taskLists.${idTaskList}.name`]: name,
         [`taskLists.${idTaskList}.distributionType`]: distributionType
       });
+
+      await batch.commit();
 
       this.toastService.showToast({
         message: 'La lista de tareas se ha actualizado correctamente',
