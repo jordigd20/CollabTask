@@ -309,9 +309,10 @@ export class TeamService {
       }
 
       if (isPreferred) {
-        const maxNumberOfTasks = Math.floor(tasksUnassigned.length * MAX_LIST_PREFERRED_FACTOR);
-        const tasksPreferred = team?.taskLists[idTaskList].userTasksPreferred[idUser] ?? [];
+        const maxNumberOfTasks =
+          Math.floor(tasksUnassigned.length * MAX_LIST_PREFERRED_FACTOR) || 1;
 
+        const tasksPreferred = team?.taskLists[idTaskList].userTasksPreferred[idUser] ?? [];
         if (tasksPreferred.length >= maxNumberOfTasks) {
           throw new Error(TeamErrorCodes.TeamReachedMaxTasksPreferred);
         }

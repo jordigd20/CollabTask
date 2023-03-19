@@ -85,9 +85,8 @@ export class PreferencesDistributionPage implements OnInit {
         this.userTasksPreferred = userTasksPreferred;
         this.tasksUnassigned = tasksUnassigned;
 
-        const newMaxNumberOfTasks = Math.floor(
-          this.tasksUnassigned.length * MAX_LIST_PREFERRED_FACTOR
-        );
+        const newMaxNumberOfTasks =
+          Math.floor(this.tasksUnassigned.length * MAX_LIST_PREFERRED_FACTOR) || 1;
 
         if (this.maxNumberOfTasks && newMaxNumberOfTasks !== this.maxNumberOfTasks) {
           const addedMoreTasks = newMaxNumberOfTasks > this.maxNumberOfTasks;

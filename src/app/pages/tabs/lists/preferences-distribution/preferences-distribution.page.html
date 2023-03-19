@@ -32,8 +32,8 @@
         <ion-label><h3 class="list-title">Tu lista de preferencia</h3></ion-label>
         <ion-chip class="info-chip chip-active" [disabled]="true">
           <ion-label>
-            {{team.taskLists[idTaskList!].userTasksPreferred[idUser].length}}/{{
-            (tasksUnassigned.length * 0.2) | floor }} tareas
+            {{team.taskLists[idTaskList!].userTasksPreferred[idUser].length}}/{{ maxNumberOfTasks }}
+            tareas
           </ion-label>
         </ion-chip>
       </ion-list-header>
