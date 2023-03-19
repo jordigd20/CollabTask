@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Task, Team } from '../../../../interfaces';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { switchMap, Observable, map, from, combineLatest } from 'rxjs';
+import { switchMap, Observable, map, from, combineLatest, Subject, takeUntil } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { PopoverController } from '@ionic/angular';
 import { InfoManualDistributionComponent } from '../../../../components/info-manual-distribution/info-manual-distribution.component';
@@ -17,27 +17,27 @@ export class ManualDistributionPage implements OnInit {
   idTeam: string | undefined;
   idTaskList: string | undefined;
   idUser: string = '';
-  viewModel$:
-    | Observable<{
-        teamVm: {
-          [key: string]: any;
-          team: Team | undefined;
-        };
-        tasksUnassigned: Task[];
-      }>
+  teamVm:
+    | {
+        [key: string]: any;
+        team: Team | undefined;
+      }
     | undefined;
+  tasksUnassigned: Task[] = [];
   isLoading: boolean = false;
+  destroy$ = new Subject<void>();
 
   constructor(
     private activeRoute: ActivatedRoute,
     private teamService: TeamService,
     private taskService: TaskService,
     private storageService: StorageService,
-    private popoverController: PopoverController
+    private popoverController: PopoverController,
+    private router: Router
   ) {}
 
   ngOnInit() {
-    this.viewModel$ = combineLatest([
+    combineLatest([
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
           this.idTeam = params.get('idTeam') as string;
@@ -47,7 +47,7 @@ export class ManualDistributionPage implements OnInit {
         }),
         switchMap((user) => {
           this.idUser = user.id;
-          return this.teamService.getTeam(this.idTeam!);
+          return this.teamService.getTeamObservable(this.idTeam!);
         }),
         map((team) => {
           const result: {
@@ -59,7 +59,6 @@ export class ManualDistributionPage implements OnInit {
             result[user.id] = this.taskService.getTemporalUserTasks(this.idTaskList!, user.id);
           }
 
-          console.log(result);
           return result;
         })
       ),
@@ -71,7 +70,24 @@ export class ManualDistributionPage implements OnInit {
           return this.taskService.getAllUnassignedTasks(this.idTaskList);
         })
       )
-    ]).pipe(map(([teamVm, tasksUnassigned]) => ({ teamVm, tasksUnassigned })));
+    ])
+      .pipe(
+        takeUntil(this.destroy$),
+        map(([teamVm, tasksUnassigned]) => ({ teamVm, tasksUnassigned }))
+      )
+      .subscribe(({ teamVm, tasksUnassigned }) => {
+        if (!teamVm.team?.taskLists[this.idTaskList!]) {
+          this.router.navigate(['/tabs/lists']);
+          return;
+        }
+
+        this.teamVm = teamVm;
+        this.tasksUnassigned = tasksUnassigned;
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
   }
 
   identify(index: number, item: any) {

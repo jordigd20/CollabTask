@@ -4,6 +4,7 @@ import { TeamService } from '../../services/team.service';
 import { Task, UserMember } from '../../interfaces';
 import { TaskService } from '../../services/task.service';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-task',
@@ -23,6 +24,7 @@ export class TaskComponent implements OnInit {
   username: string = '';
   userTeamMembers: UserMember[] = [];
   isTaskPreferred: boolean = false;
+  destroy$ = new Subject<void>();
 
   constructor(
     private teamService: TeamService,
@@ -32,27 +34,44 @@ export class TaskComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.teamService.getTeamObservable(this.task.idTeam).subscribe((team) => {
-      if (team) {
-        const users = Object.values(team.userMembers);
-        this.userTeamMembers = users;
-        const currentUser = this.userTeamMembers.find((user) => user.id === this.idUser);
+    this.teamService
+      .getTeamObservable(this.task.idTeam)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((team) => {
+        if (team) {
+          if (
+            (this.distributionMode === 'preferences' &&
+              team.taskLists[this.task.idTaskList].distributionType === 'manual') ||
+            (this.distributionMode === 'manual' &&
+              team.taskLists[this.task.idTaskList].distributionType === 'preferences')
+          ) {
+            this.router.navigate(['tabs/lists/task-list', this.task.idTeam, this.task.idTaskList]);
+            return;
+          }
 
-        if (currentUser && this.photoURL !== currentUser.photoURL) {
-          this.photoURL = currentUser.photoURL;
-        }
+          const users = Object.values(team.userMembers);
+          this.userTeamMembers = users;
+          const currentUser = this.userTeamMembers.find((user) => user.id === this.idUser);
 
-        if (currentUser && this.username !== currentUser.name) {
-          this.username = currentUser.name;
-        }
+          if (currentUser && this.photoURL !== currentUser.photoURL) {
+            this.photoURL = currentUser.photoURL;
+          }
 
-        if (this.distributionMode === 'preferences') {
-          const userTasksPreferred =
-            team.taskLists[this.task.idTaskList].userTasksPreferred[this.idUser] ?? [];
-          this.isTaskPreferred = userTasksPreferred.includes(this.task.id);
+          if (currentUser && this.username !== currentUser.name) {
+            this.username = currentUser.name;
+          }
+
+          if (this.distributionMode === 'preferences') {
+            const userTasksPreferred =
+              team.taskLists[this.task.idTaskList].userTasksPreferred[this.idUser] ?? [];
+            this.isTaskPreferred = userTasksPreferred.includes(this.task.id);
+          }
         }
-      }
-    });
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
   }
 
   click() {

@@ -3,7 +3,7 @@ import { ActionSheetController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../../services/task.service';
 import { Task } from '../../../../interfaces';
-import { from, switchMap, Observable, combineLatest, map } from 'rxjs';
+import { from, switchMap, combineLatest, map, Subject, takeUntil } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { TeamService } from '../../../../services/team.service';
 import { Team } from '../../../../interfaces/models/team.interface';
@@ -17,13 +17,9 @@ export class TaskListPage implements OnInit {
   idTeam: string | undefined;
   idTaskList: string | undefined;
   idUser: string = '';
-  team$: Observable<Team | undefined> | undefined;
-  viewModel$:
-    | Observable<{
-        team: Team | undefined;
-        tasks: Task[];
-      }>
-    | undefined;
+  team: Team | undefined;
+  tasks: Task[] = [];
+  destroy$ = new Subject<void>();
 
   constructor(
     private actionSheetController: ActionSheetController,
@@ -35,21 +31,19 @@ export class TaskListPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    this.team$ = this.activeRoute.paramMap.pipe(
-      switchMap((params) => {
-        this.idTeam = params.get('idTeam') as string;
-        this.idTaskList = params.get('idTaskList') as string;
+    combineLatest([
+      this.activeRoute.paramMap.pipe(
+        switchMap((params) => {
+          this.idTeam = params.get('idTeam') as string;
+          this.idTaskList = params.get('idTaskList') as string;
 
-        return from(this.storageService.get('user'));
-      }),
-      switchMap((user) => {
-        this.idUser = user.id;
-        return this.teamService.getTeam(this.idTeam!);
-      })
-    );
-
-    this.viewModel$ = combineLatest<[Team | undefined, Task[]]>([
-      this.team$,
+          return from(this.storageService.get('user'));
+        }),
+        switchMap((user) => {
+          this.idUser = user.id;
+          return this.teamService.getTeamObservable(this.idTeam!);
+        })
+      ),
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
           this.idTeam = params.get('idTeam') as string;
@@ -58,7 +52,24 @@ export class TaskListPage implements OnInit {
           return this.taskService.getAllAssignedTasks(this.idTaskList);
         })
       )
-    ]).pipe(map(([team, tasks]) => ({ team, tasks })));
+    ])
+      .pipe(
+        takeUntil(this.destroy$),
+        map(([team, tasks]) => ({ team, tasks }))
+      )
+      .subscribe(({ team, tasks }) => {
+        if (!team?.taskLists[this.idTaskList!]) {
+          this.router.navigate(['/tabs/lists']);
+          return;
+        }
+
+        this.team = team;
+        this.tasks = tasks;
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
   }
 
   identify(index: number, item: Task) {

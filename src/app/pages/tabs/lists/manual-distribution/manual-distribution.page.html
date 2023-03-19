@@ -5,7 +5,7 @@
 ></app-back-header>
 
 <ion-content>
-  <ng-container *ngIf="(viewModel$ | async) as vm; else loading">
+  <ng-container *ngIf="teamVm && tasksUnassigned; else loading">
     <ion-list lines="none">
       <ion-list-header class="ion-padding-horizontal">
         <ion-label><h3 class="list-title">Lista de tareas</h3></ion-label>
@@ -20,7 +20,7 @@
       </ion-list-header>
 
       <app-task-slide
-        [tasks]="vm.tasksUnassigned"
+        [tasks]="tasksUnassigned"
         [withoutUsers]="true"
         distributionMode="manual"
       ></app-task-slide>
@@ -28,7 +28,7 @@
 
     <ion-list
       lines="none"
-      *ngFor="let user of vm.teamVm.team?.userMembers | objSortedValues; trackBy: identify"
+      *ngFor="let user of teamVm.team?.userMembers | objSortedValues; trackBy: identify"
     >
       <ion-list-header class="ion-padding-horizontal">
         <ion-label>
@@ -37,7 +37,7 @@
       </ion-list-header>
 
       <app-task-slide
-        [tasks]="(vm.teamVm[user.id] | async)!"
+        [tasks]="(teamVm[user.id] | async)!"
         [idUser]="user.id"
         [withoutUsers]="false"
         distributionMode="manual"
@@ -47,7 +47,7 @@
 
     <ion-button
       (click)="completeDistribution()"
-      [disabled]="vm.teamVm.team!.userMembers[idUser].role === 'member' || isLoading"
+      [disabled]="teamVm.team!.userMembers[idUser].role === 'member' || isLoading"
       class="ion-margin"
       expand="block"
       fill="solid"
