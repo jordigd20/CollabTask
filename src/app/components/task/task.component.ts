@@ -84,7 +84,7 @@ export class TaskComponent implements OnInit {
       icon: 'trash-outline',
       cssClass: 'action-sheet-danger-icon',
       handler: () => {
-        this.taskService.deleteTask(this.task.id);
+        this.teamService.deleteTask(this.task.idTeam, this.task.idTaskList, this.task.id);
       }
     };
 

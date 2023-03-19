@@ -341,7 +341,7 @@ export class TeamService {
         team!.taskLists[idTaskList].userTasksPreferred
       )) {
         if (userValue.length > maxNumberOfTasks) {
-          const idTask = userValue[userValue.length - 1]; /// -------------------------------------
+          const idTask = userValue[userValue.length - 1];
           batch.update(
             teamRef,
             `taskLists.${idTaskList}.userTasksPreferred.${userKey}`,
@@ -391,6 +391,39 @@ export class TeamService {
           cssClass: 'toast-success'
         });
       }
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async deleteTask(idTeam: string, idTaskList: string, idTask: string) {
+    try {
+      const team = await firstValueFrom(this.getTeam(idTeam));
+
+      if (!team) {
+        throw new Error('No se ha encontrado el equipo');
+      }
+
+      const batch = this.afs.firestore.batch();
+      const taskRef = this.afs.firestore.doc(`tasks/${idTask}`);
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+
+      batch.delete(taskRef);
+
+      for (let [userKey, userValue] of Object.entries(
+        team.taskLists[idTaskList].userTasksPreferred
+      )) {
+        if (userValue.includes(idTask)) {
+          batch.update(
+            teamRef,
+            `taskLists.${idTaskList}.userTasksPreferred.${userKey}`,
+            firebase.firestore.FieldValue.arrayRemove(idTask)
+          );
+        }
+      }
+
+      await batch.commit();
     } catch (error) {
       console.error(error);
       this.handleError(error);

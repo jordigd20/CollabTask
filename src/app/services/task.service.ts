@@ -171,15 +171,6 @@ export class TaskService {
     }
   }
 
-  async deleteTask(idTask: string) {
-    try {
-      await this.afs.doc<Task>(`tasks/${idTask}`).delete();
-    } catch (error) {
-      console.error(error);
-      this.handleError(error);
-    }
-  }
-
   async completeDistribution(idTaskList: string) {
     try {
       const temporalTasks = await firstValueFrom(this.getAllTemporarilyAssignedTasks(idTaskList));
