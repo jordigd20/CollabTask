@@ -155,7 +155,6 @@ export class ListsPage implements OnInit {
               message:
                 '¿Estás seguro de que quieres eliminar esta lista de tareas? Perderás las tareas y los puntos acumulados.',
               confirmText: 'Eliminar',
-              cssClass: 'delete-task-list-modal',
               dangerType: true,
               mainFunction: () => this.deleteTaskList(idTeam, idTaskList),
               modalController: this.modalController

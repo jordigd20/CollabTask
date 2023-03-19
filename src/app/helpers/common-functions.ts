@@ -6,7 +6,7 @@ interface ConfirmationModal {
   message: string;
   confirmText: string;
   dangerType: boolean;
-  cssClass: string;
+  cssClass?: string;
   mainFunction: () => void;
   modalController: ModalController;
 }

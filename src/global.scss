@@ -402,22 +402,27 @@ ion-spinner.loading-content {
 }
 
 .confirmation-modal {
+  --height: auto;
   --width: 90%;
   --border-radius: 10px;
+
+  .ion-page {
+    position: relative;
+    display: block;
+    contain: content;
+  }
+
+  .inner-content {
+    max-height: 80vh;
+    overflow: auto;
+    color: var(--ion-text-color);
+  }
 }
 
 .periodic-date-modal {
   ion-content {
     --padding-top: 25vh !important;
   }
-}
-
-.leave-team-modal {
-  --height: 25%;
-}
-
-.delete-task-list-modal {
-  --height: 32%;
 }
 
 ion-modal.modal-transparent {
