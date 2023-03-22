@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="fw-bold ion-text-center">Resultado del reparto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="tertiary">
+  <ion-list class="list-container" lines="none">
+    <ion-list-header>
+      <ion-label><h3 class="list-title">Tareas</h3></ion-label>
+      <ion-select interface="action-sheet" placeholder="Todas" cancelText="Cancelar">
+        <ion-select-option value="allTasks">Todas</ion-select-option>
+        <ion-select-option *ngFor="let user of team!.userMembers | objSortedValues" [value]="user.id">
+          {{user.name}}
+        </ion-select-option>
+      </ion-select>
+    </ion-list-header>
+
+    <div class="ion-padding">
+      <app-task
+        *ngFor="let task of tasks; trackBy: identify"
+        [task]="task"
+        [teamName]="team!.name"
+        [idUser]="task.idUserAssigned"
+        [withoutUserAssigned]="false"
+        [showCompleteButton]="idUser === task.idUserAssigned"
+      ></app-task>
+    </div>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="center" slot="fixed" style="position: fixed">
+    <ion-button
+      [routerLink]="['/tabs/lists/task-list/', idTeam, idTaskList]"
+      color="primary"
+      shape="round"
+    >
+      Volver a la lista de tareas
+    </ion-button>
+  </ion-fab>
+</ion-content>

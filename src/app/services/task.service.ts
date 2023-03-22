@@ -55,6 +55,12 @@ export class TaskService {
     );
   }
 
+  getTasksFromDistributionResult(idTaskList: string, idTasksResult: string[]) {
+    return this.getAllTasksByTaskList(idTaskList).pipe(
+      map((tasks) => tasks.filter((task) => idTasksResult.includes(task.id)))
+    );
+  }
+
   getAllTasksByTaskList(idTaskList: string) {
     if (!this.tasks$ || this.currentIdTaskList !== idTaskList) {
       console.log('this.tasks$ is undefined');

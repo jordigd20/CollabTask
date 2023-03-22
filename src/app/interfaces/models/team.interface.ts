@@ -24,4 +24,6 @@ export interface TaskList {
   userScore: { [key: string]: number };
   userTasksPreferred: { [key: string]: string[] };
   idCompletedUsers: string[];
+  distributionCompleted: boolean;
+  idAssignedTasks: string[];
 }

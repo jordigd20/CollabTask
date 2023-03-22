@@ -209,7 +209,7 @@ export class TeamService {
     try {
       const team = await firstValueFrom(this.getTeam(idTeam));
 
-      if (!team) {
+      if (!team || !name || !distributionType) {
         throw new Error('No se ha encontrado el equipo');
       }
 
@@ -224,7 +224,9 @@ export class TeamService {
         distributionType,
         userScore: {},
         userTasksPreferred: {},
-        idCompletedUsers: []
+        idCompletedUsers: [],
+        distributionCompleted: false,
+        idAssignedTasks: []
       };
 
       for (const user of Object.values(team.userMembers)) {
@@ -250,17 +252,22 @@ export class TeamService {
   async updateTaskListProperties(
     idTeam: string,
     idTaskList: string,
-    { name, distributionType }: TaskListData
+    { name, distributionType, distributionCompleted, idAssignedTasks }: TaskListData
   ) {
     try {
       const team = await firstValueFrom(this.getTeam(idTeam));
+
+      if (!team) {
+        throw new Error('No se ha encontrado el equipo');
+      }
+
       const batch = this.afs.firestore.batch();
 
       // If team is changing from manual to preferences, we need to reset
       // the idTemporalUserAssigned of all tasks
       if (
         distributionType === 'preferences' &&
-        team?.taskLists[idTaskList].distributionType === 'manual'
+        team.taskLists[idTaskList].distributionType === 'manual'
       ) {
         const tasks = await firstValueFrom(this.taskService.getAllTasksByTaskList(idTaskList));
 
@@ -273,10 +280,25 @@ export class TeamService {
       }
 
       const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
-      batch.update(teamRef, {
-        [`taskLists.${idTaskList}.name`]: name,
-        [`taskLists.${idTaskList}.distributionType`]: distributionType
-      });
+      const dataToUpdate: { [key: string]: string | string[] | boolean } = {};
+
+      if (name) {
+        dataToUpdate[`taskLists.${idTaskList}.name`] = name;
+      }
+
+      if (distributionType) {
+        dataToUpdate[`taskLists.${idTaskList}.distributionType`] = distributionType;
+      }
+
+      if (distributionCompleted) {
+        dataToUpdate[`taskLists.${idTaskList}.distributionCompleted`] = distributionCompleted;
+      }
+
+      if (idAssignedTasks) {
+        dataToUpdate[`taskLists.${idTaskList}.idAssignedTasks`] = idAssignedTasks;
+      }
+
+      batch.update(teamRef, dataToUpdate);
 
       await batch.commit();
 
@@ -638,6 +660,7 @@ export class TeamService {
         const tasksWithoutPreference: Task[] = [];
         const tasksPerUser = Math.floor(tasksUnassigned.length / userMembersWithScore.length);
         const assignmentsTrack: Map<string, number> = new Map();
+        const idAssignedTasks: string[] = [];
         console.log('Entire object: ', userMembersWithScore);
         console.log('tasksPerUser', tasksPerUser);
 
@@ -672,6 +695,7 @@ export class TeamService {
             );
 
             console.log(`Assigning task ${task.id} to HIGHEST user ${userWithHighestScore.id}`);
+            idAssignedTasks.push(task.id);
             batch.update(taskRef, { idUserAssigned: userWithHighestScore.id });
 
             // If there is only one user with preference, we assign the task to that user
@@ -689,6 +713,7 @@ export class TeamService {
             );
 
             console.log(`Assigning task ${task.id} DIRECTLY to user ${usersWithPreference[0][0]}`);
+            idAssignedTasks.push(task.id);
             batch.update(taskRef, { idUserAssigned: usersWithPreference[0][0] });
           } else {
             tasksWithoutPreference.push(task);
@@ -719,6 +744,7 @@ export class TeamService {
             assignmentsTrack.set(user.id, (assignmentsTrack.get(user.id) || 0) + 1);
             console.log(`Assigning task ${task.id} to user ${user.id}`);
             const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+            idAssignedTasks.push(task.id);
             batch.update(taskRef, { idUserAssigned: user.id });
           }
 
@@ -752,6 +778,7 @@ export class TeamService {
             assignmentsTrack.set(randomUser?.id, (assignmentsTrack.get(randomUser?.id) || 0) + 1);
             console.log(`Assigning task ${task.id} to user: `, randomUser);
             const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+            idAssignedTasks.push(task.id);
             batch.update(taskRef, { idUserAssigned: randomUser?.id });
           }
 
@@ -768,7 +795,11 @@ export class TeamService {
           }
         }
 
-        batch.update(teamRef, `taskLists.${idTaskList}.idCompletedUsers`, []);
+        batch.update(teamRef, {
+          [`taskLists.${idTaskList}.idCompletedUsers`]: [],
+          [`taskLists.${idTaskList}.distributionCompleted`]: true,
+          [`taskLists.${idTaskList}.idAssignedTasks`]: idAssignedTasks
+        });
         await batch.commit();
       }
     } catch (error) {

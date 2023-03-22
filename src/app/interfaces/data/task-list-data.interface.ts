@@ -1,4 +1,6 @@
 export interface TaskListData {
-  name: string;
-  distributionType: 'manual' | 'preferences';
+  name?: string;
+  distributionType?: 'manual' | 'preferences';
+  distributionCompleted?: boolean;
+  idAssignedTasks?: string[];
 }

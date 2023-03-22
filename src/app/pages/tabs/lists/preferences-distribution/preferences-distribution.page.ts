@@ -84,6 +84,15 @@ export class PreferencesDistributionPage implements OnInit {
           return;
         }
 
+        if (team.taskLists[this.idTaskList!].distributionCompleted) {
+          this.router.navigate([
+            '/tabs/lists/distribution-result',
+            this.idTeam,
+            this.idTaskList
+          ]);
+          return;
+        }
+
         this.team = team;
         this.userTasksPreferred = userTasksPreferred;
         this.tasksUnassigned = tasksUnassigned;
