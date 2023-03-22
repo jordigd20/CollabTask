@@ -109,9 +109,9 @@ export class TaskComponent implements OnInit {
 
     const markAsPreferredButton = {
       text: this.isTaskPreferred
-        ? 'Quitar de la lista de preferencia'
-        : 'Añadir a la lista de preferencia',
-      icon: this.isTaskPreferred ? 'close-circle-outline' : 'add-circle-outline',
+        ? 'Eliminar de preferidas'
+        : 'Marcar como preferida',
+      icon: this.isTaskPreferred ? 'heart-dislike-outline' : 'heart-outline',
       cssClass: 'action-sheet-custom-icon',
       handler: () => {
         this.markTaskAsPreferred();

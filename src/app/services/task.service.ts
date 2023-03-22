@@ -171,7 +171,7 @@ export class TaskService {
     }
   }
 
-  async completeDistribution(idTaskList: string) {
+  async completeManualDistribution(idTaskList: string) {
     try {
       const temporalTasks = await firstValueFrom(this.getAllTemporarilyAssignedTasks(idTaskList));
 

@@ -30,7 +30,11 @@
     <ion-list>
       <ion-list-header class="ion-padding-horizontal">
         <ion-label><h3 class="list-title">Tu lista de preferencia</h3></ion-label>
-        <ion-chip class="info-chip chip-active" [disabled]="true">
+        <ion-chip
+          class="info-chip"
+          [ngClass]="{ 'chip-active':  team.taskLists[idTaskList!].userTasksPreferred[idUser].length === maxNumberOfTasks}"
+          [disabled]="true"
+        >
           <ion-label>
             {{team.taskLists[idTaskList!].userTasksPreferred[idUser].length}}/{{ maxNumberOfTasks }}
             tareas
@@ -52,7 +56,11 @@
 
     <div class="ion-padding ion-margin-top d-flex justify-center align-items-center flex-column">
       <span class="regular-text">Han terminado</span>
-      <ion-chip class="info-chip chip-active" [disabled]="true">
+      <ion-chip
+        class="info-chip"
+        [ngClass]="{ 'chip-active':  team.taskLists[idTaskList!].idCompletedUsers.length === team!.idUserMembers.length}"
+        [disabled]="true"
+      >
         <ion-label>
           {{ team.taskLists[idTaskList!].idCompletedUsers.length }}/{{ team!.idUserMembers.length }}
           miembros del equipo
@@ -60,7 +68,15 @@
       </ion-chip>
     </div>
 
-    <ion-button class="ion-margin" expand="block" fill="solid" shape="round">
+    <ion-button
+      (click)="checkDistribution()"
+      [disabled]="team!.userMembers[idUser].role === 'member' || isLoading"
+      class="ion-margin"
+      expand="block"
+      fill="solid"
+      shape="round"
+    >
+      <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
       Terminar reparto
     </ion-button>
   </ng-container>

@@ -104,7 +104,7 @@ export class ManualDistributionPage implements OnInit {
 
   async completeDistribution() {
     this.isLoading = true;
-    await this.taskService.completeDistribution(this.idTaskList!);
+    await this.taskService.completeManualDistribution(this.idTaskList!);
     this.isLoading = false;
   }
 }

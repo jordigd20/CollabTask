@@ -7,7 +7,8 @@ import {
   UserMember,
   TaskListData,
   TaskList,
-  MarkTaskData
+  MarkTaskData,
+  Task
 } from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
@@ -620,6 +621,162 @@ export class TeamService {
     );
   }
 
+  async completePreferencesDistribution(idTeam: string, idTaskList: string) {
+    try {
+      const [team, tasksUnassigned] = await Promise.all([
+        firstValueFrom(this.getTeam(idTeam)),
+        firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))
+      ]);
+
+      if (team && tasksUnassigned.length > 0) {
+        const batch = this.afs.firestore.batch();
+        const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+        const userTasksPreferred = Object.entries(team.taskLists[idTaskList].userTasksPreferred);
+        const userMembersWithScore = Object.entries(team.taskLists[idTaskList].userScore)
+          .map(([id, score]) => ({ id, score }))
+          .sort((a, b) => a.score - b.score);
+        const tasksWithoutPreference: Task[] = [];
+        const tasksPerUser = Math.floor(tasksUnassigned.length / userMembersWithScore.length);
+        const assignmentsTrack: Map<string, number> = new Map();
+        console.log('Entire object: ', userMembersWithScore);
+        console.log('tasksPerUser', tasksPerUser);
+
+        for (let task of tasksUnassigned) {
+          const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+          const usersWithPreference = userTasksPreferred.filter(([_, tasks]) =>
+            tasks.includes(task.id)
+          );
+
+          // If there is more than one user with the same preference,
+          // we assign the task to the one with the highest score
+          if (usersWithPreference.length > 1) {
+            let userWithHighestScore = this.getUserWithHighestScore(
+              userMembersWithScore,
+              usersWithPreference
+            );
+
+            // If the user with the highest score has reached the maximum number of tasks,
+            // we assign the task to the next user
+            if (assignmentsTrack.get(userWithHighestScore.id) === tasksPerUser) {
+              const nextUserMembers = [...userMembersWithScore];
+              nextUserMembers.pop();
+              userWithHighestScore = this.getUserWithHighestScore(
+                nextUserMembers,
+                usersWithPreference
+              );
+            }
+
+            assignmentsTrack.set(
+              userWithHighestScore.id,
+              (assignmentsTrack.get(userWithHighestScore.id) || 0) + 1
+            );
+
+            console.log(`Assigning task ${task.id} to HIGHEST user ${userWithHighestScore.id}`);
+            batch.update(taskRef, { idUserAssigned: userWithHighestScore.id });
+
+            // If there is only one user with preference, we assign the task to that user
+          } else if (usersWithPreference.length === 1) {
+            // If the user has reached the maximum number of tasks,
+            // the task goes to the rest of the tasks
+            if (assignmentsTrack.get(usersWithPreference[0][0]) === tasksPerUser) {
+              tasksWithoutPreference.push(task);
+              continue;
+            }
+
+            assignmentsTrack.set(
+              usersWithPreference[0][0],
+              (assignmentsTrack.get(usersWithPreference[0][0]) || 0) + 1
+            );
+
+            console.log(`Assigning task ${task.id} DIRECTLY to user ${usersWithPreference[0][0]}`);
+            batch.update(taskRef, { idUserAssigned: usersWithPreference[0][0] });
+          } else {
+            tasksWithoutPreference.push(task);
+          }
+        }
+
+        // Assign the rest of the tasks to each user ordered by score
+        // in descending order until all the users have the same number of tasks
+        let i = 0;
+        let usersReachedMaxTasks = 0;
+        while (tasksWithoutPreference.length > 0) {
+          if (assignmentsTrack.get(userMembersWithScore[i].id) === tasksPerUser) {
+            usersReachedMaxTasks++;
+            if (usersReachedMaxTasks === userMembersWithScore.length) {
+              break;
+            }
+            i++;
+            if (i === userMembersWithScore.length) {
+              i = 0;
+            }
+            continue;
+          }
+
+          const task = tasksWithoutPreference.shift();
+          const user = userMembersWithScore[i];
+
+          if (task) {
+            assignmentsTrack.set(user.id, (assignmentsTrack.get(user.id) || 0) + 1);
+            console.log(`Assigning task ${task.id} to user ${user.id}`);
+            const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+            batch.update(taskRef, { idUserAssigned: user.id });
+          }
+
+          i++;
+          if (i === userMembersWithScore.length) {
+            i = 0;
+          }
+        }
+
+        console.log('Rest of the tasks: ');
+        const sumOfScores = userMembersWithScore.reduce((acc, user) => acc + user.score, 0);
+        const scoresWeight = userMembersWithScore.map((user) => 1 - user.score / sumOfScores);
+
+        i = 0;
+        // The rest of the tasks will be randomly assigned but weighted by the inverse of their score
+        // so that the users with highest score will have a lower chance of getting an additional task
+        while (tasksWithoutPreference.length > 0) {
+          const randomUser = this.weightedRandom(userMembersWithScore, scoresWeight);
+
+          if (assignmentsTrack.get(randomUser?.id) === tasksPerUser + 1) {
+            i++;
+            if (i === userMembersWithScore.length) {
+              i = 0;
+            }
+            continue;
+          }
+
+          const task = tasksWithoutPreference.shift();
+
+          if (task) {
+            assignmentsTrack.set(randomUser?.id, (assignmentsTrack.get(randomUser?.id) || 0) + 1);
+            console.log(`Assigning task ${task.id} to user: `, randomUser);
+            const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+            batch.update(taskRef, { idUserAssigned: randomUser?.id });
+          }
+
+          i++;
+          if (i === userMembersWithScore.length) {
+            i = 0;
+          }
+        }
+
+        // Clear the preferences
+        for (let [userKey, userValue] of userTasksPreferred) {
+          if (userValue.length > 0) {
+            batch.update(teamRef, `taskLists.${idTaskList}.userTasksPreferred.${userKey}`, []);
+          }
+        }
+
+        batch.update(teamRef, `taskLists.${idTaskList}.idCompletedUsers`, []);
+        await batch.commit();
+      }
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
   handleError(error: any) {
     let message = '';
 
@@ -658,5 +815,49 @@ export class TeamService {
       icon: 'close-circle',
       cssClass: 'toast-error'
     });
+  }
+
+  private weightedRandom(users: any[], weights: number[]) {
+    const cumulativeWeights: number[] = [];
+    for (let i = 0; i < weights.length; i++) {
+      cumulativeWeights[i] = weights[i] + (cumulativeWeights[i - 1] || 0);
+    }
+
+    // Getting the random number in a range of [0...sum(weights)]
+    const maxCumulativeWeight = cumulativeWeights[cumulativeWeights.length - 1];
+    const randomNumber = maxCumulativeWeight * Math.random();
+
+    // Picking the random item based on its score
+    // The items with higher weight will be picked more often
+    for (let i = 0; i < users.length; i++) {
+      if (cumulativeWeights[i] >= randomNumber) {
+        return {
+          id: users[i].id,
+          index: i
+        };
+      }
+    }
+    return;
+  }
+
+  private getUserWithHighestScore(
+    userMembersWithScore: {
+      id: string;
+      score: number;
+    }[],
+    usersWithPreference: [string, string[]][]
+  ) {
+    const usersScore = userMembersWithScore.filter(({ id }) =>
+      usersWithPreference.map(([userKey]) => userKey).includes(id)
+    );
+
+    // In case there is a tie the array is suffled and the last element is returned
+    usersScore.sort(() => 0.5 - Math.random());
+
+    const userWithHighestScore = usersScore.reduce((acc, curr) =>
+      curr.score > acc.score ? curr : acc
+    );
+
+    return userWithHighestScore;
   }
 }

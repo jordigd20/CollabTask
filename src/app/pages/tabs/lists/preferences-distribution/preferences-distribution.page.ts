@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PopoverController } from '@ionic/angular';
+import { PopoverController, ModalController } from '@ionic/angular';
 import { InfoPreferencesDistributionComponent } from '../../../../components/info-preferences-distribution/info-preferences-distribution.component';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { switchMap, from, Observable, combineLatest, map, Subject, takeUntil } from 'rxjs';
+import { switchMap, from, combineLatest, map, Subject, takeUntil } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { Task, Team } from '../../../../interfaces';
+import { presentConfirmationModal } from '../../../../helpers/common-functions';
 
 const MAX_LIST_PREFERRED_FACTOR = 0.2;
 
@@ -23,6 +24,7 @@ export class PreferencesDistributionPage implements OnInit {
   tasksUnassigned: Task[] | undefined;
   userTasksPreferred: (Task | undefined)[] = [];
   maxNumberOfTasks: number | undefined;
+  isLoading: boolean = false;
   destroy$ = new Subject<void>();
 
   constructor(
@@ -31,6 +33,7 @@ export class PreferencesDistributionPage implements OnInit {
     private taskService: TaskService,
     private teamService: TeamService,
     private storageService: StorageService,
+    private modalController: ModalController,
     private router: Router
   ) {}
 
@@ -126,5 +129,31 @@ export class PreferencesDistributionPage implements OnInit {
     });
 
     await popover.present();
+  }
+
+  async checkDistribution() {
+    if (
+      this.team?.taskLists[this.idTaskList!].idCompletedUsers.length ===
+      this.team?.idUserMembers.length
+    ) {
+      this.completeDistribution();
+      return;
+    }
+
+    await presentConfirmationModal({
+      title: 'Terminar el reparto',
+      message:
+        '¿Estas seguro de que quieres terminar el reparto? Todavía no han terminado todos los miembros del equipo.',
+      confirmText: 'Terminar',
+      dangerType: false,
+      mainFunction: () => this.completeDistribution(),
+      modalController: this.modalController
+    });
+  }
+
+  async completeDistribution() {
+    this.isLoading = true;
+    await this.teamService.completePreferencesDistribution(this.idTeam!, this.idTaskList!);
+    this.isLoading = false;
   }
 }
