@@ -1,0 +1,13 @@
+.preferences-list {
+  background-color: var(--ion-color-tertiary);
+
+  ion-list-header {
+    padding-top: 10px;
+    background-color: var(--ion-color-white);
+  }
+
+  .items-container {
+    padding: 10px;
+    padding-bottom: 0;
+  }
+}
