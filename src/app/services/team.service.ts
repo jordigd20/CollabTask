@@ -659,7 +659,7 @@ export class TeamService {
           .sort((a, b) => a.score - b.score);
         const tasksWithoutPreference: Task[] = [];
         const tasksPerUser = Math.floor(tasksUnassigned.length / userMembersWithScore.length);
-        const assignmentsTrack: Map<string, number> = new Map();
+        const assignmentsTrack = new Map<string, number>();
         const idAssignedTasks: string[] = [];
         console.log('Entire object: ', userMembersWithScore);
         console.log('tasksPerUser', tasksPerUser);
@@ -723,13 +723,14 @@ export class TeamService {
         // Assign the rest of the tasks to each user ordered by score
         // in descending order until all the users have the same number of tasks
         let i = 0;
-        let usersReachedMaxTasks = 0;
+        const usersReachedMaxTasks = new Map<string, boolean>();
         while (tasksWithoutPreference.length > 0) {
           if (assignmentsTrack.get(userMembersWithScore[i].id) === tasksPerUser) {
-            usersReachedMaxTasks++;
-            if (usersReachedMaxTasks === userMembersWithScore.length) {
+            usersReachedMaxTasks.set(userMembersWithScore[i].id, true);
+            if (usersReachedMaxTasks.size === userMembersWithScore.length) {
               break;
             }
+
             i++;
             if (i === userMembersWithScore.length) {
               i = 0;
@@ -755,37 +756,15 @@ export class TeamService {
         }
 
         console.log('Rest of the tasks: ');
-        const sumOfScores = userMembersWithScore.reduce((acc, user) => acc + user.score, 0);
-        const scoresWeight = userMembersWithScore.map((user) => 1 - user.score / sumOfScores);
 
-        i = 0;
-        // The rest of the tasks will be randomly assigned but weighted by the inverse of their score
-        // so that the users with highest score will have a lower chance of getting an additional task
-        while (tasksWithoutPreference.length > 0) {
-          const randomUser = this.weightedRandom(userMembersWithScore, scoresWeight);
-
-          if (assignmentsTrack.get(randomUser?.id) === tasksPerUser + 1) {
-            i++;
-            if (i === userMembersWithScore.length) {
-              i = 0;
-            }
-            continue;
-          }
-
-          const task = tasksWithoutPreference.shift();
-
-          if (task) {
-            assignmentsTrack.set(randomUser?.id, (assignmentsTrack.get(randomUser?.id) || 0) + 1);
-            console.log(`Assigning task ${task.id} to user: `, randomUser);
-            const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
-            idAssignedTasks.push(task.id);
-            batch.update(taskRef, { idUserAssigned: randomUser?.id });
-          }
-
-          i++;
-          if (i === userMembersWithScore.length) {
-            i = 0;
-          }
+        // The rest of the tasks will be assigned to the users in descending order of score
+        for (let i = 0; i < tasksWithoutPreference.length; i++) {
+          console.log(
+            `Assigning task ${tasksWithoutPreference[i].id} to user ${userMembersWithScore[i].id}`
+          );
+          const taskRef = this.afs.firestore.doc(`tasks/${tasksWithoutPreference[i].id}`);
+          idAssignedTasks.push(tasksWithoutPreference[i].id);
+          batch.update(taskRef, { idUserAssigned: userMembersWithScore[i].id });
         }
 
         // Clear the preferences
