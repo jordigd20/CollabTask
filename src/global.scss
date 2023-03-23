@@ -519,6 +519,15 @@ ion-searchbar {
   }
 }
 
+ion-select {
+  background-color: var(--ion-color-light);
+  --padding-end: 10px;
+  --padding-top: 7px;
+  --padding-bottom: 7px;
+  border-radius: 6px;
+  border: 1px solid var(--ion-color-tertiary);
+}
+
 ion-fab.fab-horizontal-center {
   margin: 0 !important;
   bottom: -10px;

@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { TeamService } from '../../../../services/team.service';
 import { ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../../services/task.service';
-import { switchMap, of, Subject, takeUntil, from } from 'rxjs';
-import { Team, Task, UserMember } from '../../../../interfaces';
+import { switchMap, of, Subject, takeUntil, from, firstValueFrom } from 'rxjs';
+import { Team, Task } from '../../../../interfaces';
 import { StorageService } from '../../../../services/storage.service';
 
 @Component({
@@ -17,6 +17,8 @@ export class DistributionResultPage implements OnInit {
   idUser: string = '';
   team: Team | undefined;
   tasks: Task[] | undefined;
+  allTasks: Task[] | undefined;
+  taskListUpdated: boolean = false;
   destroy$ = new Subject<void>();
 
   constructor(
@@ -26,10 +28,9 @@ export class DistributionResultPage implements OnInit {
     private taskService: TaskService
   ) {}
 
-  ngOnInit() {
-    this.activeRoute.paramMap
-      .pipe(
-        takeUntil(this.destroy$),
+  async ngOnInit() {
+    const tasks = await firstValueFrom(
+      this.activeRoute.paramMap.pipe(
         switchMap((params) => {
           this.idTeam = params.get('idTeam') as string;
           this.idTaskList = params.get('idTaskList') as string;
@@ -52,17 +53,22 @@ export class DistributionResultPage implements OnInit {
           }
 
           return of();
-        })
+        }),
+        takeUntil(this.destroy$)
       )
-      .subscribe((tasks) => {
-        this.tasks = tasks;
+    );
 
-        // this.teamService.updateTaskListProperties(this.idTeam!, this.idTaskList!, {
-        //   distributionCompleted: false,
-        //   idAssignedTasks: []
-        // });
-        console.log(tasks);
+    this.allTasks = tasks;
+    this.tasks = tasks;
+
+    if (!this.taskListUpdated) {
+      this.teamService.updateTaskListProperties(this.idTeam!, this.idTaskList!, false, {
+        distributionCompleted: false,
+        idAssignedTasks: []
       });
+
+      this.taskListUpdated = true;
+    }
   }
 
   ngOnDestroy() {
@@ -71,5 +77,14 @@ export class DistributionResultPage implements OnInit {
 
   identify(index: number, item: Task) {
     return item.id;
+  }
+
+  changeSelectList(ev: any) {
+    if (this.allTasks) {
+      this.tasks =
+        ev.detail.value !== 'allTasks'
+          ? this.allTasks.filter((task) => task.idUserAssigned === ev.detail.value)
+          : this.allTasks;
+    }
   }
 }

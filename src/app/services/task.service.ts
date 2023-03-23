@@ -5,6 +5,7 @@ import { StorageService } from './storage.service';
 import { map, debounceTime, Observable, shareReplay, take, firstValueFrom } from 'rxjs';
 import firebase from 'firebase/compat/app';
 import { ToastService } from './toast.service';
+import { TeamErrorCodes } from '../interfaces/errors/team-error-codes.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -182,7 +183,7 @@ export class TaskService {
       const temporalTasks = await firstValueFrom(this.getAllTemporarilyAssignedTasks(idTaskList));
 
       if (temporalTasks.length === 0) {
-        return;
+        throw new Error(TeamErrorCodes.TeamEmptyTaskList);
       }
 
       const batch = this.afs.firestore.batch();
@@ -211,6 +212,9 @@ export class TaskService {
     let message = '';
 
     switch (error.message) {
+      case TeamErrorCodes.TeamEmptyTaskList:
+        message = 'No hay tareas para repartir';
+      break;
       default:
         message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
         break;

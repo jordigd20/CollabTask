@@ -87,6 +87,7 @@ export class TaskListFormPage implements OnInit {
     await this.teamService.updateTaskListProperties(
       this.idTeam!,
       this.idTaskList!,
+      true,
       this.taskListForm.value
     );
     this.isLoading = false;

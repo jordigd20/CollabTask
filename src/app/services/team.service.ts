@@ -252,6 +252,7 @@ export class TeamService {
   async updateTaskListProperties(
     idTeam: string,
     idTaskList: string,
+    showToastMsg: boolean,
     { name, distributionType, distributionCompleted, idAssignedTasks }: TaskListData
   ) {
     try {
@@ -290,7 +291,7 @@ export class TeamService {
         dataToUpdate[`taskLists.${idTaskList}.distributionType`] = distributionType;
       }
 
-      if (distributionCompleted) {
+      if (distributionCompleted !== undefined) {
         dataToUpdate[`taskLists.${idTaskList}.distributionCompleted`] = distributionCompleted;
       }
 
@@ -299,14 +300,15 @@ export class TeamService {
       }
 
       batch.update(teamRef, dataToUpdate);
-
       await batch.commit();
 
-      this.toastService.showToast({
-        message: 'La lista de tareas se ha actualizado correctamente',
-        icon: 'checkmark-circle',
-        cssClass: 'toast-success'
-      });
+      if (showToastMsg) {
+        this.toastService.showToast({
+          message: 'La lista de tareas se ha actualizado correctamente',
+          icon: 'checkmark-circle',
+          cssClass: 'toast-success'
+        });
+      }
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -650,6 +652,10 @@ export class TeamService {
         firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))
       ]);
 
+      if (tasksUnassigned.length === 0) {
+        throw new Error(TeamErrorCodes.TeamEmptyTaskList);
+      }
+
       if (team && tasksUnassigned.length > 0) {
         const batch = this.afs.firestore.batch();
         const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
@@ -780,6 +786,12 @@ export class TeamService {
           [`taskLists.${idTaskList}.idAssignedTasks`]: idAssignedTasks
         });
         await batch.commit();
+
+        this.toastService.showToast({
+          message: 'El reparto se ha realizado correctamente',
+          icon: 'checkmark-circle',
+          cssClass: 'toast-success'
+        });
       }
     } catch (error) {
       console.error(error);
@@ -815,6 +827,9 @@ export class TeamService {
       case TeamErrorCodes.TeamReachedMaxTasksPreferred:
         message = 'Has alcanzado el máximo de tareas preferidas permitidas';
         break;
+      case TeamErrorCodes.TeamEmptyTaskList:
+        message = 'No hay tareas para repartir';
+        break;
       default:
         message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
         break;
@@ -825,29 +840,6 @@ export class TeamService {
       icon: 'close-circle',
       cssClass: 'toast-error'
     });
-  }
-
-  private weightedRandom(users: any[], weights: number[]) {
-    const cumulativeWeights: number[] = [];
-    for (let i = 0; i < weights.length; i++) {
-      cumulativeWeights[i] = weights[i] + (cumulativeWeights[i - 1] || 0);
-    }
-
-    // Getting the random number in a range of [0...sum(weights)]
-    const maxCumulativeWeight = cumulativeWeights[cumulativeWeights.length - 1];
-    const randomNumber = maxCumulativeWeight * Math.random();
-
-    // Picking the random item based on its score
-    // The items with higher weight will be picked more often
-    for (let i = 0; i < users.length; i++) {
-      if (cumulativeWeights[i] >= randomNumber) {
-        return {
-          id: users[i].id,
-          index: i
-        };
-      }
-    }
-    return;
   }
 
   private getUserWithHighestScore(

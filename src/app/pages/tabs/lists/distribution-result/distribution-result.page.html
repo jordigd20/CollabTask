@@ -8,15 +8,24 @@
   <ion-list class="list-container" lines="none">
     <ion-list-header>
       <ion-label><h3 class="list-title">Tareas</h3></ion-label>
-      <ion-select interface="action-sheet" placeholder="Todas" cancelText="Cancelar">
+      <ion-select
+        (ionChange)="changeSelectList($event)"
+        *ngIf="team"
+        interface="action-sheet"
+        placeholder="Todas"
+        cancelText="Cancelar"
+      >
         <ion-select-option value="allTasks">Todas</ion-select-option>
-        <ion-select-option *ngFor="let user of team!.userMembers | objSortedValues" [value]="user.id">
+        <ion-select-option
+          *ngFor="let user of team.userMembers | objSortedValues"
+          [value]="user.id"
+        >
           {{user.name}}
         </ion-select-option>
       </ion-select>
     </ion-list-header>
 
-    <div class="ion-padding">
+    <div *ngIf="team && tasks; else loading" class="ion-padding">
       <app-task
         *ngFor="let task of tasks; trackBy: identify"
         [task]="task"
@@ -27,6 +36,15 @@
       ></app-task>
     </div>
   </ion-list>
+
+  <ng-template #loading>
+    <ion-spinner
+      class="loading-content"
+      name="circles"
+      color="primary"
+      style="margin-top: 30px !important; margin: 10px auto"
+    ></ion-spinner>
+  </ng-template>
 
   <ion-fab vertical="bottom" horizontal="center" slot="fixed" style="position: fixed">
     <ion-button
