@@ -148,7 +148,7 @@ export class TaskFormPage implements OnInit {
         previousDate
       },
       backdropDismiss: false,
-      cssClass: 'modal-transparent'
+      cssClass: 'responsive-modal datetime-modal'
     });
 
     await modal.present();
@@ -168,7 +168,7 @@ export class TaskFormPage implements OnInit {
       componentProps: {
         previousScore
       },
-      cssClass: 'modal-transparent'
+      cssClass: 'responsive-modal transparent-modal'
     });
 
     await modal.present();
@@ -190,7 +190,7 @@ export class TaskFormPage implements OnInit {
       componentProps: {
         previousSelectedDays
       },
-      cssClass: 'modal-transparent periodic-date-modal'
+      cssClass: 'responsive-modal periodic-modal'
     });
 
     await modal.present();

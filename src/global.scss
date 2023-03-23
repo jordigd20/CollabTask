@@ -91,7 +91,8 @@ ion-item.item-form.item-fill-none {
 
   &.item-has-focus,
   &:focus {
-    ion-input, ion-textarea {
+    ion-input,
+    ion-textarea {
       --background: var(--ion-color-white);
       box-shadow: 0 0 0 3px rgba(92, 137, 176, 0.3);
       border: 1px solid var(--ion-color-secondary-light);
@@ -111,7 +112,8 @@ ion-item.item-form.item-fill-none {
   /* Invalid with focus */
   &.ion-invalid.ion-touched.item-has-focus,
   &.ion-invalid.ion-touched:focus {
-    ion-input, ion-textarea {
+    ion-input,
+    ion-textarea {
       --background: var(--ion-color-white);
       box-shadow: 0 0 0 3px rgba(255, 68, 86, 0.3);
       border: 1px solid var(--ion-color-danger);
@@ -124,7 +126,8 @@ ion-item.item-form.item-fill-none {
 
   /* Invalid without focus */
   &.ion-invalid.ion-touched:not(.item-has-focus) {
-    ion-input, ion-textarea {
+    ion-input,
+    ion-textarea {
       --background: var(--ion-color-light);
       box-shadow: var(--box-shadow-input-field);
       // border: 2px solid var(--ion-color-danger);
@@ -401,7 +404,7 @@ ion-spinner.loading-content {
   }
 }
 
-.confirmation-modal {
+.responsive-modal {
   --height: auto;
   --width: 90%;
   --border-radius: 10px;
@@ -419,26 +422,14 @@ ion-spinner.loading-content {
   }
 }
 
-.periodic-date-modal {
-  ion-content {
-    --padding-top: 25vh !important;
-  }
+ion-modal.datetime-modal::part(content),
+ion-modal.periodic-modal::part(content) {
+  max-width: 350px;
 }
 
-ion-modal.modal-transparent {
-  --background: rgba(44, 39, 45, 0.2);
-
-  ion-content {
-    --background: transparent;
-    --padding-top: 15vh;
-    --padding-start: 20px;
-    --padding-end: 20px;
-
-    ion-datetime {
-      border-radius: 8px;
-      margin: auto;
-    }
-  }
+ion-modal.transparent-modal::part(content) {
+  background-color: transparent;
+  max-width: 350px;
 }
 
 ion-alert.alert-error .alert-title {

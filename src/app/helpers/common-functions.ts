@@ -30,7 +30,7 @@ export const presentConfirmationModal = async ({
       mainFunction
     },
     backdropDismiss: false,
-    cssClass: `confirmation-modal ${cssClass}`,
+    cssClass: `responsive-modal ${cssClass}`,
   });
 
   modal.present();
