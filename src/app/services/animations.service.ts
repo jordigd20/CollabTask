@@ -7,7 +7,7 @@ import { AnimationController } from '@ionic/angular';
 export class AnimationsService {
   constructor(private animationController: AnimationController) {}
 
-  toastEnterAnimation(baseEl: any, position: string) {
+  toastEnterAnimation(baseEl: any, { position, width = '' }: { position: string; width?: string }) {
     const baseAnimation = this.animationController.create();
     const wrapperAnimation = this.animationController.create();
     const iconAnimation = this.animationController.create();
@@ -20,6 +20,10 @@ export class AnimationsService {
 
     const bottom = `calc(8px + var(--ion-safe-area-bottom, 0px))`;
     const top = `calc(8px + var(--ion-safe-area-top, 0px))`;
+
+    if (width) {
+      wrapperEl.style.setProperty('width', width);
+    }
 
     wrapperAnimation
       .addElement(wrapperEl)

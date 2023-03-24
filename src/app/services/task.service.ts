@@ -6,6 +6,7 @@ import { map, debounceTime, Observable, shareReplay, take, firstValueFrom } from
 import firebase from 'firebase/compat/app';
 import { ToastService } from './toast.service';
 import { TeamErrorCodes } from '../interfaces/errors/team-error-codes.enum';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,8 @@ export class TaskService {
   constructor(
     private afs: AngularFirestore,
     private storageService: StorageService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private userService: UserService
   ) {}
 
   getTask(id: string, idTaskList: string) {
@@ -41,12 +43,7 @@ export class TaskService {
 
   getAllUnassignedTasks(idTaskList: string) {
     return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) =>
-        tasks.filter(
-          (task) =>
-            task.idTemporalUserAssigned === '' && task.idUserAssigned === '' && !task.completed
-        )
-      )
+      map((tasks) => tasks.filter((task) => task.idTemporalUserAssigned === ''))
     );
   }
 
@@ -167,6 +164,61 @@ export class TaskService {
     }
   }
 
+  async completeTask(idTeam: string, idTaskList: string, idTask: string, idUser: string) {
+    try {
+      const [task, user] = await Promise.all([
+        firstValueFrom(this.getTask(idTask, idTaskList)),
+        firstValueFrom(this.userService.getUser(idUser))
+      ]);
+
+      console.log(task, user);
+
+      if (!task || !user) {
+        throw new Error('No se ha podido completar la tarea');
+      }
+
+      const batch = this.afs.firestore.batch();
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      const taskRef = this.afs.firestore.doc(`tasks/${idTask}`);
+      const userRef = this.afs.firestore.doc(`users/${idUser}`);
+
+      //TODO: qualityMark
+      batch.update(userRef, {
+        tasksCompleted: firebase.firestore.FieldValue.increment(1),
+        efficiency: user.tasksCompleted / user.tasksAssigned
+      });
+
+      // if (task.selectedDate === 'datePeriodic') {
+        // TODO: Task with periodic date
+      // } else {
+      batch.update(taskRef, {
+        completed: true,
+        idTemporalUserAssigned: ''
+      });
+      // }
+
+      batch.update(teamRef, {
+        [`taskLists.${idTaskList}.userScore.${idUser}`]: firebase.firestore.FieldValue.increment(
+          task.score
+        ),
+        [`taskLists.${idTaskList}.userMembers.${idUser}.userTotalScore`]:
+          firebase.firestore.FieldValue.increment(task.score)
+      });
+
+      await batch.commit();
+
+      this.toastService.showToast({
+        message: 'Tarea completada',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success toast-task',
+        width: '210px'
+      });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
   async temporarilyAssignTask(idTask: string, idUser: string) {
     try {
       await this.afs.doc<Task>(`tasks/${idTask}`).update({
@@ -190,8 +242,7 @@ export class TaskService {
       for (let task of temporalTasks) {
         const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
         batch.update(taskRef, {
-          idUserAssigned: task.idTemporalUserAssigned,
-          idTemporalUserAssigned: ''
+          idUserAssigned: task.idTemporalUserAssigned
         });
       }
 
@@ -214,7 +265,7 @@ export class TaskService {
     switch (error.message) {
       case TeamErrorCodes.TeamEmptyTaskList:
         message = 'No hay tareas para repartir';
-      break;
+        break;
       default:
         message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
         break;

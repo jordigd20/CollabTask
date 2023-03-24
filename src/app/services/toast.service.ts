@@ -6,6 +6,12 @@ interface ToastOptions {
   message: string;
   icon: string;
   cssClass: string;
+  button?: {
+    side: 'start' | 'end';
+    text: string;
+    handler: (() => boolean | void | Promise<boolean | void>) | undefined;
+  };
+  width?: string;
 }
 
 @Injectable({
@@ -19,7 +25,7 @@ export class ToastService {
     private animationService: AnimationsService
   ) {}
 
-  async showToast({ message, icon, cssClass = '' }: ToastOptions) {
+  async showToast({ message, icon, cssClass = '', button, width }: ToastOptions) {
     this.currentToast?.dismiss();
 
     this.currentToast = await this.toastController.create({
@@ -30,8 +36,9 @@ export class ToastService {
       color: 'white',
       animated: true,
       cssClass: `custom-toast ${cssClass}`,
+      buttons: button ? [button] : undefined,
       enterAnimation: (baseEl: any, position: string) => {
-        return this.animationService.toastEnterAnimation(baseEl, position);
+        return this.animationService.toastEnterAnimation(baseEl, { position, width });
       },
       leaveAnimation: (baseEl: any) => {
         return this.animationService.toastLeaveAnimation(baseEl);

@@ -24,6 +24,7 @@ export class TaskComponent implements OnInit {
   username: string = '';
   userTeamMembers: UserMember[] = [];
   isTaskPreferred: boolean = false;
+  isLoading: boolean = false;
   destroy$ = new Subject<void>();
 
   constructor(
@@ -78,6 +79,17 @@ export class TaskComponent implements OnInit {
     console.log('click');
   }
 
+  async completeTask() {
+    this.isLoading = true;
+    await this.taskService.completeTask(
+      this.task.idTeam,
+      this.task.idTaskList,
+      this.task.id,
+      this.idUser
+    );
+    this.isLoading = false;
+  }
+
   async moreOptions() {
     const editTaskButton = {
       text: 'Editar',
@@ -108,9 +120,7 @@ export class TaskComponent implements OnInit {
     };
 
     const markAsPreferredButton = {
-      text: this.isTaskPreferred
-        ? 'Eliminar de preferidas'
-        : 'Marcar como preferida',
+      text: this.isTaskPreferred ? 'Eliminar de preferidas' : 'Marcar como preferida',
       icon: this.isTaskPreferred ? 'heart-dislike-outline' : 'heart-outline',
       cssClass: 'action-sheet-custom-icon',
       handler: () => {

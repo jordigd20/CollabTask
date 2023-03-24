@@ -8,12 +8,20 @@
   <div class="main-container">
     <div
       [ngClass]="{
-        'top-container': !showCompleteButton,
-        'top-container-without-button': showCompleteButton,
+        'top-container': showCompleteButton && !task.completed,
+        'top-container-without-button':
+          !showCompleteButton || (showCompleteButton && task.completed),
         'top-container-more-opts': showDistributionMode && !showCompleteButton
       }"
     >
-      <ion-button *ngIf="showCompleteButton" fill="clear" shape="round" class="check-button">
+      <ion-button
+        [disabled]="isLoading"
+        (click)="completeTask();$event.stopPropagation()"
+        *ngIf="showCompleteButton && !task.completed"
+        fill="clear"
+        shape="round"
+        class="check-button"
+      >
         <ion-icon
           slot="icon-only"
           src="../../../assets/icons/task-check.svg"
@@ -46,7 +54,9 @@
           style="gap: 3px"
         >
           <ion-icon src="../../../assets/icons/periodic.svg" style="margin-bottom: 2px"></ion-icon>
-          <span class="date-periodic-info" style="font-size: 14px">{{ task.datePeriodic.join(', ') | titlecase }}</span>
+          <span class="date-periodic-info" style="font-size: 14px">{{
+            task.datePeriodic.join(', ') | titlecase
+          }}</span>
         </ion-text>
       </ion-label>
 

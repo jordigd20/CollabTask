@@ -34,6 +34,7 @@ import { ToastService } from './toast.service';
 const MAX_USER_MEMBERS = 10;
 const MAX_TASK_LISTS = 20;
 const MAX_LIST_PREFERRED_FACTOR = 0.2;
+const MAX_TASKS_PER_DISTRIBUTION = 250;
 
 @Injectable({
   providedIn: 'root'
@@ -656,6 +657,10 @@ export class TeamService {
         throw new Error(TeamErrorCodes.TeamEmptyTaskList);
       }
 
+      if (tasksUnassigned.length >= MAX_TASKS_PER_DISTRIBUTION) {
+        throw new Error(TeamErrorCodes.TeamTasksExceedMaxPerDistribution);
+      }
+
       if (team && tasksUnassigned.length > 0) {
         const batch = this.afs.firestore.batch();
         const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
@@ -702,7 +707,12 @@ export class TeamService {
 
             console.log(`Assigning task ${task.id} to HIGHEST user ${userWithHighestScore.id}`);
             idAssignedTasks.push(task.id);
-            batch.update(taskRef, { idUserAssigned: userWithHighestScore.id });
+            const userRef = this.afs.firestore.doc(`users/${userWithHighestScore.id}`);
+            batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
+            batch.update(taskRef, {
+              idUserAssigned: userWithHighestScore.id,
+              idTemporalUserAssigned: userWithHighestScore.id
+            });
 
             // If there is only one user with preference, we assign the task to that user
           } else if (usersWithPreference.length === 1) {
@@ -720,7 +730,12 @@ export class TeamService {
 
             console.log(`Assigning task ${task.id} DIRECTLY to user ${usersWithPreference[0][0]}`);
             idAssignedTasks.push(task.id);
-            batch.update(taskRef, { idUserAssigned: usersWithPreference[0][0] });
+            const userRef = this.afs.firestore.doc(`users/${usersWithPreference[0][0]}`);
+            batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
+            batch.update(taskRef, {
+              idUserAssigned: usersWithPreference[0][0],
+              idTemporalUserAssigned: usersWithPreference[0][0]
+            });
           } else {
             tasksWithoutPreference.push(task);
           }
@@ -750,9 +765,11 @@ export class TeamService {
           if (task) {
             assignmentsTrack.set(user.id, (assignmentsTrack.get(user.id) || 0) + 1);
             console.log(`Assigning task ${task.id} to user ${user.id}`);
-            const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
             idAssignedTasks.push(task.id);
-            batch.update(taskRef, { idUserAssigned: user.id });
+            const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+            const userRef = this.afs.firestore.doc(`users/${user.id}`);
+            batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
+            batch.update(taskRef, { idUserAssigned: user.id, idTemporalUserAssigned: user.id });
           }
 
           i++;
@@ -768,9 +785,14 @@ export class TeamService {
           console.log(
             `Assigning task ${tasksWithoutPreference[i].id} to user ${userMembersWithScore[i].id}`
           );
-          const taskRef = this.afs.firestore.doc(`tasks/${tasksWithoutPreference[i].id}`);
           idAssignedTasks.push(tasksWithoutPreference[i].id);
-          batch.update(taskRef, { idUserAssigned: userMembersWithScore[i].id });
+          const taskRef = this.afs.firestore.doc(`tasks/${tasksWithoutPreference[i].id}`);
+          const userRef = this.afs.firestore.doc(`users/${userMembersWithScore[i].id}`);
+          batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
+          batch.update(taskRef, {
+            idUserAssigned: userMembersWithScore[i].id,
+            idTemporalUserAssigned: userMembersWithScore[i].id
+          });
         }
 
         // Clear the preferences
@@ -829,6 +851,9 @@ export class TeamService {
         break;
       case TeamErrorCodes.TeamEmptyTaskList:
         message = 'No hay tareas para repartir';
+        break;
+      case TeamErrorCodes.TeamTasksExceedMaxPerDistribution:
+        message = 'El número de tareas supera el máximo permitido para realizar el reparto';
         break;
       default:
         message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';

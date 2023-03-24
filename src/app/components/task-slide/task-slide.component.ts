@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Task } from '../../interfaces';
 import { SwiperOptions } from 'swiper';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-task-slide',
