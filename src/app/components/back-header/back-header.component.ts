@@ -10,6 +10,7 @@ export class BackHeaderComponent implements OnInit {
   @Input() showMoreOptions: boolean = false;
   @Input() showPreferences: boolean = false;
   @Input() showMoreInfo: boolean = false;
+  @Input() transparentMode: boolean = false;
 
   @Output() moreOptions: EventEmitter<any> = new EventEmitter();
   @Output() preferences: EventEmitter<any> = new EventEmitter();

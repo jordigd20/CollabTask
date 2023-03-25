@@ -25,7 +25,8 @@ export class TaskComponent implements OnInit {
 
   photoURL: string = '';
   username: string = '';
-  userTeamMembers: UserMember[] = [];
+  teamMembers: { [key: string]: UserMember } = {};
+  userTeamMembersList: UserMember[] = [];
   isTaskPreferred: boolean = false;
   isLoading: boolean = false;
   destroy$ = new Subject<void>();
@@ -54,9 +55,9 @@ export class TaskComponent implements OnInit {
             return;
           }
 
-          const users = Object.values(team.userMembers);
-          this.userTeamMembers = users;
-          const currentUser = this.userTeamMembers.find((user) => user.id === this.idUser);
+          this.teamMembers = team.userMembers;
+          this.userTeamMembersList = Object.values(team.userMembers);
+          const currentUser = this.userTeamMembersList.find((user) => user.id === this.idUser);
 
           if (currentUser && this.photoURL !== currentUser.photoURL) {
             this.photoURL = currentUser.photoURL;
@@ -79,8 +80,8 @@ export class TaskComponent implements OnInit {
     this.destroy$.next();
   }
 
-  click() {
-    console.log('click');
+  navigateToDetail() {
+    this.router.navigate(['tabs/lists/detail-task/', this.task.idTaskList, this.task.id]);
   }
 
   async completeTask() {
@@ -109,7 +110,7 @@ export class TaskComponent implements OnInit {
       icon: this.withoutUserAssigned ? 'person-add-outline' : 'person-remove-outline',
       cssClass: 'action-sheet-custom-icon ',
       handler: () => {
-        this.withoutUserAssigned ? this.selectUser(this.userTeamMembers) : this.unassignUser();
+        this.withoutUserAssigned ? this.selectUser(this.userTeamMembersList) : this.unassignUser();
         console.log('Asignar a usuario');
       }
     };
@@ -148,7 +149,7 @@ export class TaskComponent implements OnInit {
       }
     };
 
-    const userRole = this.getCurrentUserRole();
+    const userRole = this.teamMembers[this.currentUserId]?.role;
     let buttons = [
       editTaskButton,
       this.distributionMode === 'preferences' ? markAsPreferredButton : assignUserButton,
@@ -216,9 +217,5 @@ export class TaskComponent implements OnInit {
     });
 
     this.isTaskPreferred = !this.isTaskPreferred;
-  }
-
-  getCurrentUserRole() {
-    return this.userTeamMembers.find((user) => user.id === this.currentUserId)?.role;
   }
 }

@@ -79,6 +79,11 @@ const routes: Routes = [
               import('../lists/distribution-result/distribution-result.module').then(
                 (m) => m.DistributionResultPageModule
               )
+          },
+          {
+            path: 'detail-task/:idTaskList/:idTask',
+            loadChildren: () =>
+              import('../lists/detail-task/detail-task.module').then((m) => m.DetailTaskPageModule)
           }
         ]
       },

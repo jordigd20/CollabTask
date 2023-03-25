@@ -1,0 +1,43 @@
+ion-content.detail-content {
+  &::part(scroll) {
+    top: calc(var(--offset-top) * -2);
+  }
+}
+
+ion-img {
+  &::part(image) {
+    max-height: 220px;
+    object-fit: cover;
+  }
+}
+
+.image-container {
+  position: relative;
+
+  ion-button {
+    position: absolute;
+    bottom: 20px;
+    left: 16px;
+
+    &::part(native) {
+      border: 1px solid var(--ion-color-medium);
+      color: var(--ion-color-secondary);
+    }
+  }
+}
+
+ion-button.check-button {
+  height: 30px;
+  margin: 0;
+  margin-right: 6px;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+main {
+  background: var(--ion-color-white);
+  border-radius: 20px 20px 0 0;
+  position: relative;
+  margin-top: -17px;
+  z-index: 2;
+}

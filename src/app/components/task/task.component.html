@@ -1,5 +1,5 @@
 <ion-item
-  (click)="click()"
+  (click)="navigateToDetail()"
   class="task-item"
   [ngClass]="{ 'disable-ripple-touch': showDistributionMode && !showCompleteButton }"
   button
@@ -40,10 +40,7 @@
           {{ task.title }}
         </h3>
 
-        <ion-text
-          *ngIf="task.selectedDate !== 'withoutDate' && task.selectedDate !== 'datePeriodic'"
-          color="medium"
-        >
+        <ion-text color="medium">
           <div class="d-flex align-items-center" style="gap: 3px">
             <ng-container *ngIf="!showDistributionMode">
               <ion-icon
@@ -63,24 +60,37 @@
                 style="font-size: 18px; margin-bottom: 2px"
               ></ion-icon>
             </ng-container>
-            <ion-icon
-              src="../../../assets/icons/calendar.svg"
-              style="margin-bottom: 2px"
-            ></ion-icon>
-            <span style="font-size: 14px">{{ task.date + '' | date : 'd MMM y' }}</span>
-          </div>
-        </ion-text>
 
-        <ion-text
-          *ngIf="task.selectedDate !== 'withoutDate' && task.selectedDate === 'datePeriodic'"
-          class="d-flex align-items-center"
-          color="medium"
-          style="gap: 3px"
-        >
-          <ion-icon src="../../../assets/icons/periodic.svg" style="margin-bottom: 2px"></ion-icon>
-          <span class="date-periodic-info" style="font-size: 14px">{{
-            task.datePeriodic.join(', ') | titlecase
-          }}</span>
+            <div
+              *ngIf="task.selectedDate !== 'datePeriodic'"
+              class="d-flex align-items-center"
+              style="gap: 3px"
+            >
+              <ion-icon
+                src="../../../assets/icons/calendar.svg"
+                style="margin-bottom: 2px"
+              ></ion-icon>
+              <span style="font-size: 14px">{{
+                task.selectedDate === 'withoutDate'
+                  ? 'Sin fecha'
+                  : [task.date + '' | date : 'd MMM y']
+              }}</span>
+            </div>
+
+            <div
+              *ngIf="task.selectedDate === 'datePeriodic'"
+              class="d-flex align-items-center"
+              style="gap: 3px"
+            >
+              <ion-icon
+                src="../../../assets/icons/periodic.svg"
+                style="margin-bottom: 2px"
+              ></ion-icon>
+              <span class="date-periodic-info" style="font-size: 14px">{{
+                task.datePeriodic.join(', ') | titlecase
+              }}</span>
+            </div>
+          </div>
         </ion-text>
       </ion-label>
 

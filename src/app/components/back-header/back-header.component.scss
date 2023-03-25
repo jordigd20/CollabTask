@@ -1,3 +1,13 @@
 .header-title {
   padding-left: 5px;
 }
+
+.header-transparent {
+  ion-toolbar {
+    --background: transparent;
+  }
+
+  &::after {
+    background-image: none;
+  }
+}

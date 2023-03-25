@@ -1,0 +1,99 @@
+<app-back-header
+  title=""
+  [showMoreOptions]="true"
+  [transparentMode]="true"
+  (moreOptions)="showMoreOptions()"
+></app-back-header>
+
+<ion-content class="detail-content" [fullscreen]="true">
+  <div class="image-container">
+    <ion-img [src]="'../../../../../assets/task-background.jpg'"></ion-img>
+    <ion-button class="fw-regular" color="light" shape="round">
+      <ion-icon slot="start" src="../../../assets/icons/image.svg"></ion-icon>
+      Imagen
+    </ion-button>
+  </div>
+
+  <ng-container *ngIf="task && team; else loading">
+    <main class="ion-padding">
+      <div class="d-flex justify-center align-items-center">
+        <ion-button
+          [disabled]="isLoading"
+          *ngIf="!task.completed && task.idUserAssigned === idUser"
+          class="check-button"
+          fill="clear"
+          shape="round"
+        >
+          <ion-icon
+            slot="icon-only"
+            src="../../../assets/icons/task-check.svg"
+            color="primary"
+            size="large"
+          ></ion-icon>
+        </ion-button>
+        <h3 class="ion-no-margin" style="font-size: 20px">{{ task.title }}</h3>
+      </div>
+
+      <div style="margin: 10px 0">
+        <ion-chip class="info-chip" [disabled]="true" style="padding-inline: 10px">
+          <ion-icon
+            *ngIf="task.completed"
+            name="checkmark-circle"
+            color="primary"
+            style="font-size: 24px"
+          ></ion-icon>
+          <ion-icon
+            *ngIf="!task.completed"
+            name="ellipsis-horizontal-circle-sharp"
+            style="font-size: 24px; color: #ffd600"
+          ></ion-icon>
+          <ion-label>{{ task.completed ? 'Completada' : 'Sin completar'}}</ion-label>
+        </ion-chip>
+
+        <ion-chip *ngIf="task.selectedDate !== 'datePeriodic'" class="info-chip" [disabled]="true">
+          <ion-icon src="../../../assets/icons/calendar.svg"></ion-icon>
+          <ion-label>
+            {{ task.selectedDate === 'withoutDate' ? 'Sin fecha' : [task.date + '' | date : 'd MMM
+            y'] }}
+          </ion-label>
+        </ion-chip>
+
+        <ion-chip
+          *ngIf="task.selectedDate === 'datePeriodic'"
+          class="info-chip chip-auto-height"
+          [disabled]="true"
+        >
+          <ion-icon src="../../../../assets/icons/periodic.svg" style="min-width: 24px"></ion-icon>
+          <ion-label>{{ task.datePeriodic.join(', ') | titlecase }}</ion-label>
+        </ion-chip>
+
+        <ion-chip class="info-chip" [disabled]="true" style="padding-inline: 18px">
+          <ion-avatar class="user-task-avatar">
+            <img [src]="photoURL" [alt]="'Avatar de' + username" referrerpolicy="no-referrer" />
+          </ion-avatar>
+          <ion-label>{{ username }}</ion-label>
+        </ion-chip>
+
+        <ion-chip class="info-chip chip-active" [disabled]="true" style="padding-inline: 8px">
+          <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 3px"></ion-icon>
+          100
+        </ion-chip>
+      </div>
+
+      <ion-text color="medium" style="color: var(--ion-color-step-600, #666666)">
+        <p class="fw-regular" [ngClass]="{ 'ion-text-center': !task.description }">
+          {{ task.description || 'Esta tarea no tiene descripción'}}
+        </p>
+      </ion-text>
+    </main>
+  </ng-container>
+
+  <ng-template #loading>
+    <ion-spinner
+      class="loading-content"
+      name="circles"
+      color="primary"
+      style="margin-top: 30px !important; margin: 10px auto"
+    ></ion-spinner>
+  </ng-template>
+</ion-content>
