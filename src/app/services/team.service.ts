@@ -711,7 +711,8 @@ export class TeamService {
             batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
             batch.update(taskRef, {
               idUserAssigned: userWithHighestScore.id,
-              idTemporalUserAssigned: userWithHighestScore.id
+              availableToAssign: false,
+              completed: false
             });
 
             // If there is only one user with preference, we assign the task to that user
@@ -734,7 +735,8 @@ export class TeamService {
             batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
             batch.update(taskRef, {
               idUserAssigned: usersWithPreference[0][0],
-              idTemporalUserAssigned: usersWithPreference[0][0]
+              availableToAssign: false,
+              completed: false
             });
           } else {
             tasksWithoutPreference.push(task);
@@ -769,7 +771,11 @@ export class TeamService {
             const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
             const userRef = this.afs.firestore.doc(`users/${user.id}`);
             batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
-            batch.update(taskRef, { idUserAssigned: user.id, idTemporalUserAssigned: user.id });
+            batch.update(taskRef, {
+              idUserAssigned: user.id,
+              availableToAssign: false,
+              completed: false
+            });
           }
 
           i++;
@@ -791,7 +797,8 @@ export class TeamService {
           batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
           batch.update(taskRef, {
             idUserAssigned: userMembersWithScore[i].id,
-            idTemporalUserAssigned: userMembersWithScore[i].id
+            availableToAssign: false,
+            completed: false
           });
         }
 

@@ -6,6 +6,7 @@ export interface Task {
   idTaskList: string;
   idUserAssigned: string;
   idTemporalUserAssigned: string;
+  availableToAssign: boolean;
   title: string;
   description: string;
   score: number;

@@ -42,8 +42,10 @@
           [task]="task"
           [teamName]="team!.name"
           [idUser]="task.idUserAssigned"
+          [currentUserId]="idUser"
           [withoutUserAssigned]="false"
           [showCompleteButton]="idUser === task.idUserAssigned"
+          [showMoreOptions]="true"
         ></app-task>
       </ion-list>
 

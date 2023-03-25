@@ -12,25 +12,32 @@ ion-item.task-item {
   .top-container {
     margin: 5px 0;
     display: grid;
-    grid-template-columns: 0.5fr 5fr 1.5fr;
     align-items: flex-start;
     gap: 2px;
+  }
+
+  .btn-title-team {
+    grid-template-columns: 0.5fr 5fr 1.5fr;
+  }
+
+  .btn-title-more {
+    grid-template-columns: 0.5fr 5fr 0.5fr;
+  }
+
+  .title-more {
+    grid-template-columns: 5fr 0.5fr;
+  }
+
+  .title-team {
+    grid-template-columns: 5fr 1.25fr;
   }
 
   .top-container-without-button {
-    margin: 5px 0;
-    display: grid;
     grid-template-columns: 5fr 1.25fr;
-    align-items: flex-start;
-    gap: 2px;
   }
 
   .top-container-more-opts {
-    margin: 5px 0;
-    display: grid;
     grid-template-columns: 5fr 0.5fr;
-    align-items: flex-start;
-    gap: 2px;
   }
 
   .more-opts-btn {

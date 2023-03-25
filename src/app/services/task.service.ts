@@ -43,7 +43,9 @@ export class TaskService {
 
   getAllUnassignedTasks(idTaskList: string) {
     return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) => tasks.filter((task) => task.idTemporalUserAssigned === ''))
+      map((tasks) =>
+        tasks.filter((task) => task.idTemporalUserAssigned === '' && task.availableToAssign)
+      )
     );
   }
 
@@ -121,6 +123,7 @@ export class TaskService {
         title: title.trim(),
         description,
         score,
+        availableToAssign: true,
         selectedDate,
         date: dateTimestamp,
         dateLimit: dateLimitTimestamp,
@@ -164,14 +167,27 @@ export class TaskService {
     }
   }
 
+  async updateTaskAvailability(idTask: string, availableToAssign: boolean) {
+    try {
+      await this.afs.doc<Task>(`tasks/${idTask}`).update({ availableToAssign });
+
+      this.toastService.showToast({
+        message: 'Tarea actualizada',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success'
+      });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
   async completeTask(idTeam: string, idTaskList: string, idTask: string, idUser: string) {
     try {
       const [task, user] = await Promise.all([
         firstValueFrom(this.getTask(idTask, idTaskList)),
         firstValueFrom(this.userService.getUser(idUser))
       ]);
-
-      console.log(task, user);
 
       if (!task || !user) {
         throw new Error('No se ha podido completar la tarea');
@@ -189,11 +205,11 @@ export class TaskService {
       });
 
       // if (task.selectedDate === 'datePeriodic') {
-        // TODO: Task with periodic date
+      // TODO: Task with periodic date
       // } else {
       batch.update(taskRef, {
         completed: true,
-        idTemporalUserAssigned: ''
+        availableToAssign: true,
       });
       // }
 
@@ -242,7 +258,10 @@ export class TaskService {
       for (let task of temporalTasks) {
         const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
         batch.update(taskRef, {
-          idUserAssigned: task.idTemporalUserAssigned
+          idUserAssigned: task.idTemporalUserAssigned,
+          idTemporalUserAssigned: '',
+          availableToAssign: false,
+          completed: false
         });
       }
 

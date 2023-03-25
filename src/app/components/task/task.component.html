@@ -7,16 +7,19 @@
 >
   <div class="main-container">
     <div
+      class="top-container"
       [ngClass]="{
-        'top-container': showCompleteButton && !task.completed,
-        'top-container-without-button':
-          !showCompleteButton || (showCompleteButton && task.completed),
-        'top-container-more-opts': showDistributionMode && !showCompleteButton
+        'btn-title-team': showCompleteButton && !task.completed && !showMoreOptions,
+        'btn-title-more': showCompleteButton && !task.completed && showMoreOptions,
+        'title-team':
+          (!showCompleteButton || (showCompleteButton && task.completed)) && !showMoreOptions,
+        'title-more':
+          (!showCompleteButton || (showCompleteButton && task.completed)) && showMoreOptions
       }"
     >
       <ion-button
         [disabled]="isLoading"
-        (click)="completeTask();$event.stopPropagation()"
+        (click)="completeTask(); $event.stopPropagation()"
         *ngIf="showCompleteButton && !task.completed"
         fill="clear"
         shape="round"
@@ -39,12 +42,33 @@
 
         <ion-text
           *ngIf="task.selectedDate !== 'withoutDate' && task.selectedDate !== 'datePeriodic'"
-          class="d-flex align-items-center"
           color="medium"
-          style="gap: 3px"
         >
-          <ion-icon src="../../../assets/icons/calendar.svg" style="margin-bottom: 2px"></ion-icon>
-          <span style="font-size: 14px">{{ task.date + '' | date : 'd MMM y' }}</span>
+          <div class="d-flex align-items-center" style="gap: 3px">
+            <ng-container *ngIf="!showDistributionMode">
+              <ion-icon
+                *ngIf="task.completed"
+                name="checkmark-circle"
+                color="primary"
+                style="font-size: 18px; margin-bottom: 2px"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="!task.completed"
+                name="ellipsis-horizontal-circle-sharp"
+                style="font-size: 18px; margin-bottom: 2px; color: #ffd600"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="!task.availableToAssign && task.completed"
+                name="eye-off-outline"
+                style="font-size: 18px; margin-bottom: 2px"
+              ></ion-icon>
+            </ng-container>
+            <ion-icon
+              src="../../../assets/icons/calendar.svg"
+              style="margin-bottom: 2px"
+            ></ion-icon>
+            <span style="font-size: 14px">{{ task.date + '' | date : 'd MMM y' }}</span>
+          </div>
         </ion-text>
 
         <ion-text
@@ -61,7 +85,7 @@
       </ion-label>
 
       <ion-text
-        *ngIf="!showDistributionMode"
+        *ngIf="!showMoreOptions"
         class="team-name-container"
         color="medium"
         [ngStyle]="{ 'margin-top': task.selectedDate === 'withoutDate' ? '5px' : '0' }"
@@ -70,7 +94,10 @@
       </ion-text>
 
       <ion-button
-        *ngIf="showDistributionMode"
+        *ngIf="
+          (showDistributionMode && showMoreOptions) ||
+          (!showDistributionMode && showMoreOptions && currentUserId)
+        "
         (click)="moreOptions(); $event.stopPropagation()"
         class="more-opts-btn"
         fill="clear"

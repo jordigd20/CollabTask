@@ -15,9 +15,11 @@ export class TaskComponent implements OnInit {
   @Input() task: Task = {} as Task;
   @Input() teamName: string = '';
   @Input() idUser: string = '';
+  @Input() currentUserId: string = '';
   @Input() withoutUserAssigned: boolean = false;
   @Input() showCompleteButton: boolean = true;
   @Input() showDistributionMode: boolean = false;
+  @Input() showMoreOptions: boolean = false;
   @Input() distributionMode: 'none' | 'preferences' | 'manual' = 'none';
 
   photoURL: string = '';
@@ -128,15 +130,38 @@ export class TaskComponent implements OnInit {
       }
     };
 
+    const toggleTaskAvailabilityButton = {
+      text: this.task.availableToAssign
+        ? 'Descartar tarea del reparto'
+        : 'Añadir tarea al reparto',
+      icon: this.task.availableToAssign ? 'eye-off-outline' : 'eye-outline',
+      cssClass: 'action-sheet-custom-icon',
+      handler: () => {
+        this.taskService.updateTaskAvailability(this.task.id, !this.task.availableToAssign);
+      }
+    };
+
+    const userRole = this.getCurrentUserRole();
+    let buttons = [
+      editTaskButton,
+      this.distributionMode === 'preferences' ? markAsPreferredButton : assignUserButton,
+      toggleTaskAvailabilityButton,
+      deleteTaskButton
+    ];
+
+    if (!this.showDistributionMode && userRole === 'member') {
+      buttons = [toggleTaskAvailabilityButton];
+    }
+
+    if (!this.showDistributionMode && userRole === 'admin') {
+      buttons = [editTaskButton, toggleTaskAvailabilityButton, deleteTaskButton];
+    }
+
     const actionSheet = await this.actionSheetController.create({
       htmlAttributes: {
         'aria-label': 'Acciones de la tarea'
       },
-      buttons: [
-        editTaskButton,
-        this.distributionMode === 'preferences' ? markAsPreferredButton : assignUserButton,
-        deleteTaskButton
-      ]
+      buttons
     });
 
     await actionSheet.present();
@@ -180,5 +205,9 @@ export class TaskComponent implements OnInit {
     });
 
     this.isTaskPreferred = !this.isTaskPreferred;
+  }
+
+  getCurrentUserRole() {
+    return this.userTeamMembers.find((user) => user.id === this.currentUserId)?.role;
   }
 }
