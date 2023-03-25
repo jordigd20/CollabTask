@@ -1,10 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, ModalController } from '@ionic/angular';
 import { TeamService } from '../../services/team.service';
 import { Task, UserMember } from '../../interfaces';
 import { TaskService } from '../../services/task.service';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { presentConfirmationModal } from '../../helpers/common-functions';
 
 @Component({
   selector: 'app-task',
@@ -33,6 +34,7 @@ export class TaskComponent implements OnInit {
     private teamService: TeamService,
     private taskService: TaskService,
     private actionSheetController: ActionSheetController,
+    private modalController: ModalController,
     private router: Router
   ) {}
 
@@ -117,7 +119,14 @@ export class TaskComponent implements OnInit {
       icon: 'trash-outline',
       cssClass: 'action-sheet-danger-icon',
       handler: () => {
-        this.teamService.deleteTask(this.task.idTeam, this.task.idTaskList, this.task.id);
+        presentConfirmationModal({
+          title: 'Eliminar tarea',
+          message: '¿Estás seguro de que quieres eliminar esta tarea?',
+          confirmText: 'Eliminar',
+          dangerType: true,
+          mainFunction: () => this.deleteTask(),
+          modalController: this.modalController
+        });
       }
     };
 
@@ -131,9 +140,7 @@ export class TaskComponent implements OnInit {
     };
 
     const toggleTaskAvailabilityButton = {
-      text: this.task.availableToAssign
-        ? 'Descartar tarea del reparto'
-        : 'Añadir tarea al reparto',
+      text: this.task.availableToAssign ? 'Descartar tarea del reparto' : 'Añadir tarea al reparto',
       icon: this.task.availableToAssign ? 'eye-off-outline' : 'eye-outline',
       cssClass: 'action-sheet-custom-icon',
       handler: () => {
@@ -189,6 +196,10 @@ export class TaskComponent implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  deleteTask() {
+    this.teamService.deleteTask(this.task.idTeam, this.task.idTaskList, this.task.id);
   }
 
   unassignUser() {

@@ -473,6 +473,13 @@ export class TeamService {
       }
 
       await batch.commit();
+
+      this.toastService.showToast({
+        message: 'Tarea eliminada',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success',
+        width: '200px'
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);
