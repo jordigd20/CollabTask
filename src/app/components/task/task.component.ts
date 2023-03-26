@@ -81,7 +81,7 @@ export class TaskComponent implements OnInit {
   }
 
   navigateToDetail() {
-    this.router.navigate(['tabs/lists/detail-task/', this.task.idTaskList, this.task.id]);
+    this.router.navigate(['tabs/lists/task-detail/', this.task.idTaskList, this.task.id]);
   }
 
   async completeTask() {
@@ -110,8 +110,9 @@ export class TaskComponent implements OnInit {
       icon: this.withoutUserAssigned ? 'person-add-outline' : 'person-remove-outline',
       cssClass: 'action-sheet-custom-icon ',
       handler: () => {
-        this.withoutUserAssigned ? this.selectUser(this.userTeamMembersList) : this.unassignUser();
-        console.log('Asignar a usuario');
+        this.withoutUserAssigned
+          ? this.selectUser(this.userTeamMembersList)
+          : this.taskService.temporarilyAssignTask(this.task.id, '');
       }
     };
 
@@ -125,7 +126,8 @@ export class TaskComponent implements OnInit {
           message: '¿Estás seguro de que quieres eliminar esta tarea?',
           confirmText: 'Eliminar',
           dangerType: true,
-          mainFunction: () => this.deleteTask(),
+          mainFunction: () =>
+            this.teamService.deleteTask(this.task.idTeam, this.task.idTaskList, this.task.id),
           modalController: this.modalController
         });
       }
@@ -145,7 +147,7 @@ export class TaskComponent implements OnInit {
       icon: this.task.availableToAssign ? 'eye-off-outline' : 'eye-outline',
       cssClass: 'action-sheet-custom-icon',
       handler: () => {
-        if (!this.task.availableToAssign) {
+        if (!this.task.availableToAssign && !this.task.completed) {
           presentConfirmationModal({
             title: 'Añadir tarea al reparto',
             message:
@@ -210,14 +212,6 @@ export class TaskComponent implements OnInit {
     });
 
     await actionSheet.present();
-  }
-
-  deleteTask() {
-    this.teamService.deleteTask(this.task.idTeam, this.task.idTaskList, this.task.id);
-  }
-
-  unassignUser() {
-    this.taskService.temporarilyAssignTask(this.task.id, '');
   }
 
   markTaskAsPreferred() {

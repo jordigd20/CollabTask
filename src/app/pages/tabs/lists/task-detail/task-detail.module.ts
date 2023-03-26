@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { DetailTaskPageRoutingModule } from './detail-task-routing.module';
-import { DetailTaskPage } from './detail-task.page';
+import { TaskDetailPageRoutingModule } from './task-deatil-routing.module';
+import { TaskDetailPage } from './task-detail.page';
 import { ComponentsModule } from '../../../../components/components.module';
 
 @NgModule({
@@ -11,9 +11,9 @@ import { ComponentsModule } from '../../../../components/components.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    DetailTaskPageRoutingModule,
+    TaskDetailPageRoutingModule,
     ComponentsModule
   ],
-  declarations: [DetailTaskPage]
+  declarations: [TaskDetailPage]
 })
-export class DetailTaskPageModule {}
+export class TaskDetailPageModule {}
