@@ -7,6 +7,8 @@ import { TeamService } from '../../../../services/team.service';
 import { StorageService } from '../../../../services/storage.service';
 import { presentConfirmationModal } from '../../../../helpers/common-functions';
 import { ModalController, ActionSheetController } from '@ionic/angular';
+import { Camera } from '@capacitor/camera';
+import { CameraResultType } from '@capacitor/camera/dist/esm/definitions';
 
 @Component({
   selector: 'app-task-detail',
@@ -17,10 +19,11 @@ export class TaskDetailPage implements OnInit {
   idTask: string | undefined;
   idTaskList: string | undefined;
   idUser: string | undefined;
+  fromDistribution: boolean = false;
   task: Task | undefined;
   team: Team | undefined;
   isLoading: boolean = false;
-  photoURL: string | undefined;
+  userPhotoURL: string | undefined;
   username: string | undefined;
   destroy$ = new Subject<void>();
 
@@ -41,6 +44,7 @@ export class TaskDetailPage implements OnInit {
           if (params.get('idTask') && params.get('idTaskList')) {
             this.idTask = params.get('idTask')!;
             this.idTaskList = params.get('idTaskList')!;
+            this.fromDistribution = params.get('fromDistribution') === 'true';
             return from(this.storageService.get('user'));
           }
 
@@ -64,14 +68,15 @@ export class TaskDetailPage implements OnInit {
         if (team && this.task) {
           this.team = team;
 
-          // if (this.task.idTemporalUserAssigned === '') {
-          //   this.photoURL = team.userMembers[this.task.idTemporalUserAssigned].photoURL;
-          //   this.username = team.userMembers[this.task.idTemporalUserAssigned].name;
-          // } else {
-          // }
+          if (!this.fromDistribution && this.task.idUserAssigned) {
+            this.userPhotoURL = team.userMembers[this.task.idUserAssigned].photoURL;
+            this.username = team.userMembers[this.task.idUserAssigned].name;
+          }
 
-          this.photoURL = team.userMembers[this.task.idUserAssigned].photoURL;
-          this.username = team.userMembers[this.task.idUserAssigned].name;
+          if (this.fromDistribution && this.task.idTemporalUserAssigned) {
+            this.userPhotoURL = team.userMembers[this.task.idTemporalUserAssigned].photoURL;
+            this.username = team.userMembers[this.task.idTemporalUserAssigned].name;
+          }
         }
       });
   }
@@ -174,5 +179,35 @@ export class TaskDetailPage implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  async selectImage() {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 85,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        promptLabelHeader: 'Seleccionar una imagen',
+        promptLabelPhoto: 'Seleccionar desde la galería',
+        promptLabelPicture: 'Tomar una foto'
+      });
+
+      if (image.dataUrl && this.task) {
+        this.task.imageURL = await this.taskService.uploadTaskImage(
+          this.task.id,
+          this.idTaskList!,
+          image.dataUrl
+        );
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async deleteImage() {
+    if (this.task) {
+      await this.taskService.deleteTaskImage(this.task.id, this.idTaskList!);
+      this.task.imageURL = '';
+    }
   }
 }

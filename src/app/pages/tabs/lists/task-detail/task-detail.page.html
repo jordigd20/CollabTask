@@ -7,10 +7,24 @@
 
 <ion-content class="detail-content" [fullscreen]="true">
   <div class="image-container">
-    <ion-img [src]="'../../../../../assets/task-background.jpg'"></ion-img>
-    <ion-button class="fw-regular" color="light" shape="round">
+    <ion-img *ngIf="task && task.imageURL" [src]="task.imageURL"></ion-img>
+    <ion-img
+      *ngIf="!task || !task.imageURL"
+      [src]="'../../../../../assets/task-background.jpg'"
+    ></ion-img>
+
+    <ion-button (click)="selectImage()" class="image-btn fw-regular" color="light" shape="round">
       <ion-icon slot="start" src="../../../assets/icons/image.svg"></ion-icon>
       Imagen
+    </ion-button>
+    <ion-button
+      *ngIf="task && task.imageURL"
+      (click)="deleteImage()"
+      class="delete-img-btn fw-regular"
+      color="light"
+      shape="round"
+    >
+      <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
     </ion-button>
   </div>
   <ng-container *ngIf="task && team; else loading">
@@ -68,10 +82,10 @@
         </ion-chip>
 
         <ion-chip class="info-chip" [disabled]="true" style="padding-inline: 18px">
-          <ion-avatar class="user-task-avatar">
-            <img [src]="photoURL" [alt]="'Avatar de' + username" referrerpolicy="no-referrer" />
+          <ion-avatar *ngIf="userPhotoURL" class="user-task-avatar">
+            <img [src]="userPhotoURL" [alt]="'Avatar de' + username" referrerpolicy="no-referrer" />
           </ion-avatar>
-          <ion-label>{{ username }}</ion-label>
+          <ion-label>{{ username || 'Sin asignar' }}</ion-label>
         </ion-chip>
 
         <ion-chip class="info-chip chip-active" [disabled]="true" style="padding-inline: 8px">

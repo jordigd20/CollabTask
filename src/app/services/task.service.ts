@@ -2,11 +2,23 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { TaskData, Task } from '../interfaces';
 import { StorageService } from './storage.service';
-import { map, debounceTime, Observable, shareReplay, take, firstValueFrom } from 'rxjs';
+import {
+  map,
+  debounceTime,
+  Observable,
+  shareReplay,
+  take,
+  firstValueFrom,
+  finalize,
+  lastValueFrom
+} from 'rxjs';
 import firebase from 'firebase/compat/app';
 import { ToastService } from './toast.service';
 import { TeamErrorCodes } from '../interfaces/errors/team-error-codes.enum';
 import { UserService } from './user.service';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
+import { nanoid } from 'nanoid';
+import { dataURItoBlob } from '../helpers/common-functions';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +31,8 @@ export class TaskService {
     private afs: AngularFirestore,
     private storageService: StorageService,
     private toastService: ToastService,
-    private userService: UserService
+    private userService: UserService,
+    private afStorage: AngularFireStorage
   ) {}
 
   getTask(id: string, idTaskList: string) {
@@ -210,7 +223,7 @@ export class TaskService {
       // } else {
       batch.update(taskRef, {
         completed: true,
-        availableToAssign: true,
+        availableToAssign: true
       });
       // }
 
@@ -273,6 +286,54 @@ export class TaskService {
         icon: 'checkmark-circle',
         cssClass: 'toast-success'
       });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async uploadTaskImage(idTask: string, idTaskList: string, image: string) {
+    try {
+      const filePath = `tasks/${nanoid()}`;
+      const fileRef = this.afStorage.ref(filePath);
+      const imageBlob = dataURItoBlob(image);
+      const afTask = this.afStorage.upload(filePath, imageBlob);
+      const task = await firstValueFrom(this.getTask(idTask, idTaskList));
+
+      if (!task) {
+        throw new Error('No se ha podido subir la imagen');
+      }
+
+      if (task.imageURL !== '') {
+        const imageRef = this.afStorage.refFromURL(task.imageURL);
+        await imageRef.delete();
+      }
+
+      await lastValueFrom(afTask.snapshotChanges());
+      const url = await firstValueFrom(fileRef.getDownloadURL());
+      await this.afs.doc<Task>(`tasks/${idTask}`).update({ imageURL: url });
+
+      return url;
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async deleteTaskImage(idTask: string, idTaskList: string) {
+    try {
+      const task = await firstValueFrom(this.getTask(idTask, idTaskList));
+
+      if (!task) {
+        throw new Error('No se ha podido eliminar la imagen');
+      }
+
+      if (task.imageURL !== '') {
+        const imageRef = this.afStorage.refFromURL(task.imageURL);
+        await imageRef.delete();
+      }
+
+      await this.afs.doc<Task>(`tasks/${idTask}`).update({ imageURL: '' });
     } catch (error) {
       console.error(error);
       this.handleError(error);

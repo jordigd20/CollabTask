@@ -81,7 +81,16 @@ export class TaskComponent implements OnInit {
   }
 
   navigateToDetail() {
-    this.router.navigate(['tabs/lists/task-detail/', this.task.idTaskList, this.task.id]);
+    const optParams = {
+      fromDistribution: this.showDistributionMode
+    };
+
+    this.router.navigate([
+      'tabs/lists/task-detail/',
+      this.task.idTaskList,
+      this.task.id,
+      optParams
+    ]);
   }
 
   async completeTask() {

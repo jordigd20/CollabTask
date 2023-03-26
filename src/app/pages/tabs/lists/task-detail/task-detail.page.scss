@@ -16,13 +16,24 @@ ion-img {
 
   ion-button {
     position: absolute;
-    bottom: 20px;
-    left: 16px;
 
     &::part(native) {
       border: 1px solid var(--ion-color-medium);
       color: var(--ion-color-secondary);
     }
+  }
+
+  .image-btn {
+    bottom: 20px;
+    left: 16px;
+  }
+
+  .delete-img-btn {
+    bottom: 20px;
+    left: 148px;
+    --padding-start: 10px;
+    --padding-end: 10px;
+    font-size: 12px;
   }
 }
 

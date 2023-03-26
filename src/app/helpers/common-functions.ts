@@ -30,8 +30,21 @@ export const presentConfirmationModal = async ({
       mainFunction
     },
     backdropDismiss: false,
-    cssClass: `responsive-modal ${cssClass}`,
+    cssClass: `responsive-modal ${cssClass}`
   });
 
   modal.present();
+};
+
+export const dataURItoBlob = (dataURI: string) => {
+  const byteString = atob(dataURI.split(',')[1]);
+  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const arrayBuffer = new ArrayBuffer(byteString.length);
+  const byteNumbers = new Uint8Array(arrayBuffer);
+
+  for (let i = 0; i < byteString.length; i++) {
+    byteNumbers[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([byteNumbers], { type: mimeString });
 };
