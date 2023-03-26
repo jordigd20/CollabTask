@@ -145,7 +145,20 @@ export class TaskComponent implements OnInit {
       icon: this.task.availableToAssign ? 'eye-off-outline' : 'eye-outline',
       cssClass: 'action-sheet-custom-icon',
       handler: () => {
-        this.taskService.updateTaskAvailability(this.task.id, !this.task.availableToAssign);
+        if (!this.task.availableToAssign) {
+          presentConfirmationModal({
+            title: 'Añadir tarea al reparto',
+            message:
+              'El usuario asignado todavía no ha completado la tarea. ¿Estás seguro de que quieres añadir esta tarea al reparto?',
+            confirmText: 'Añadir',
+            dangerType: false,
+            mainFunction: () =>
+              this.taskService.updateTaskAvailability(this.task.id, !this.task.availableToAssign),
+            modalController: this.modalController
+          });
+        } else {
+          this.taskService.updateTaskAvailability(this.task.id, !this.task.availableToAssign);
+        }
       }
     };
 

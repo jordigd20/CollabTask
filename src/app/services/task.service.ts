@@ -174,7 +174,8 @@ export class TaskService {
       this.toastService.showToast({
         message: 'Tarea actualizada',
         icon: 'checkmark-circle',
-        cssClass: 'toast-success'
+        cssClass: 'toast-success',
+        width: '200px'
       });
     } catch (error) {
       console.error(error);

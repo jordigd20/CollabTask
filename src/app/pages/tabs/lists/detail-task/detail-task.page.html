@@ -13,13 +13,13 @@
       Imagen
     </ion-button>
   </div>
-
   <ng-container *ngIf="task && team; else loading">
     <main class="ion-padding">
       <div class="d-flex justify-center align-items-center">
         <ion-button
-          [disabled]="isLoading"
           *ngIf="!task.completed && task.idUserAssigned === idUser"
+          [disabled]="isLoading"
+          (click)="completeTask()"
           class="check-button"
           fill="clear"
           shape="round"

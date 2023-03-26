@@ -87,6 +87,7 @@ export class DetailTaskPage implements OnInit {
         this.task.id,
         this.idUser
       );
+      this.task.completed = true;
       this.isLoading = false;
     }
   }
