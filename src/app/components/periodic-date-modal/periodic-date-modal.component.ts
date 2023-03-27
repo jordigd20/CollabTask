@@ -29,7 +29,7 @@ export class PeriodicDateModalComponent implements OnInit {
 
   selectDay(day: string) {
     if (this.selectedDays.includes(day)) {
-      this.selectedDays = this.selectedDays.filter(d => d !== day);
+      this.selectedDays = this.selectedDays.filter((d) => d !== day);
     } else {
       this.selectedDays.push(day);
     }
@@ -42,6 +42,10 @@ export class PeriodicDateModalComponent implements OnInit {
   }
 
   accept() {
+    if (this.selectedDays.length === 0) {
+      return;
+    }
+
     this.modalController.dismiss({
       selectedDays: this.selectedDays
     });

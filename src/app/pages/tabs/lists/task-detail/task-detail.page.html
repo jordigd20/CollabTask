@@ -82,8 +82,12 @@
         </ion-chip>
 
         <ion-chip class="info-chip" [disabled]="true" style="padding-inline: 18px">
-          <ion-avatar *ngIf="userPhotoURL" class="user-task-avatar">
-            <img [src]="userPhotoURL" [alt]="'Avatar de' + username" referrerpolicy="no-referrer" />
+          <ion-avatar class="user-task-avatar">
+            <img
+              [src]="userPhotoURL || '../../../../../assets/no-photo.jpg'"
+              [alt]="'Avatar de' + username"
+              referrerpolicy="no-referrer"
+            />
           </ion-avatar>
           <ion-label>{{ username || 'Sin asignar' }}</ion-label>
         </ion-chip>

@@ -6,7 +6,8 @@ ion-content.detail-content {
 
 ion-img {
   &::part(image) {
-    max-height: 220px;
+    height: 250px;
+    max-height: 250px;
     object-fit: cover;
   }
 }

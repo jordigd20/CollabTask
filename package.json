@@ -11,7 +11,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "splash-screen": "cordova-res android --skip-config --copy",
-    "emulator": "firebase emulators:start"
+    "emulator": "firebase emulators:start --import=./emulator-data --export-on-exit"
   },
   "private": true,
   "dependencies": {

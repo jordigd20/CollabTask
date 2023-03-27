@@ -282,9 +282,10 @@ export class TaskService {
       await batch.commit();
 
       this.toastService.showToast({
-        message: 'Reparto realizado correctamente',
+        message: 'Reparto realizado',
         icon: 'checkmark-circle',
-        cssClass: 'toast-success'
+        cssClass: 'toast-success',
+        width: '200px'
       });
     } catch (error) {
       console.error(error);

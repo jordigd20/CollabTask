@@ -4,7 +4,8 @@
 
 .header-transparent {
   ion-toolbar {
-    --background: transparent;
+    --background: linear-gradient(rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+    color: var(--ion-color-white);
   }
 
   &::after {

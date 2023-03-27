@@ -45,19 +45,20 @@
             <ng-container *ngIf="!showDistributionMode">
               <ion-icon
                 *ngIf="task.completed"
+                class="task-icon"
                 name="checkmark-circle"
                 color="primary"
-                style="font-size: 18px; margin-bottom: 2px"
               ></ion-icon>
               <ion-icon
                 *ngIf="!task.completed"
+                class="task-icon"
                 name="ellipsis-horizontal-circle-sharp"
-                style="font-size: 18px; margin-bottom: 2px; color: #ffd600"
+                style="color: #ffd600"
               ></ion-icon>
               <ion-icon
                 *ngIf="!task.availableToAssign && task.completed"
+                class="task-icon"
                 name="eye-off-outline"
-                style="font-size: 18px; margin-bottom: 2px"
               ></ion-icon>
             </ng-container>
 
@@ -82,10 +83,7 @@
               class="d-flex align-items-center"
               style="gap: 3px"
             >
-              <ion-icon
-                src="../../../assets/icons/periodic.svg"
-                style="margin-bottom: 2px"
-              ></ion-icon>
+              <ion-icon src="../../../assets/icons/periodic.svg" class="task-icon"></ion-icon>
               <span class="date-periodic-info" style="font-size: 14px">{{
                 task.datePeriodic.join(', ') | titlecase
               }}</span>
@@ -126,9 +124,13 @@
       </div>
     </div>
 
-    <div *ngIf="!withoutUserAssigned && photoURL.length !== 0" class="bottom-container">
+    <div *ngIf="!withoutUserAssigned" class="bottom-container">
       <ion-avatar class="user-task-avatar">
-        <img [src]="photoURL" [alt]="'Avatar de ' + username" referrerpolicy="no-referrer" />
+        <img
+          [src]="photoURL || '../../../assets/no-photo.jpg'"
+          [alt]="'Avatar de ' + username"
+          referrerpolicy="no-referrer"
+        />
       </ion-avatar>
       <p class="username-container username">
         {{ username }}
@@ -138,13 +140,5 @@
         <span>{{ task.score }}</span>
       </div>
     </div>
-
-    <ng-container *ngIf="!withoutUserAssigned && photoURL.length === 0">
-      <div class="bottom-container">
-        <ion-skeleton-text
-          style="height: 30px; background: var(--ion-color-white)"
-        ></ion-skeleton-text>
-      </div>
-    </ng-container>
   </div>
 </ion-item>

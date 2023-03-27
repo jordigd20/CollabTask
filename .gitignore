@@ -69,6 +69,7 @@ Thumbs.db
 
 # Project
 /src/environments/
+/emulator-data
 
 # Firebase
 .firebase
