@@ -57,6 +57,14 @@ h3 {
   background-color: #fff !important;
 }
 
+ion-header.header-md {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+
+  &::after {
+    content: none;
+  }
+}
+
 ion-button {
   text-transform: none;
   --box-shadow: none;
