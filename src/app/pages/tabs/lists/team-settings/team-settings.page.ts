@@ -5,7 +5,7 @@ import { Team } from '../../../../interfaces';
 import { Clipboard } from '@capacitor/clipboard';
 import { ModalController } from '@ionic/angular';
 import { ConfirmationModalComponent } from '../../../../components/confirmation-modal/confirmation-modal.component';
-import { Observable, switchMap } from 'rxjs';
+import { Observable, switchMap, of } from 'rxjs';
 import { presentConfirmationModal } from '../../../../helpers/common-functions';
 
 @Component({
@@ -27,14 +27,18 @@ export class TeamSettingsPage implements OnInit {
   ngOnInit() {
     this.team$ = this.activeRoute.paramMap.pipe(
       switchMap((params) => {
-        this.idTeam = params.get('id') as string;
-        const result = this.teamService.getTeam(this.idTeam);
+        if (params.get('id')) {
+          this.idTeam = params.get('id')!;
+          const result = this.teamService.getTeam(this.idTeam);
 
-        if (!result) {
-          this.router.navigate(['/tabs/lists']);
+          if (!result) {
+            this.router.navigate(['/tabs/lists']);
+          }
+
+          return result;
         }
 
-        return result;
+        return of();
       })
     );
   }

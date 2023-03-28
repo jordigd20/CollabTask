@@ -4,7 +4,7 @@ import { PopoverController, ModalController } from '@ionic/angular';
 import { InfoPreferencesDistributionComponent } from '../../../../components/info-preferences-distribution/info-preferences-distribution.component';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { switchMap, from, combineLatest, map, Subject, takeUntil } from 'rxjs';
+import { switchMap, from, combineLatest, map, Subject, takeUntil, of } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { Task, Team } from '../../../../interfaces';
 import { presentConfirmationModal } from '../../../../helpers/common-functions';
@@ -41,18 +41,24 @@ export class PreferencesDistributionPage implements OnInit {
     combineLatest([
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+          if (params.get('idTeam') && params.get('idTaskList')) {
+            this.idTeam = params.get('idTeam')!;
+            this.idTaskList = params.get('idTaskList')!;
+            return this.teamService.getTeamObservable(this.idTeam);
+          }
 
-          return this.teamService.getTeamObservable(this.idTeam);
+          return of();
         })
       ),
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+          if (params.get('idTeam') && params.get('idTaskList')) {
+            this.idTeam = params.get('idTeam')!;
+            this.idTaskList = params.get('idTaskList')!;
+            return this.taskService.getAllUnassignedTasks(this.idTaskList);
+          }
 
-          return this.taskService.getAllUnassignedTasks(this.idTaskList);
+          return of();
         })
       ),
       this.activeRoute.paramMap.pipe(
@@ -79,17 +85,13 @@ export class PreferencesDistributionPage implements OnInit {
         }))
       )
       .subscribe(({ team, tasksUnassigned, userTasksPreferred }) => {
-        if (!team || !tasksUnassigned || !userTasksPreferred) {
+        if (!team || !team.taskLists[this.idTaskList!] || !tasksUnassigned || !userTasksPreferred) {
           this.router.navigate(['/tabs/lists']);
           return;
         }
 
         if (team.taskLists[this.idTaskList!].distributionCompleted) {
-          this.router.navigate([
-            '/tabs/lists/distribution-result',
-            this.idTeam,
-            this.idTaskList
-          ]);
+          this.router.navigate(['/tabs/lists/distribution-result', this.idTeam, this.idTaskList]);
           return;
         }
 

@@ -32,16 +32,23 @@ export class DistributionResultPage implements OnInit {
     const tasks = await firstValueFrom(
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+          if (params.get('idTeam') && params.get('idTaskList')) {
+            this.idTeam = params.get('idTeam')!;
+            this.idTaskList = params.get('idTaskList')!;
+            return from(this.storageService.get('user'));
+          }
 
-          return from(this.storageService.get('user'));
+          return of();
         }),
         switchMap((user) => {
           this.idUser = user.id;
           return this.teamService.getTeamObservable(this.idTeam!);
         }),
         switchMap((team) => {
+          if (!team || !team.taskLists[this.idTaskList!]) {
+            return of();
+          }
+
           this.team = team;
           const idAssignedTasks = team?.taskLists[this.idTaskList!]?.idAssignedTasks;
 

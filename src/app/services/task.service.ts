@@ -9,7 +9,6 @@ import {
   shareReplay,
   take,
   firstValueFrom,
-  finalize,
   lastValueFrom
 } from 'rxjs';
 import firebase from 'firebase/compat/app';
@@ -18,14 +17,17 @@ import { TeamErrorCodes } from '../interfaces/errors/team-error-codes.enum';
 import { UserService } from './user.service';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { nanoid } from 'nanoid';
-import { dataURItoBlob } from '../helpers/common-functions';
+import { dataURItoBlob, collabTaskErrors } from '../helpers/common-functions';
+import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TaskService {
   private tasks$: Observable<Task[]> | undefined;
+  private task$: Observable<Task | undefined> | undefined;
   private currentIdTaskList: string = '';
+  private currentIdTask: string = '';
 
   constructor(
     private afs: AngularFirestore,
@@ -105,6 +107,32 @@ export class TaskService {
     return this.tasks$;
   }
 
+  getTaskObservable(idTask: string) {
+    if (!this.task$ || this.currentIdTask !== idTask) {
+      this.task$ = this.afs
+        .doc<Task>(`tasks/${idTask}`)
+        .valueChanges()
+        .pipe(
+          debounceTime(350),
+          map((task) => {
+            if (task) {
+              const date = task.date as firebase.firestore.Timestamp;
+              const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+
+              task.date = this.convertTimestampToString(date);
+              task.dateLimit = this.convertTimestampToString(dateLimit);
+            }
+
+            return task;
+          }),
+          shareReplay({ bufferSize: 1, refCount: true })
+        );
+      this.currentIdTask = idTask;
+    }
+
+    return this.task$;
+  }
+
   getAllTasksByTeam(idTeam: string) {
     return this.afs
       .collection<Task>('tasks', (ref) => ref.where('idTeam', '==', idTeam))
@@ -162,26 +190,40 @@ export class TaskService {
     }
   }
 
-  async updateTask({ idTask, ...taskData }: TaskData) {
+  async updateTask({ idTask, idTaskList, ...taskData }: TaskData) {
     try {
-      taskData.date = this.convertStringToTimestamp(taskData.date as string);
-      taskData.dateLimit = this.convertStringToTimestamp(taskData.dateLimit as string);
+      if (idTask && idTaskList) {
+        const task = await firstValueFrom(this.getTask(idTask, idTaskList));
 
-      await this.afs.doc<Task>(`tasks/${idTask}`).update(taskData);
+        if (!task) {
+          throw new Error(TaskErrorCodes.TaskNotFound);
+        }
 
-      this.toastService.showToast({
-        message: 'Tarea actualizada correctamente',
-        icon: 'checkmark-circle',
-        cssClass: 'toast-success'
-      });
+        taskData.date = this.convertStringToTimestamp(taskData.date as string);
+        taskData.dateLimit = this.convertStringToTimestamp(taskData.dateLimit as string);
+
+        await this.afs.doc<Task>(`tasks/${idTask}`).update(taskData);
+
+        this.toastService.showToast({
+          message: 'Tarea actualizada correctamente',
+          icon: 'checkmark-circle',
+          cssClass: 'toast-success'
+        });
+      }
     } catch (error) {
       console.error(error);
       this.handleError(error);
     }
   }
 
-  async updateTaskAvailability(idTask: string, availableToAssign: boolean) {
+  async updateTaskAvailability(idTask: string, idTaskList: string, availableToAssign: boolean) {
     try {
+      const task = await firstValueFrom(this.getTask(idTask, idTaskList));
+
+      if (!task) {
+        throw new Error(TaskErrorCodes.TaskNotFound);
+      }
+
       await this.afs.doc<Task>(`tasks/${idTask}`).update({ availableToAssign });
 
       this.toastService.showToast({
@@ -204,7 +246,7 @@ export class TaskService {
       ]);
 
       if (!task || !user) {
-        throw new Error('No se ha podido completar la tarea');
+        throw new Error(TaskErrorCodes.TaskCouldNotBeCompleted);
       }
 
       const batch = this.afs.firestore.batch();
@@ -249,8 +291,18 @@ export class TaskService {
     }
   }
 
-  async temporarilyAssignTask(idTask: string, idUser: string) {
+  async temporarilyAssignTask(idTask: string, idTaskList: string, idUser: string) {
     try {
+      const task = await firstValueFrom(this.getTask(idTask, idTaskList));
+
+      if (!task) {
+        throw new Error(TaskErrorCodes.TaskNotFound);
+      }
+
+      if (!task?.availableToAssign) {
+        return;
+      }
+
       await this.afs.doc<Task>(`tasks/${idTask}`).update({
         idTemporalUserAssigned: idUser
       });
@@ -302,7 +354,7 @@ export class TaskService {
       const task = await firstValueFrom(this.getTask(idTask, idTaskList));
 
       if (!task) {
-        throw new Error('No se ha podido subir la imagen');
+        throw new Error(TaskErrorCodes.TaskNotFound);
       }
 
       if (task.imageURL !== '') {
@@ -326,7 +378,7 @@ export class TaskService {
       const task = await firstValueFrom(this.getTask(idTask, idTaskList));
 
       if (!task) {
-        throw new Error('No se ha podido eliminar la imagen');
+        throw new Error(TaskErrorCodes.TaskNotFound);
       }
 
       if (task.imageURL !== '') {
@@ -342,16 +394,9 @@ export class TaskService {
   }
 
   handleError(error: any) {
-    let message = '';
-
-    switch (error.message) {
-      case TeamErrorCodes.TeamEmptyTaskList:
-        message = 'No hay tareas para repartir';
-        break;
-      default:
-        message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
-        break;
-    }
+    const message =
+      collabTaskErrors[error.message] ??
+      'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
 
     this.toastService.showToast({
       message,

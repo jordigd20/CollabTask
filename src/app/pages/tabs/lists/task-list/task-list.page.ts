@@ -3,7 +3,7 @@ import { ActionSheetController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../../services/task.service';
 import { Task } from '../../../../interfaces';
-import { from, switchMap, combineLatest, map, Subject, takeUntil } from 'rxjs';
+import { from, switchMap, combineLatest, map, Subject, takeUntil, of } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { TeamService } from '../../../../services/team.service';
 import { Team } from '../../../../interfaces/models/team.interface';
@@ -34,10 +34,13 @@ export class TaskListPage implements OnInit {
     combineLatest([
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+          if (params.get('idTeam') && params.get('idTaskList')) {
+            this.idTeam = params.get('idTeam')!;
+            this.idTaskList = params.get('idTaskList')!;
+            return from(this.storageService.get('user'));
+          }
 
-          return from(this.storageService.get('user'));
+          return of();
         }),
         switchMap((user) => {
           this.idUser = user.id;
@@ -46,10 +49,13 @@ export class TaskListPage implements OnInit {
       ),
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+          if (params.get('idTeam') && params.get('idTaskList')) {
+            this.idTeam = params.get('idTeam')!;
+            this.idTaskList = params.get('idTaskList')!;
+            return this.taskService.getAllAssignedTasks(this.idTaskList);
+          }
 
-          return this.taskService.getAllAssignedTasks(this.idTaskList);
+          return of();
         })
       )
     ])
@@ -58,7 +64,7 @@ export class TaskListPage implements OnInit {
         map(([team, tasks]) => ({ team, tasks }))
       )
       .subscribe(({ team, tasks }) => {
-        if (!team?.taskLists[this.idTaskList!]) {
+        if (!team || !team?.taskLists[this.idTaskList!] || !tasks) {
           this.router.navigate(['/tabs/lists']);
           return;
         }

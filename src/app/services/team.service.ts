@@ -30,6 +30,8 @@ import firebase from 'firebase/compat/app';
 import { UserService } from './user.service';
 import { TaskService } from './task.service';
 import { ToastService } from './toast.service';
+import { collabTaskErrors } from '../helpers/common-functions';
+import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
 
 const MAX_USER_MEMBERS = 10;
 const MAX_TASK_LISTS = 20;
@@ -188,6 +190,11 @@ export class TeamService {
   ) {
     try {
       const { id: userId } = await this.storageService.get('user');
+      const team = await firstValueFrom(this.getTeam(id, userId));
+
+      if (!team) {
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
 
       if (userMembers[userId].role !== 'admin') {
         throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
@@ -211,7 +218,7 @@ export class TeamService {
       const team = await firstValueFrom(this.getTeam(idTeam));
 
       if (!team || !name || !distributionType) {
-        throw new Error('No se ha encontrado el equipo');
+        throw new Error(TeamErrorCodes.TeamNotFound);
       }
 
       if (Object.keys(team.taskLists).length >= MAX_TASK_LISTS) {
@@ -260,7 +267,11 @@ export class TeamService {
       const team = await firstValueFrom(this.getTeam(idTeam));
 
       if (!team) {
-        throw new Error('No se ha encontrado el equipo');
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (!team.taskLists[idTaskList]) {
+        throw new Error(TeamErrorCodes.TaskListNotFound);
       }
 
       const batch = this.afs.firestore.batch();
@@ -323,6 +334,22 @@ export class TeamService {
         firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))
       ]);
 
+      if (!team) {
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (!team.taskLists[idTaskList]) {
+        throw new Error(TeamErrorCodes.TaskListNotFound);
+      }
+
+      if (!tasksUnassigned) {
+        throw new Error(TaskErrorCodes.TasksNotFound);
+      }
+
+      if (!tasksUnassigned.find((task) => task.id === idTask)) {
+        throw new Error(TaskErrorCodes.TaskNotFound);
+      }
+
       const batch = this.afs.firestore.batch();
       const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
 
@@ -383,6 +410,15 @@ export class TeamService {
       }
 
       const team = await firstValueFrom(this.getTeam(idTeam));
+
+      if (!team) {
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (!team.taskLists[idTaskList]) {
+        throw new Error(TeamErrorCodes.TaskListNotFound);
+      }
+
       const batch = this.afs.firestore.batch();
       const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
 
@@ -416,30 +452,32 @@ export class TeamService {
     try {
       const team = await firstValueFrom(this.getTeam(idTeam));
 
-      if (team) {
-        if (team.userMembers[idUser].role !== 'admin') {
-          throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
-        }
-
-        const batch = this.afs.firestore.batch();
-        const tasks = await firstValueFrom(this.taskService.getAllTasksByTaskList(idTaskList));
-
-        for (const task of tasks) {
-          const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
-          batch.delete(taskRef);
-        }
-
-        const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
-        batch.update(teamRef, `taskLists.${idTaskList}`, firebase.firestore.FieldValue.delete());
-
-        await batch.commit();
-
-        this.toastService.showToast({
-          message: 'La lista de tareas se ha eliminado correctamente',
-          icon: 'checkmark-circle',
-          cssClass: 'toast-success'
-        });
+      if (!team) {
+        throw new Error(TeamErrorCodes.TeamNotFound);
       }
+
+      if (team.userMembers[idUser].role !== 'admin') {
+        throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
+      }
+
+      const batch = this.afs.firestore.batch();
+      const tasks = await firstValueFrom(this.taskService.getAllTasksByTaskList(idTaskList));
+
+      for (const task of tasks) {
+        const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+        batch.delete(taskRef);
+      }
+
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      batch.update(teamRef, `taskLists.${idTaskList}`, firebase.firestore.FieldValue.delete());
+
+      await batch.commit();
+
+      this.toastService.showToast({
+        message: 'La lista de tareas se ha eliminado correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success'
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);
@@ -451,7 +489,11 @@ export class TeamService {
       const team = await firstValueFrom(this.getTeam(idTeam));
 
       if (!team) {
-        throw new Error('No se ha encontrado el equipo');
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (!team.taskLists[idTaskList]) {
+        throw new Error(TeamErrorCodes.TaskListNotFound);
       }
 
       const batch = this.afs.firestore.batch();
@@ -488,6 +530,11 @@ export class TeamService {
 
   async leaveTeam(idTeam: string) {
     const team = await firstValueFrom(this.getTeam(idTeam));
+
+    if (!team) {
+      throw new Error(TeamErrorCodes.TeamNotFound);
+    }
+
     if (Object.keys(team!.userMembers).length === 1) {
       this.deleteTeam(idTeam);
     } else {
@@ -498,6 +545,11 @@ export class TeamService {
   async deleteTeam(idTeam: string) {
     try {
       const tasks = await firstValueFrom(this.taskService.getAllTasksByTeam(idTeam));
+
+      if (!tasks) {
+        throw new Error(TaskErrorCodes.TasksNotFound);
+      }
+
       const batch = this.afs.firestore.batch();
 
       for (const task of tasks) {
@@ -525,6 +577,10 @@ export class TeamService {
     try {
       const { id: idUser } = await this.storageService.get('user');
       const tasks = await firstValueFrom(this.taskService.getAllTasksByTeam(idTeam));
+
+      if (!tasks) {
+        throw new Error(TaskErrorCodes.TasksNotFound);
+      }
 
       const batch = this.afs.firestore.batch();
 
@@ -659,6 +715,10 @@ export class TeamService {
         firstValueFrom(this.getTeam(idTeam)),
         firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))
       ]);
+
+      if (!team) {
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
 
       if (tasksUnassigned.length === 0) {
         throw new Error(TeamErrorCodes.TeamEmptyTaskList);
@@ -836,43 +896,9 @@ export class TeamService {
   }
 
   handleError(error: any) {
-    let message = '';
-
-    switch (error.message) {
-      case TeamErrorCodes.TeamInvitationCodeNotFound:
-        message = 'No se ha encontrado ningún equipo con ese código de invitación';
-        break;
-      case TeamErrorCodes.TeamDoesNotAllowNewMembers:
-        message = 'Este equipo no permite nuevos miembros';
-        break;
-      case TeamErrorCodes.TeamUserIsAlreadyMember:
-        message = 'Ya eres miembro de este equipo';
-        break;
-      case TeamErrorCodes.TeamReachedMaxMembers:
-        message = 'No se pueden añadir más miembros a este equipo';
-        break;
-      case TeamErrorCodes.TeamReachedMaxTaskLists:
-        message = 'Este equipo ha alcanzado el máximo de listas de tareas disponibles';
-        break;
-      case TeamErrorCodes.TeamUserPermissionDenied:
-        message = 'Solo los administradores pueden realizar esta acción';
-        break;
-      case TeamErrorCodes.FirestorePermissionDenied:
-        message = 'No tienes el permiso suficiente para realizar esta acción';
-        break;
-      case TeamErrorCodes.TeamReachedMaxTasksPreferred:
-        message = 'Has alcanzado el máximo de tareas preferidas permitidas';
-        break;
-      case TeamErrorCodes.TeamEmptyTaskList:
-        message = 'No hay tareas para repartir';
-        break;
-      case TeamErrorCodes.TeamTasksExceedMaxPerDistribution:
-        message = 'El número de tareas supera el máximo permitido para realizar el reparto';
-        break;
-      default:
-        message = 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
-        break;
-    }
+    const message =
+      collabTaskErrors[error.message] ??
+      'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
 
     this.toastService.showToast({
       message,

@@ -36,9 +36,8 @@ export class TeamFormPage implements OnInit {
     this.activeRoute.paramMap
       .pipe(
         switchMap((params) => {
-          this.idTeam = params.get('id') as string;
-
-          if (this.idTeam) {
+          if (params.get('id')) {
+            this.idTeam = params.get('id')!;
             this.headerTitle = 'Editar equipo';
             this.buttonText = 'Guardar cambios';
             return this.teamService.getTeam(this.idTeam);

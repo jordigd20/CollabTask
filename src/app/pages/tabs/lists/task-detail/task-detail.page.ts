@@ -52,31 +52,35 @@ export class TaskDetailPage implements OnInit {
         }),
         switchMap((user) => {
           this.idUser = user.id;
-          return this.taskService.getTask(this.idTask!, this.idTaskList!);
+          return this.taskService.getTaskObservable(this.idTask!);
         }),
         switchMap((task) => {
-          if (task) {
-            this.task = task;
-            return this.teamService.getTeamObservable(task?.idTeam);
+          if (!task) {
+            this.router.navigate(['/tabs/lists']);
+            return of();
           }
 
-          return of();
+          this.task = task;
+          return this.teamService.getTeamObservable(task?.idTeam);
         }),
         takeUntil(this.destroy$)
       )
       .subscribe((team) => {
-        if (team && this.task) {
-          this.team = team;
+        if (!team || !this.task) {
+          this.router.navigate(['/tabs/lists']);
+          return;
+        }
 
-          if (!this.fromDistribution && this.task.idUserAssigned) {
-            this.userPhotoURL = team.userMembers[this.task.idUserAssigned].photoURL;
-            this.username = team.userMembers[this.task.idUserAssigned].name;
-          }
+        this.team = team;
 
-          if (this.fromDistribution && this.task.idTemporalUserAssigned) {
-            this.userPhotoURL = team.userMembers[this.task.idTemporalUserAssigned].photoURL;
-            this.username = team.userMembers[this.task.idTemporalUserAssigned].name;
-          }
+        if (!this.fromDistribution && this.task.idUserAssigned) {
+          this.userPhotoURL = team.userMembers[this.task.idUserAssigned].photoURL;
+          this.username = team.userMembers[this.task.idUserAssigned].name;
+        }
+
+        if (this.fromDistribution && this.task.idTemporalUserAssigned) {
+          this.userPhotoURL = team.userMembers[this.task.idTemporalUserAssigned].photoURL;
+          this.username = team.userMembers[this.task.idTemporalUserAssigned].name;
         }
       });
   }
@@ -153,13 +157,13 @@ export class TaskDetailPage implements OnInit {
             dangerType: false,
             mainFunction: () => {
               if (this.task) {
-                this.taskService.updateTaskAvailability(this.task.id, !this.task.availableToAssign);
+                this.taskService.updateTaskAvailability(this.task.id, this.task.idTaskList, !this.task.availableToAssign);
               }
             },
             modalController: this.modalController
           });
         } else {
-          this.taskService.updateTaskAvailability(this.task.id, !this.task.availableToAssign);
+          this.taskService.updateTaskAvailability(this.task.id, this.task.idTaskList, !this.task.availableToAssign);
         }
       }
     };

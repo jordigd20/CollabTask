@@ -44,34 +44,36 @@ export class TaskComponent implements OnInit {
       .getTeamObservable(this.task.idTeam)
       .pipe(takeUntil(this.destroy$))
       .subscribe((team) => {
-        if (team) {
-          if (
-            (this.distributionMode === 'preferences' &&
-              team.taskLists[this.task.idTaskList].distributionType === 'manual') ||
-            (this.distributionMode === 'manual' &&
-              team.taskLists[this.task.idTaskList].distributionType === 'preferences')
-          ) {
-            this.router.navigate(['tabs/lists/task-list', this.task.idTeam, this.task.idTaskList]);
-            return;
-          }
+        if (!team || !team.taskLists[this.task.idTaskList]) {
+          return;
+        }
 
-          this.teamMembers = team.userMembers;
-          this.userTeamMembersList = Object.values(team.userMembers);
-          const currentUser = this.userTeamMembersList.find((user) => user.id === this.idUser);
+        if (
+          (this.distributionMode === 'preferences' &&
+            team.taskLists[this.task.idTaskList].distributionType === 'manual') ||
+          (this.distributionMode === 'manual' &&
+            team.taskLists[this.task.idTaskList].distributionType === 'preferences')
+        ) {
+          this.router.navigate(['tabs/lists/task-list', this.task.idTeam, this.task.idTaskList]);
+          return;
+        }
 
-          if (currentUser && this.photoURL !== currentUser.photoURL) {
-            this.photoURL = currentUser.photoURL;
-          }
+        this.teamMembers = team.userMembers;
+        this.userTeamMembersList = Object.values(team.userMembers);
+        const currentUser = this.userTeamMembersList.find((user) => user.id === this.idUser);
 
-          if (currentUser && this.username !== currentUser.name) {
-            this.username = currentUser.name;
-          }
+        if (currentUser && this.photoURL !== currentUser.photoURL) {
+          this.photoURL = currentUser.photoURL;
+        }
 
-          if (this.distributionMode === 'preferences') {
-            const userTasksPreferred =
-              team.taskLists[this.task.idTaskList].userTasksPreferred[this.idUser] ?? [];
-            this.isTaskPreferred = userTasksPreferred.includes(this.task.id);
-          }
+        if (currentUser && this.username !== currentUser.name) {
+          this.username = currentUser.name;
+        }
+
+        if (this.distributionMode === 'preferences') {
+          const userTasksPreferred =
+            team.taskLists[this.task.idTaskList].userTasksPreferred[this.idUser] ?? [];
+          this.isTaskPreferred = userTasksPreferred.includes(this.task.id);
         }
       });
   }
@@ -121,7 +123,7 @@ export class TaskComponent implements OnInit {
       handler: () => {
         this.withoutUserAssigned
           ? this.selectUser(this.userTeamMembersList)
-          : this.taskService.temporarilyAssignTask(this.task.id, '');
+          : this.taskService.temporarilyAssignTask(this.task.id, this.task.idTaskList, '');
       }
     };
 
@@ -164,11 +166,19 @@ export class TaskComponent implements OnInit {
             confirmText: 'Añadir',
             dangerType: false,
             mainFunction: () =>
-              this.taskService.updateTaskAvailability(this.task.id, !this.task.availableToAssign),
+              this.taskService.updateTaskAvailability(
+                this.task.id,
+                this.task.idTaskList,
+                !this.task.availableToAssign
+              ),
             modalController: this.modalController
           });
         } else {
-          this.taskService.updateTaskAvailability(this.task.id, !this.task.availableToAssign);
+          this.taskService.updateTaskAvailability(
+            this.task.id,
+            this.task.idTaskList,
+            !this.task.availableToAssign
+          );
         }
       }
     };
@@ -206,7 +216,7 @@ export class TaskComponent implements OnInit {
           text: user.name,
           cssClass: 'action-sheet-custom-icon',
           handler: () => {
-            this.taskService.temporarilyAssignTask(this.task.id, user.id);
+            this.taskService.temporarilyAssignTask(this.task.id, this.task.idTaskList, user.id);
           }
         };
       })

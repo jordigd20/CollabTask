@@ -136,7 +136,11 @@ export class TaskFormPage implements OnInit {
     }
 
     this.isLoading = true;
-    await this.taskService.updateTask({ idTask: this.idTask, ...this.taskForm.value });
+    await this.taskService.updateTask({
+      idTask: this.idTask,
+      idTaskList: this.idTaskList,
+      ...this.taskForm.value
+    });
     this.isLoading = false;
   }
 

@@ -1,4 +1,6 @@
 export enum TeamErrorCodes {
+  TeamNotFound = 'team/not-found',
+  TaskListNotFound = 'team/task-list-not-found',
   TeamInvitationCodeNotFound = 'team/invitation-code-not-found',
   TeamInvitationCodeNotValid = 'team/invitation-code-not-valid',
   TeamUserIsAlreadyMember = 'team/user-already-member',
@@ -9,5 +11,5 @@ export enum TeamErrorCodes {
   TeamReachedMaxTasksPreferred = 'team/reached-max-tasks-preferred',
   TeamEmptyTaskList = 'team/empty-task-list',
   TeamTasksExceedMaxPerDistribution = 'team/tasks-exceed-max-per-distribution',
-  FirestorePermissionDenied = 'permission-denied',
+  FirestorePermissionDenied = 'permission-denied'
 }

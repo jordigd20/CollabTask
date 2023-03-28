@@ -37,21 +37,28 @@ export class ListsPage implements OnInit {
 
   async ngOnInit() {
     this.isLoading = true;
-    const result = from(this.storageService.get('user')).pipe(
-      switchMap((user) => {
-        this.userId = user.id;
-        return this.teamService.getAllUserTeams(this.userId);
-      })
-    );
+    from(this.storageService.get('user'))
+      .pipe(
+        switchMap((user) => {
+          this.userId = user.id;
+          return this.teamService.getAllUserTeams(this.userId);
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((teams) => {
+        if (!teams) {
+          this.teamsList = [];
+          this.isLoading = false;
+          return;
+        }
 
-    result.pipe(takeUntil(this.destroy$)).subscribe((teams) => {
-      if (teams.length > 0) {
-        this.fillComponentData(teams);
-      } else {
-        this.teamsList = [];
-        this.isLoading = false;
-      }
-    });
+        if (teams.length > 0) {
+          this.fillComponentData(teams);
+        } else {
+          this.teamsList = [];
+          this.isLoading = false;
+        }
+      });
   }
 
   ngOnDestroy() {

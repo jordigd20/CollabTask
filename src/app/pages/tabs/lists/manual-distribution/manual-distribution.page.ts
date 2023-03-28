@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Task, Team } from '../../../../interfaces';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { switchMap, Observable, map, from, combineLatest, Subject, takeUntil } from 'rxjs';
+import { switchMap, Observable, map, from, combineLatest, Subject, takeUntil, of } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { PopoverController } from '@ionic/angular';
 import { InfoManualDistributionComponent } from '../../../../components/info-manual-distribution/info-manual-distribution.component';
@@ -40,10 +40,13 @@ export class ManualDistributionPage implements OnInit {
     combineLatest([
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+          if (params.get('idTeam') && params.get('idTaskList')) {
+            this.idTeam = params.get('idTeam')!;
+            this.idTaskList = params.get('idTaskList')!;
+            return from(this.storageService.get('user'));
+          }
 
-          return from(this.storageService.get('user'));
+          return of();
         }),
         switchMap((user) => {
           this.idUser = user.id;
@@ -64,10 +67,13 @@ export class ManualDistributionPage implements OnInit {
       ),
       this.activeRoute.paramMap.pipe(
         switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+          if (params.get('idTeam') && params.get('idTaskList')) {
+            this.idTeam = params.get('idTeam')!;
+            this.idTaskList = params.get('idTaskList')!;
+            return this.taskService.getAllUnassignedTasks(this.idTaskList);
+          }
 
-          return this.taskService.getAllUnassignedTasks(this.idTaskList);
+          return of();
         })
       )
     ])
@@ -76,7 +82,7 @@ export class ManualDistributionPage implements OnInit {
         map(([teamVm, tasksUnassigned]) => ({ teamVm, tasksUnassigned }))
       )
       .subscribe(({ teamVm, tasksUnassigned }) => {
-        if (!teamVm.team?.taskLists[this.idTaskList!]) {
+        if (!teamVm.team?.taskLists[this.idTaskList!] || !tasksUnassigned) {
           this.router.navigate(['/tabs/lists']);
           return;
         }
