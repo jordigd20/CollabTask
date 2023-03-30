@@ -106,6 +106,7 @@
           (showDistributionMode && showMoreOptions) ||
           (!showDistributionMode && showMoreOptions && currentUserId)
         "
+        [disabled]="disableMoreOptions"
         (click)="moreOptions(); $event.stopPropagation()"
         class="more-opts-btn"
         fill="clear"

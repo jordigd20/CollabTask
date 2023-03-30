@@ -728,167 +728,169 @@ export class TeamService {
         throw new Error(TeamErrorCodes.TeamTasksExceedMaxPerDistribution);
       }
 
-      if (team && tasksUnassigned.length > 0) {
-        const batch = this.afs.firestore.batch();
-        const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
-        const userTasksPreferred = Object.entries(team.taskLists[idTaskList].userTasksPreferred);
-        const userMembersWithScore = Object.entries(team.taskLists[idTaskList].userScore)
-          .map(([id, score]) => ({ id, score }))
-          .sort((a, b) => a.score - b.score);
-        const tasksWithoutPreference: Task[] = [];
-        const tasksPerUser = Math.floor(tasksUnassigned.length / userMembersWithScore.length);
-        const assignmentsTrack = new Map<string, number>();
-        const idAssignedTasks: string[] = [];
-        console.log('Entire object: ', userMembersWithScore);
-        console.log('tasksPerUser', tasksPerUser);
+      const batch = this.afs.firestore.batch();
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      const userTasksPreferred = Object.entries(team.taskLists[idTaskList].userTasksPreferred);
+      const userMembersWithScore = Object.entries(team.taskLists[idTaskList].userScore)
+        .map(([id, score]) => ({ id, score }))
+        .sort((a, b) => a.score - b.score);
+      const tasksWithoutPreference: Task[] = [];
+      const tasksPerUser = Math.floor(tasksUnassigned.length / userMembersWithScore.length);
+      const assignmentsTrack = new Map<string, number>();
+      const idAssignedTasks: string[] = [];
+      console.log('Entire object: ', userMembersWithScore);
+      console.log('tasksPerUser', tasksPerUser);
 
-        for (let task of tasksUnassigned) {
-          const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
-          const usersWithPreference = userTasksPreferred.filter(([_, tasks]) =>
-            tasks.includes(task.id)
-          );
+      for (let task of tasksUnassigned) {
+        const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+        const usersWithPreference = userTasksPreferred.filter(([_, tasks]) =>
+          tasks.includes(task.id)
+        );
 
-          // If there is more than one user with the same preference,
-          // we assign the task to the one with the highest score
-          if (usersWithPreference.length > 1) {
-            let userWithHighestScore = this.getUserWithHighestScore(
-              userMembersWithScore,
+        // If there is more than one user with the same preference,
+        // we assign the task to the one with the highest score
+        if (usersWithPreference.length > 1) {
+          let selectedUserId = '';
+          const usersWithPreferenceAndScore = userMembersWithScore.filter((user) => {
+            return usersWithPreference.some(([id]) => id === user.id);
+          });
+
+          while (usersWithPreferenceAndScore.length > 0) {
+            const userWithHighestScore = this.getUserWithHighestScore(
+              usersWithPreferenceAndScore,
               usersWithPreference
             );
 
-            // If the user with the highest score has reached the maximum number of tasks,
-            // we assign the task to the next user
-            if (assignmentsTrack.get(userWithHighestScore.id) === tasksPerUser) {
-              const nextUserMembers = [...userMembersWithScore];
-              nextUserMembers.pop();
-              userWithHighestScore = this.getUserWithHighestScore(
-                nextUserMembers,
-                usersWithPreference
-              );
+            if (assignmentsTrack.get(userWithHighestScore.id) === tasksPerUser - 2) {
+              usersWithPreferenceAndScore.pop();
+            } else {
+              selectedUserId = userWithHighestScore.id;
+              break;
             }
+          }
 
-            assignmentsTrack.set(
-              userWithHighestScore.id,
-              (assignmentsTrack.get(userWithHighestScore.id) || 0) + 1
-            );
+          if (selectedUserId) {
+            assignmentsTrack.set(selectedUserId, (assignmentsTrack.get(selectedUserId) || 0) + 1);
 
-            console.log(`Assigning task ${task.id} to HIGHEST user ${userWithHighestScore.id}`);
+            console.log(`Assigning task ${task.id} to HIGHEST user ${selectedUserId}`);
             idAssignedTasks.push(task.id);
-            const userRef = this.afs.firestore.doc(`users/${userWithHighestScore.id}`);
+            const userRef = this.afs.firestore.doc(`users/${selectedUserId}`);
             batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
             batch.update(taskRef, {
-              idUserAssigned: userWithHighestScore.id,
-              availableToAssign: false,
-              completed: false
-            });
-
-            // If there is only one user with preference, we assign the task to that user
-          } else if (usersWithPreference.length === 1) {
-            // If the user has reached the maximum number of tasks,
-            // the task goes to the rest of the tasks
-            if (assignmentsTrack.get(usersWithPreference[0][0]) === tasksPerUser) {
-              tasksWithoutPreference.push(task);
-              continue;
-            }
-
-            assignmentsTrack.set(
-              usersWithPreference[0][0],
-              (assignmentsTrack.get(usersWithPreference[0][0]) || 0) + 1
-            );
-
-            console.log(`Assigning task ${task.id} DIRECTLY to user ${usersWithPreference[0][0]}`);
-            idAssignedTasks.push(task.id);
-            const userRef = this.afs.firestore.doc(`users/${usersWithPreference[0][0]}`);
-            batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
-            batch.update(taskRef, {
-              idUserAssigned: usersWithPreference[0][0],
+              idUserAssigned: selectedUserId,
               availableToAssign: false,
               completed: false
             });
           } else {
             tasksWithoutPreference.push(task);
           }
-        }
 
-        // Assign the rest of the tasks to each user ordered by score
-        // in descending order until all the users have the same number of tasks
-        let i = 0;
-        const usersReachedMaxTasks = new Map<string, boolean>();
-        while (tasksWithoutPreference.length > 0) {
-          if (assignmentsTrack.get(userMembersWithScore[i].id) === tasksPerUser) {
-            usersReachedMaxTasks.set(userMembersWithScore[i].id, true);
-            if (usersReachedMaxTasks.size === userMembersWithScore.length) {
-              break;
-            }
-
-            i++;
-            if (i === userMembersWithScore.length) {
-              i = 0;
-            }
+          // If there is only one user with preference, we assign the task to that user
+        } else if (usersWithPreference.length === 1) {
+          // If the user has reached the maximum number of tasks,
+          // the task goes to the rest of the tasks
+          if (assignmentsTrack.get(usersWithPreference[0][0]) === tasksPerUser) {
+            tasksWithoutPreference.push(task);
             continue;
           }
 
-          const task = tasksWithoutPreference.shift();
-          const user = userMembersWithScore[i];
+          assignmentsTrack.set(
+            usersWithPreference[0][0],
+            (assignmentsTrack.get(usersWithPreference[0][0]) || 0) + 1
+          );
 
-          if (task) {
-            assignmentsTrack.set(user.id, (assignmentsTrack.get(user.id) || 0) + 1);
-            console.log(`Assigning task ${task.id} to user ${user.id}`);
-            idAssignedTasks.push(task.id);
-            const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
-            const userRef = this.afs.firestore.doc(`users/${user.id}`);
-            batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
-            batch.update(taskRef, {
-              idUserAssigned: user.id,
-              availableToAssign: false,
-              completed: false
-            });
+          console.log(`Assigning task ${task.id} DIRECTLY to user ${usersWithPreference[0][0]}`);
+          idAssignedTasks.push(task.id);
+          const userRef = this.afs.firestore.doc(`users/${usersWithPreference[0][0]}`);
+          batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
+          batch.update(taskRef, {
+            idUserAssigned: usersWithPreference[0][0],
+            availableToAssign: false,
+            completed: false
+          });
+        } else {
+          tasksWithoutPreference.push(task);
+        }
+      }
+
+      // Assign the rest of the tasks to each user ordered by score
+      // in descending order until all the users have the same number of tasks
+      let i = 0;
+      const usersReachedMaxTasks = new Map<string, boolean>();
+      while (tasksWithoutPreference.length > 0) {
+        if (assignmentsTrack.get(userMembersWithScore[i].id) === tasksPerUser) {
+          usersReachedMaxTasks.set(userMembersWithScore[i].id, true);
+          if (usersReachedMaxTasks.size === userMembersWithScore.length) {
+            break;
           }
 
           i++;
           if (i === userMembersWithScore.length) {
             i = 0;
           }
+          continue;
         }
 
-        console.log('Rest of the tasks: ');
+        const task = tasksWithoutPreference.shift();
+        const user = userMembersWithScore[i];
 
-        // The rest of the tasks will be assigned to the users in descending order of score
-        for (let i = 0; i < tasksWithoutPreference.length; i++) {
-          console.log(
-            `Assigning task ${tasksWithoutPreference[i].id} to user ${userMembersWithScore[i].id}`
-          );
-          idAssignedTasks.push(tasksWithoutPreference[i].id);
-          const taskRef = this.afs.firestore.doc(`tasks/${tasksWithoutPreference[i].id}`);
-          const userRef = this.afs.firestore.doc(`users/${userMembersWithScore[i].id}`);
+        if (task) {
+          assignmentsTrack.set(user.id, (assignmentsTrack.get(user.id) || 0) + 1);
+          console.log(`Assigning task ${task.id} to user ${user.id}`);
+          idAssignedTasks.push(task.id);
+          const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
+          const userRef = this.afs.firestore.doc(`users/${user.id}`);
           batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
           batch.update(taskRef, {
-            idUserAssigned: userMembersWithScore[i].id,
+            idUserAssigned: user.id,
             availableToAssign: false,
             completed: false
           });
         }
 
-        // Clear the preferences
-        for (let [userKey, userValue] of userTasksPreferred) {
-          if (userValue.length > 0) {
-            batch.update(teamRef, `taskLists.${idTaskList}.userTasksPreferred.${userKey}`, []);
-          }
+        i++;
+        if (i === userMembersWithScore.length) {
+          i = 0;
         }
+      }
 
-        batch.update(teamRef, {
-          [`taskLists.${idTaskList}.idCompletedUsers`]: [],
-          [`taskLists.${idTaskList}.distributionCompleted`]: true,
-          [`taskLists.${idTaskList}.idAssignedTasks`]: idAssignedTasks
-        });
-        await batch.commit();
+      console.log('Rest of the tasks: ');
 
-        this.toastService.showToast({
-          message: 'El reparto se ha realizado correctamente',
-          icon: 'checkmark-circle',
-          cssClass: 'toast-success'
+      // The rest of the tasks will be assigned to the users in descending order of score
+      for (let i = 0; i < tasksWithoutPreference.length; i++) {
+        console.log(
+          `Assigning task ${tasksWithoutPreference[i].id} to user ${userMembersWithScore[i].id}`
+        );
+        idAssignedTasks.push(tasksWithoutPreference[i].id);
+        const taskRef = this.afs.firestore.doc(`tasks/${tasksWithoutPreference[i].id}`);
+        const userRef = this.afs.firestore.doc(`users/${userMembersWithScore[i].id}`);
+        batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
+        batch.update(taskRef, {
+          idUserAssigned: userMembersWithScore[i].id,
+          availableToAssign: false,
+          completed: false
         });
       }
+
+      // Clear the preferences
+      for (let [userKey, userValue] of userTasksPreferred) {
+        if (userValue.length > 0) {
+          batch.update(teamRef, `taskLists.${idTaskList}.userTasksPreferred.${userKey}`, []);
+        }
+      }
+
+      batch.update(teamRef, {
+        [`taskLists.${idTaskList}.idCompletedUsers`]: [],
+        [`taskLists.${idTaskList}.distributionCompleted`]: true,
+        [`taskLists.${idTaskList}.idAssignedTasks`]: idAssignedTasks
+      });
+      await batch.commit();
+
+      this.toastService.showToast({
+        message: 'El reparto se ha realizado correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success'
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);

@@ -29,6 +29,7 @@ export class TaskComponent implements OnInit {
   userTeamMembersList: UserMember[] = [];
   isTaskPreferred: boolean = false;
   isLoading: boolean = false;
+  disableMoreOptions: boolean = false;
   destroy$ = new Subject<void>();
 
   constructor(
@@ -74,6 +75,14 @@ export class TaskComponent implements OnInit {
           const userTasksPreferred =
             team.taskLists[this.task.idTaskList].userTasksPreferred[this.idUser] ?? [];
           this.isTaskPreferred = userTasksPreferred.includes(this.task.id);
+        }
+
+        const userRole = this.teamMembers[this.currentUserId]?.role;
+
+        if (!this.showDistributionMode && userRole === 'member' && !this.task.completed) {
+          this.disableMoreOptions = true;
+        } else {
+          this.disableMoreOptions = false;
         }
       });
   }
@@ -192,21 +201,27 @@ export class TaskComponent implements OnInit {
     ];
 
     if (!this.showDistributionMode && userRole === 'member') {
-      buttons = [toggleTaskAvailabilityButton];
+      buttons = [];
+
+      if (this.task.completed) {
+        buttons.push(toggleTaskAvailabilityButton);
+      }
     }
 
     if (!this.showDistributionMode && userRole === 'admin') {
       buttons = [editTaskButton, toggleTaskAvailabilityButton, deleteTaskButton];
     }
 
-    const actionSheet = await this.actionSheetController.create({
-      htmlAttributes: {
-        'aria-label': 'Acciones de la tarea'
-      },
-      buttons
-    });
+    if (buttons.length > 0) {
+      const actionSheet = await this.actionSheetController.create({
+        htmlAttributes: {
+          'aria-label': 'Acciones de la tarea'
+        },
+        buttons
+      });
 
-    await actionSheet.present();
+      await actionSheet.present();
+    }
   }
 
   async selectUser(users: UserMember[]) {

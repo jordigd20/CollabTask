@@ -1,22 +1,10 @@
-<ng-container *ngIf="team && team.taskLists[idTaskList!]; else loadingHeader">
-  <app-back-header
-    [title]="team.taskLists[idTaskList!].name"
-    [showMoreOptions]="true"
-    [showPreferences]="true"
-    (moreOptions)="handleMoreOptions()"
-    (preferences)="handlePreferences()"
-  ></app-back-header>
-</ng-container>
-
-<ng-template #loadingHeader>
-  <app-back-header
-    [title]="'...'"
-    [showMoreOptions]="true"
-    [showPreferences]="true"
-    (moreOptions)="handleMoreOptions()"
-    (preferences)="handlePreferences()"
-  ></app-back-header>
-</ng-template>
+<app-back-header
+  [title]="title"
+  [showMoreOptions]="true"
+  [showPreferences]="true"
+  (moreOptions)="handleMoreOptions()"
+  (preferences)="handlePreferences()"
+></app-back-header>
 
 <ion-content color="tertiary">
   <ng-container *ngIf="team && tasks; else loading">

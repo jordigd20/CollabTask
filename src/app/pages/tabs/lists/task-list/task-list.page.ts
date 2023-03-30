@@ -19,6 +19,7 @@ export class TaskListPage implements OnInit {
   idUser: string = '';
   team: Team | undefined;
   tasks: Task[] = [];
+  title: string = '...';
   destroy$ = new Subject<void>();
 
   constructor(
@@ -71,6 +72,7 @@ export class TaskListPage implements OnInit {
 
         this.team = team;
         this.tasks = tasks;
+        this.title = team.taskLists[this.idTaskList!].name;
       });
   }
 
