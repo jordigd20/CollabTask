@@ -84,6 +84,13 @@ const routes: Routes = [
             path: 'task-detail/:idTaskList/:idTask',
             loadChildren: () =>
               import('../lists/task-detail/task-detail.module').then((m) => m.TaskDetailPageModule)
+          },
+          {
+            path: 'team-members/:idTeam',
+            loadChildren: () =>
+              import('../lists/team-members/team-members.module').then(
+                (m) => m.TeamMembersPageModule
+              )
           }
         ]
       },

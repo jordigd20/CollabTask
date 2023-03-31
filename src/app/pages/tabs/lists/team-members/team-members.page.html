@@ -1,0 +1,46 @@
+<app-back-header title="Ver miembros del equipo"></app-back-header>
+
+<ion-content color="tertiary" class="ion-padding">
+  <ion-list class="root-list settings-list" lines="none" mode="md">
+    <ion-list-header color="primary">
+      <ion-label>
+        <h2>Equipo X</h2>
+      </ion-label>
+    </ion-list-header>
+
+    <ion-item class="sub-item" style="--padding-start: 10px">
+      <ion-avatar slot="start" class="user-avatar">
+        <ion-img [src]="'../../../../../assets/no-photo.jpg'"></ion-img>
+        <div class="pie-wrapper">
+          <app-circle-chart [pieData]="pieData"></app-circle-chart>
+        </div>
+      </ion-avatar>
+
+      <ion-label>
+        <h3 class="fw-bold" style="letter-spacing: 0">Jordi Gómez Devesa</h3>
+
+        <ion-chip
+          class="info-chip small-chip"
+          [disabled]="true"
+          style="padding-inline: 8px; background-color: #fff2ae"
+        >
+          <ion-icon src="../../../assets/icons/admin.svg" style="margin-inline: 0px 3px"></ion-icon>
+          Admin
+        </ion-chip>
+
+        <ion-chip
+          class="info-chip small-chip chip-active score-chip"
+          [disabled]="true"
+          style="padding-inline: 8px"
+        >
+          <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 3px"></ion-icon>
+          <span>100</span>
+        </ion-chip>
+      </ion-label>
+
+      <ion-button class="more-opts-btn" fill="clear" color="secondary" slot="end">
+        <ion-icon name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

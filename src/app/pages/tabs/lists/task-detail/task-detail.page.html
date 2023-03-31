@@ -92,9 +92,13 @@
           <ion-label>{{ username || 'Sin asignar' }}</ion-label>
         </ion-chip>
 
-        <ion-chip class="info-chip chip-active" [disabled]="true" style="padding-inline: 8px">
+        <ion-chip
+          class="info-chip chip-active score-chip"
+          [disabled]="true"
+          style="padding-inline: 8px"
+        >
           <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 3px"></ion-icon>
-          100
+          <span>100</span>
         </ion-chip>
       </div>
 

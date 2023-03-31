@@ -303,6 +303,18 @@ ion-spinner.loading-content {
   height: auto;
 }
 
+.small-chip {
+  height: 28px;
+}
+
+.score-chip {
+  padding: 5px 12px 7px 12px;
+
+  span {
+    margin-top: 2px;
+  }
+}
+
 .hr {
   margin: 50px 0;
   border: 1px solid var(--ion-color-border);
@@ -601,6 +613,14 @@ ion-item.settings-item {
       letter-spacing: 0;
     }
   }
+}
+
+.pie-wrapper {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -2px;
+  right: -3px;
 }
 
 .firebase-emulator-warning {

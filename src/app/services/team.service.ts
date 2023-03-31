@@ -736,9 +736,9 @@ export class TeamService {
         .sort((a, b) => a.score - b.score);
       const tasksWithoutPreference: Task[] = [];
       const tasksPerUser = Math.floor(tasksUnassigned.length / userMembersWithScore.length);
-      const assignmentsTrack = new Map<string, number>();
+      const tasksCountByUser = new Map<string, number>();
       const idAssignedTasks: string[] = [];
-      console.log('Entire object: ', userMembersWithScore);
+      console.log('userMembersWithScore: ', userMembersWithScore);
       console.log('tasksPerUser', tasksPerUser);
 
       for (let task of tasksUnassigned) {
@@ -761,7 +761,7 @@ export class TeamService {
               usersWithPreference
             );
 
-            if (assignmentsTrack.get(userWithHighestScore.id) === tasksPerUser - 2) {
+            if (tasksCountByUser.get(userWithHighestScore.id) === tasksPerUser - 2) {
               usersWithPreferenceAndScore.pop();
             } else {
               selectedUserId = userWithHighestScore.id;
@@ -770,7 +770,7 @@ export class TeamService {
           }
 
           if (selectedUserId) {
-            assignmentsTrack.set(selectedUserId, (assignmentsTrack.get(selectedUserId) || 0) + 1);
+            tasksCountByUser.set(selectedUserId, (tasksCountByUser.get(selectedUserId) || 0) + 1);
 
             console.log(`Assigning task ${task.id} to HIGHEST user ${selectedUserId}`);
             idAssignedTasks.push(task.id);
@@ -789,14 +789,14 @@ export class TeamService {
         } else if (usersWithPreference.length === 1) {
           // If the user has reached the maximum number of tasks,
           // the task goes to the rest of the tasks
-          if (assignmentsTrack.get(usersWithPreference[0][0]) === tasksPerUser) {
+          if (tasksCountByUser.get(usersWithPreference[0][0]) === tasksPerUser) {
             tasksWithoutPreference.push(task);
             continue;
           }
 
-          assignmentsTrack.set(
+          tasksCountByUser.set(
             usersWithPreference[0][0],
-            (assignmentsTrack.get(usersWithPreference[0][0]) || 0) + 1
+            (tasksCountByUser.get(usersWithPreference[0][0]) || 0) + 1
           );
 
           console.log(`Assigning task ${task.id} DIRECTLY to user ${usersWithPreference[0][0]}`);
@@ -818,7 +818,7 @@ export class TeamService {
       let i = 0;
       const usersReachedMaxTasks = new Map<string, boolean>();
       while (tasksWithoutPreference.length > 0) {
-        if (assignmentsTrack.get(userMembersWithScore[i].id) === tasksPerUser) {
+        if (tasksCountByUser.get(userMembersWithScore[i].id) === tasksPerUser) {
           usersReachedMaxTasks.set(userMembersWithScore[i].id, true);
           if (usersReachedMaxTasks.size === userMembersWithScore.length) {
             break;
@@ -835,7 +835,7 @@ export class TeamService {
         const user = userMembersWithScore[i];
 
         if (task) {
-          assignmentsTrack.set(user.id, (assignmentsTrack.get(user.id) || 0) + 1);
+          tasksCountByUser.set(user.id, (tasksCountByUser.get(user.id) || 0) + 1);
           console.log(`Assigning task ${task.id} to user ${user.id}`);
           idAssignedTasks.push(task.id);
           const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);

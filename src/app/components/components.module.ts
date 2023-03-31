@@ -17,6 +17,7 @@ import { SwiperModule } from 'swiper/angular';
 import { InfoManualDistributionComponent } from './info-manual-distribution/info-manual-distribution.component';
 import { PipesModule } from '../pipes/pipes.module';
 import { InfoPreferencesDistributionComponent } from './info-preferences-distribution/info-preferences-distribution.component';
+import { CircleChartComponent } from './circle-chart/circle-chart.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { InfoPreferencesDistributionComponent } from './info-preferences-distrib
     TaskSlideComponent,
     InfoManualDistributionComponent,
     InfoPreferencesDistributionComponent,
+    CircleChartComponent
   ],
   imports: [
     CommonModule,
@@ -55,6 +57,7 @@ import { InfoPreferencesDistributionComponent } from './info-preferences-distrib
     TaskSlideComponent,
     InfoManualDistributionComponent,
     InfoPreferencesDistributionComponent,
+    CircleChartComponent
   ]
 })
 export class ComponentsModule { }

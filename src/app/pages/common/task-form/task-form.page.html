@@ -113,9 +113,9 @@
         <ion-icon slot="start" src="../../../assets/icons/score.svg" class="score-icon"></ion-icon>
         Puntos
       </ion-button>
-      <ion-chip class="info-chip chip-active" [disabled]="true">
+      <ion-chip class="info-chip chip-active score-chip" [disabled]="true">
         <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 6px"></ion-icon>
-        {{ score?.value }} Puntos
+        <span>{{ score?.value }} Puntos</span>
       </ion-chip>
     </div>
 

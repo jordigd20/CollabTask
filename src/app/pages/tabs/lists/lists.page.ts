@@ -113,7 +113,7 @@ export class ListsPage implements OnInit {
           icon: 'people-outline',
           cssClass: 'action-sheet-custom-icon',
           handler: () => {
-            console.log('See team members');
+            this.router.navigate([`/tabs/lists/team-members/${idTeam}`]);
           }
         },
         {
