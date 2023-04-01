@@ -129,7 +129,7 @@ export class TaskDetailPage implements OnInit {
           message: '¿Estás seguro de que quieres eliminar esta tarea?',
           confirmText: 'Eliminar',
           dangerType: true,
-          mainFunction: () => {
+          confirmHandler: () => {
             if (this.task) {
               this.teamService.deleteTask(this.task.idTeam, this.task.idTaskList, this.task.id);
             }
@@ -155,7 +155,7 @@ export class TaskDetailPage implements OnInit {
               'El usuario asignado todavía no ha completado la tarea. ¿Estás seguro de que quieres añadir esta tarea al reparto?',
             confirmText: 'Añadir',
             dangerType: false,
-            mainFunction: () => {
+            confirmHandler: () => {
               if (this.task) {
                 this.taskService.updateTaskAvailability(this.task.id, this.task.idTaskList, !this.task.availableToAssign);
               }

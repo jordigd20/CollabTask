@@ -146,7 +146,7 @@ export class TaskComponent implements OnInit {
           message: '¿Estás seguro de que quieres eliminar esta tarea?',
           confirmText: 'Eliminar',
           dangerType: true,
-          mainFunction: () =>
+          confirmHandler: () =>
             this.teamService.deleteTask(this.task.idTeam, this.task.idTaskList, this.task.id),
           modalController: this.modalController
         });
@@ -174,7 +174,7 @@ export class TaskComponent implements OnInit {
               'El usuario asignado todavía no ha completado la tarea. ¿Estás seguro de que quieres añadir esta tarea al reparto?',
             confirmText: 'Añadir',
             dangerType: false,
-            mainFunction: () =>
+            confirmHandler: () =>
               this.taskService.updateTaskAvailability(
                 this.task.id,
                 this.task.idTaskList,

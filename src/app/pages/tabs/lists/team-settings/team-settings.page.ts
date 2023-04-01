@@ -49,7 +49,7 @@ export class TeamSettingsPage implements OnInit {
       message: '¿Estas seguro de que quieres salir del equipo?',
       confirmText: 'Abandonar',
       dangerType: true,
-      mainFunction: () => this.leaveTeam(),
+      confirmHandler: () => this.leaveTeam(),
       modalController: this.modalController
     });
   }

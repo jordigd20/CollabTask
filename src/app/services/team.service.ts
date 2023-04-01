@@ -161,16 +161,21 @@ export class TeamService {
         }
       };
 
-      await this.afs.doc<Team>(`teams/${id}`).set({
-        id,
-        name: name.trim(),
-        allowNewMembers,
-        invitationCode,
-        idUserMembers: [idUser],
-        userMembers,
-        taskLists: {},
-        dateCreated: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      await Promise.all([
+        this.afs.doc<Team>(`teams/${id}`).set({
+          id,
+          name: name.trim(),
+          allowNewMembers,
+          invitationCode,
+          idUserMembers: [idUser],
+          userMembers,
+          taskLists: {},
+          dateCreated: firebase.firestore.FieldValue.serverTimestamp()
+        }),
+        this.afs.doc(`users/${idUser}`).update({
+          idTeams: firebase.firestore.FieldValue.arrayUnion(id)
+        })
+      ]);
 
       this.toastService.showToast({
         message: 'El equipo se ha creado correctamente',
@@ -353,7 +358,7 @@ export class TeamService {
       const batch = this.afs.firestore.batch();
       const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
 
-      if (!isPreferred && team?.taskLists[idTaskList].idCompletedUsers.includes(idUser)) {
+      if (!isPreferred && team.taskLists[idTaskList].idCompletedUsers.includes(idUser)) {
         batch.update(
           teamRef,
           `taskLists.${idTaskList}.idCompletedUsers`,
@@ -365,7 +370,7 @@ export class TeamService {
         const maxNumberOfTasks =
           Math.floor(tasksUnassigned.length * MAX_LIST_PREFERRED_FACTOR) || 1;
 
-        const tasksPreferred = team?.taskLists[idTaskList].userTasksPreferred[idUser] ?? [];
+        const tasksPreferred = team.taskLists[idTaskList].userTasksPreferred[idUser] ?? [];
         if (tasksPreferred.length >= maxNumberOfTasks) {
           throw new Error(TeamErrorCodes.TeamReachedMaxTasksPreferred);
         }
@@ -410,7 +415,6 @@ export class TeamService {
       }
 
       const team = await firstValueFrom(this.getTeam(idTeam));
-
       if (!team) {
         throw new Error(TeamErrorCodes.TeamNotFound);
       }
@@ -535,10 +539,11 @@ export class TeamService {
       throw new Error(TeamErrorCodes.TeamNotFound);
     }
 
-    if (Object.keys(team!.userMembers).length === 1) {
+    if (Object.keys(team.userMembers).length === 1) {
       this.deleteTeam(idTeam);
     } else {
-      this.removeUserFromTeam(idTeam, team);
+      const { id: idUser } = await this.storageService.get('user');
+      this.removeUserFromTeam({ idTeam, team, idUser, executedByAdmin: false });
     }
   }
 
@@ -557,7 +562,10 @@ export class TeamService {
         batch.delete(taskRef);
       }
 
+      const { id: idUser } = await this.storageService.get('user');
+      const userRef = this.afs.firestore.doc(`users/${idUser}`);
       const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      batch.update(userRef, 'idTeams', firebase.firestore.FieldValue.arrayRemove(idTeam));
       batch.delete(teamRef);
 
       await batch.commit();
@@ -573,11 +581,35 @@ export class TeamService {
     }
   }
 
-  async removeUserFromTeam(idTeam: string, team: Team | undefined) {
+  async removeUserFromTeam({
+    idTeam,
+    idUser,
+    executedByAdmin,
+    team
+  }: {
+    idTeam: string;
+    idUser: string;
+    executedByAdmin: boolean;
+    team?: Team;
+  }) {
     try {
-      const { id: idUser } = await this.storageService.get('user');
-      const tasks = await firstValueFrom(this.taskService.getAllTasksByTeam(idTeam));
+      if (!team) {
+        team = await firstValueFrom(this.getTeam(idTeam));
+      }
 
+      if (!team) {
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (executedByAdmin) {
+        const currentUser = await this.storageService.get('user');
+        const currentUserRole = team.userMembers[currentUser.id].role;
+        if (currentUserRole !== 'admin') {
+          throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
+        }
+      }
+
+      const tasks = await firstValueFrom(this.taskService.getAllTasksByTeam(idTeam));
       if (!tasks) {
         throw new Error(TaskErrorCodes.TasksNotFound);
       }
@@ -598,7 +630,7 @@ export class TeamService {
 
       // Delete user score from all task lists
       const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
-      for (const taskList of Object.values(team!.taskLists)) {
+      for (const taskList of Object.values(team.taskLists)) {
         batch.update(
           teamRef,
           `taskLists.${taskList.id}.userScore.${idUser}`,
@@ -618,6 +650,8 @@ export class TeamService {
         }
       }
 
+      const userRef = this.afs.firestore.doc(`users/${idUser}`);
+      batch.update(userRef, 'idTeams', firebase.firestore.FieldValue.arrayRemove(idTeam));
       batch.update(teamRef, {
         [`userMembers.${idUser}`]: firebase.firestore.FieldValue.delete(),
         [`idUserMembers`]: firebase.firestore.FieldValue.arrayRemove(idUser) as unknown as string[]
@@ -627,6 +661,34 @@ export class TeamService {
 
       this.toastService.showToast({
         message: 'Has abandonado el equipo correctamente',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success'
+      });
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async changeUserRole(idTeam: string, idUser: string, role: 'admin' | 'member') {
+    try {
+      const currentUser = await this.storageService.get('user');
+      const team = await firstValueFrom(this.getTeamObservable(idTeam));
+      if (!team) {
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      const currentUserRole = team.userMembers[currentUser.id].role;
+      if (currentUserRole !== 'admin') {
+        throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
+      }
+
+      await this.afs.doc(`teams/${idTeam}`).update({
+        [`userMembers.${idUser}.role`]: role
+      });
+
+      this.toastService.showToast({
+        message: 'Rol cambiado correctamente',
         icon: 'checkmark-circle',
         cssClass: 'toast-success'
       });
@@ -689,11 +751,16 @@ export class TeamService {
             }
           }
 
-          await teamsCollection.doc(id).update({
-            idUserMembers: [...idUserMembers, idUser],
-            userMembers: { ...userMembers, [idUser]: user },
-            taskLists: { ...taskLists }
-          });
+          await Promise.all([
+            teamsCollection.doc(id).update({
+              idUserMembers: [...idUserMembers, idUser],
+              userMembers: { ...userMembers, [idUser]: user },
+              taskLists: { ...taskLists }
+            }),
+            this.afs.doc(`users/${idUser}`).update({
+              idTeams: firebase.firestore.FieldValue.arrayUnion(id)
+            })
+          ]);
 
           this.toastService.showToast({
             message: 'Te has unido al equipo correctamente',

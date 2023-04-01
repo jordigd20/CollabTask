@@ -163,7 +163,7 @@ export class ListsPage implements OnInit {
                 '¿Estás seguro de que quieres eliminar esta lista de tareas? Perderás las tareas y los puntos acumulados.',
               confirmText: 'Eliminar',
               dangerType: true,
-              mainFunction: () => this.deleteTaskList(idTeam, idTaskList),
+              confirmHandler: () => this.deleteTaskList(idTeam, idTaskList),
               modalController: this.modalController
             });
           }

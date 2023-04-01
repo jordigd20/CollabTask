@@ -7,4 +7,5 @@ export interface User {
   qualityMark: number;
   tasksAssigned: number;
   tasksCompleted: number;
+  idTeams: string[];
 }

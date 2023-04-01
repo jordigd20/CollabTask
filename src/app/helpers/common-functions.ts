@@ -9,7 +9,7 @@ interface ConfirmationModal {
   confirmText: string;
   dangerType: boolean;
   cssClass?: string;
-  mainFunction: () => void;
+  confirmHandler: () => void;
   modalController: ModalController;
 }
 
@@ -18,7 +18,7 @@ export const presentConfirmationModal = async ({
   message,
   confirmText,
   dangerType,
-  mainFunction,
+  confirmHandler,
   cssClass = '',
   modalController
 }: ConfirmationModal) => {
@@ -29,7 +29,7 @@ export const presentConfirmationModal = async ({
       message,
       confirmText,
       dangerType,
-      mainFunction
+      confirmHandler
     },
     backdropDismiss: false,
     cssClass: `responsive-modal ${cssClass}`

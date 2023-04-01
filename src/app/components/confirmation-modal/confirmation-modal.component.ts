@@ -11,7 +11,7 @@ export class ConfirmationModalComponent implements OnInit {
   @Input() message: string = '';
   @Input() confirmText: string = '';
   @Input() dangerType: boolean = false;
-  @Input() mainFunction: () => void = () => {};
+  @Input() confirmHandler: () => void = () => {};
 
   isLoading: boolean = false;
   constructor(private modalController: ModalController) {}
@@ -24,7 +24,7 @@ export class ConfirmationModalComponent implements OnInit {
 
   async executeAction() {
     this.isLoading = true;
-    await this.mainFunction();
+    await this.confirmHandler();
     this.isLoading = false;
     await this.dismissModal();
   }

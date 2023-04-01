@@ -9,7 +9,9 @@ import { User } from '../interfaces';
 export class UserService {
   private userLoggedIn$: Observable<User> | undefined;
   private lastUser$: Observable<User> | undefined;
+  private usersByTeam$: Observable<User[]> | undefined;
   private lastIdUser: string = '';
+  private lastIdTeam: string = '';
 
   constructor(private afs: AngularFirestore) {}
 
@@ -46,5 +48,19 @@ export class UserService {
 
     console.log('this.user$ is defined');
     return this.lastUser$;
+  }
+
+  getUsersByTeam(idTeam: string) {
+    if (!this.usersByTeam$ || this.lastIdTeam !== idTeam) {
+      this.usersByTeam$ = this.afs
+        .collection<User>('users', (ref) =>
+          ref.where('idTeams', 'array-contains', idTeam).orderBy('username', 'asc')
+        )
+        .valueChanges()
+        .pipe(debounceTime(350), shareReplay({ bufferSize: 1, refCount: true }));
+      this.lastIdTeam = idTeam;
+    }
+
+    return this.usersByTeam$;
   }
 }

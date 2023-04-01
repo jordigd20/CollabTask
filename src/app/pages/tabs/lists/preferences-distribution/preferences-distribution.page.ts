@@ -157,7 +157,7 @@ export class PreferencesDistributionPage implements OnInit {
         '¿Estas seguro de que quieres terminar el reparto? Todavía no han terminado todos los miembros del equipo.',
       confirmText: 'Terminar',
       dangerType: false,
-      mainFunction: () => this.completeDistribution(),
+      confirmHandler: () => this.completeDistribution(),
       modalController: this.modalController
     });
   }

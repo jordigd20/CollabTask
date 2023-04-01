@@ -80,7 +80,8 @@ export class AuthService {
         efficiency: 0,
         qualityMark: 0,
         tasksAssigned: 0,
-        tasksCompleted: 0
+        tasksCompleted: 0,
+        idTeams: []
       };
 
       await this.setUserData(user);
@@ -124,7 +125,8 @@ export class AuthService {
           efficiency: 0,
           qualityMark: 0,
           tasksAssigned: 0,
-          tasksCompleted: 0
+          tasksCompleted: 0,
+          idTeams: []
         };
 
         await this.setUserData(user);
