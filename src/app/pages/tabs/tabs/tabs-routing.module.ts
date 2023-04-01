@@ -91,6 +91,11 @@ const routes: Routes = [
               import('../lists/team-members/team-members.module').then(
                 (m) => m.TeamMembersPageModule
               )
+          },
+          {
+            path: 'ratings/:idTeam/:idTaskList',
+            loadChildren: () =>
+              import('../lists/ratings/ratings.module').then((m) => m.RatingsPageModule)
           }
         ]
       },

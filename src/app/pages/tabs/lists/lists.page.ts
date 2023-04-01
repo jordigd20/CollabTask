@@ -141,7 +141,7 @@ export class ListsPage implements OnInit {
           icon: 'star-outline',
           cssClass: 'action-sheet-tasklist-icon',
           handler: () => {
-            console.log('See task list ratings');
+            this.router.navigate([`/tabs/lists/ratings/${idTeam}/${idTaskList}`]);
           }
         },
         {

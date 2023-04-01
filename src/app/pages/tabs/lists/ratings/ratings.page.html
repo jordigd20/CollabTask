@@ -1,0 +1,90 @@
+<app-back-header title="Valoraciones de la lista"></app-back-header>
+
+<ion-content color="tertiary" class="ion-padding">
+  <ion-list class="root-list settings-list" lines="none" mode="md">
+    <ion-list-header color="primary">
+      <ion-label>
+        <h2>Lista X</h2>
+      </ion-label>
+    </ion-list-header>
+
+    <ion-item class="sub-item" style="--padding-start: 10px; --padding-end: 5px">
+      <ion-avatar slot="start" class="user-avatar">
+        <ion-img [src]="'../../../../../assets/no-photo.jpg'"></ion-img>
+        <div class="pie-wrapper">
+          <app-circle-chart [pieData]="30"></app-circle-chart>
+        </div>
+      </ion-avatar>
+
+      <ion-label style="margin: 5px 0">
+        <h3 class="fw-bold" style="letter-spacing: 0">Jordi Gómez Devesa</h3>
+
+        <div class="rating-container">
+          <ion-chip
+            class="info-chip small-chip rating-chip"
+            [disabled]="true"
+            style="padding-inline: 8px"
+          >
+            <span>Trabajo</span>
+            <div>
+              <ion-icon
+                *ngFor="let number of [0, 1, 2, 3, 4]"
+                name="star-outline"
+                color="primary"
+                class="star-icon"
+              ></ion-icon>
+            </div>
+          </ion-chip>
+
+          <ion-chip
+            class="info-chip small-chip rating-chip"
+            [disabled]="true"
+            style="padding-inline: 8px"
+          >
+            <span>Comunicación</span>
+            <div>
+              <ion-icon
+                *ngFor="let number of [0, 1, 2, 3, 4]"
+                name="star-outline"
+                color="primary"
+                class="star-icon"
+              ></ion-icon>
+            </div>
+          </ion-chip>
+
+          <ion-chip
+            class="info-chip small-chip rating-chip"
+            [disabled]="true"
+            style="padding-inline: 8px"
+          >
+            <span>Actitud</span>
+            <div>
+              <ion-icon
+                *ngFor="let number of [0, 1, 2, 3, 4]"
+                name="star-outline"
+                color="primary"
+                class="star-icon"
+              ></ion-icon>
+            </div>
+          </ion-chip>
+
+          <ion-chip
+            class="info-chip small-chip rating-chip"
+            [disabled]="true"
+            style="padding-inline: 12px"
+          >
+            <span>Valoración</span>
+            <div>
+              <ion-icon
+                *ngFor="let number of [0, 1, 2, 3, 4]"
+                name="star-outline"
+                color="primary"
+                class="star-icon"
+              ></ion-icon>
+            </div>
+          </ion-chip>
+        </div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

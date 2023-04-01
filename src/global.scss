@@ -315,6 +315,14 @@ ion-spinner.loading-content {
   }
 }
 
+.rating-chip {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
 .hr {
   margin: 50px 0;
   border: 1px solid var(--ion-color-border);
@@ -395,6 +403,11 @@ ion-spinner.loading-content {
 
 .score-icon {
   margin-bottom: 2px;
+}
+
+.star-icon {
+  font-size: 16px;
+  margin-inline: 0 3px !important;
 }
 
 .icon-size-title {
