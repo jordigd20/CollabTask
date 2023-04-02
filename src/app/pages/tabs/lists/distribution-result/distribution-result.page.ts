@@ -45,7 +45,7 @@ export class DistributionResultPage implements OnInit {
           return this.teamService.getTeamObservable(this.idTeam!);
         }),
         switchMap((team) => {
-          if (!team || !team.taskLists[this.idTaskList!]) {
+          if (!team || !team.taskLists[this.idTaskList!] || !team.userMembers[this.idUser]) {
             return of();
           }
 

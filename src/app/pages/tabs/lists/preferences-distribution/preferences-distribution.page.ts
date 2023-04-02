@@ -85,7 +85,13 @@ export class PreferencesDistributionPage implements OnInit {
         }))
       )
       .subscribe(({ team, tasksUnassigned, userTasksPreferred }) => {
-        if (!team || !team.taskLists[this.idTaskList!] || !tasksUnassigned || !userTasksPreferred) {
+        if (
+          !team ||
+          !team.taskLists[this.idTaskList!] ||
+          !team.userMembers[this.idUser!] ||
+          !tasksUnassigned ||
+          !userTasksPreferred
+        ) {
           this.router.navigate(['/tabs/lists']);
           return;
         }

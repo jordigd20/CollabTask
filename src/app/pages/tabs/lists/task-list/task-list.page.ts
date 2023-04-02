@@ -65,7 +65,12 @@ export class TaskListPage implements OnInit {
         map(([team, tasks]) => ({ team, tasks }))
       )
       .subscribe(({ team, tasks }) => {
-        if (!team || !team?.taskLists[this.idTaskList!] || !tasks) {
+        if (
+          !team ||
+          !team.taskLists[this.idTaskList!] ||
+          !team.userMembers[this.idUser] ||
+          !tasks
+        ) {
           this.router.navigate(['/tabs/lists']);
           return;
         }

@@ -82,11 +82,13 @@ export class RatingsPage implements OnInit {
         map(([team, users, ratings]) => ({ team, users, ratings }))
       )
       .subscribe(({ users, team, ratings }) => {
-        if (!users || !team || !team.taskLists[this.idTaskList!] || !ratings) {
-          return;
-        }
-
-        if (!team.userMembers[this.idUser]) {
+        if (
+          !team ||
+          !team.taskLists[this.idTaskList!] ||
+          !team.userMembers[this.idUser] ||
+          !users ||
+          !ratings
+        ) {
           this.router.navigate(['tabs/lists']);
           return;
         }

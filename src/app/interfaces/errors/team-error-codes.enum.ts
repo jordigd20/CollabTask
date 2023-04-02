@@ -1,6 +1,7 @@
 export enum TeamErrorCodes {
   TeamNotFound = 'team/not-found',
   TaskListNotFound = 'team/task-list-not-found',
+  UserNotFound = 'team/user-not-found',
   TeamInvitationCodeNotFound = 'team/invitation-code-not-found',
   TeamInvitationCodeNotValid = 'team/invitation-code-not-valid',
   TeamUserIsAlreadyMember = 'team/user-already-member',

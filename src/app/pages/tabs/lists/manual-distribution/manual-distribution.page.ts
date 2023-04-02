@@ -82,7 +82,12 @@ export class ManualDistributionPage implements OnInit {
         map(([teamVm, tasksUnassigned]) => ({ teamVm, tasksUnassigned }))
       )
       .subscribe(({ teamVm, tasksUnassigned }) => {
-        if (!teamVm.team?.taskLists[this.idTaskList!] || !tasksUnassigned) {
+        if (
+          !teamVm.team ||
+          !teamVm.team.taskLists[this.idTaskList!] ||
+          !teamVm.team.userMembers[this.idUser] ||
+          !tasksUnassigned
+        ) {
           this.router.navigate(['/tabs/lists']);
           return;
         }

@@ -63,10 +63,9 @@ export class TeamMembersPage implements OnInit {
         map(([team, users]) => ({ team, users }))
       )
       .subscribe(({ team, users }) => {
-        if (!team || !users) return;
-
-        if (!team.userMembers[this.idUser]) {
+        if (!team || !team.userMembers[this.idUser!] || !users) {
           this.router.navigate(['/tabs/lists']);
+          return;
         }
 
         this.team = team;

@@ -181,14 +181,18 @@ export class TeamService {
     userMembers: { [key: string]: UserMember }
   ) {
     try {
-      const { id: userId } = await this.storageService.get('user');
-      const team = await firstValueFrom(this.getTeam(id, userId));
+      const { id: idCurrentUser } = await this.storageService.get('user');
+      const team = await firstValueFrom(this.getTeam(id, idCurrentUser));
 
       if (!team) {
         throw new Error(TeamErrorCodes.TeamNotFound);
       }
 
-      if (userMembers[userId].role !== 'admin') {
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
+      }
+
+      if (userMembers[idCurrentUser].role !== 'admin') {
         throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
       }
 
@@ -207,10 +211,15 @@ export class TeamService {
 
   async createTaskList(idTeam: string, { name, distributionType }: TaskListData) {
     try {
-      const team = await firstValueFrom(this.getTeam(idTeam));
+      const { id: idCurrentUser } = await this.storageService.get('user');
+      const team = await firstValueFrom(this.getTeam(idTeam, idCurrentUser));
 
       if (!team || !name || !distributionType) {
         throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
       }
 
       if (Object.keys(team.taskLists).length >= MAX_TASK_LISTS) {
@@ -256,10 +265,15 @@ export class TeamService {
     { name, distributionType, distributionCompleted, idAssignedTasks }: TaskListData
   ) {
     try {
-      const team = await firstValueFrom(this.getTeam(idTeam));
+      const { id: idCurrentUser } = await this.storageService.get('user');
+      const team = await firstValueFrom(this.getTeam(idTeam, idCurrentUser));
 
       if (!team) {
         throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
       }
 
       if (!team.taskLists[idTaskList]) {
@@ -321,6 +335,7 @@ export class TeamService {
 
   async markTaskAsPreferred({ idTeam, idTaskList, idTask, idUser, isPreferred }: MarkTaskData) {
     try {
+      const { id: idCurrentUser } = await this.storageService.get('user');
       const [team, tasksUnassigned] = await Promise.all([
         firstValueFrom(this.getTeam(idTeam)),
         firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))
@@ -332,6 +347,10 @@ export class TeamService {
 
       if (!team.taskLists[idTaskList]) {
         throw new Error(TeamErrorCodes.TaskListNotFound);
+      }
+
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
       }
 
       if (!tasksUnassigned) {
@@ -401,13 +420,19 @@ export class TeamService {
         return;
       }
 
+      const { id: idCurrentUser } = await this.storageService.get('user');
       const team = await firstValueFrom(this.getTeam(idTeam));
+
       if (!team) {
         throw new Error(TeamErrorCodes.TeamNotFound);
       }
 
       if (!team.taskLists[idTaskList]) {
         throw new Error(TeamErrorCodes.TaskListNotFound);
+      }
+
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
       }
 
       const batch = this.afs.firestore.batch();
@@ -441,10 +466,19 @@ export class TeamService {
 
   async deleteTaskList(idTeam: string, idTaskList: string, idUser: string) {
     try {
+      const { id: idCurrentUser } = await this.storageService.get('user');
       const team = await firstValueFrom(this.getTeam(idTeam));
 
       if (!team) {
         throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (!team.taskLists[idTaskList]) {
+        throw new Error(TeamErrorCodes.TaskListNotFound);
+      }
+
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
       }
 
       if (team.userMembers[idUser].role !== 'admin') {
@@ -477,6 +511,7 @@ export class TeamService {
 
   async deleteTask(idTeam: string, idTaskList: string, idTask: string) {
     try {
+      const { id: idCurrentUser } = await this.storageService.get('user');
       const team = await firstValueFrom(this.getTeam(idTeam));
 
       if (!team) {
@@ -485,6 +520,10 @@ export class TeamService {
 
       if (!team.taskLists[idTaskList]) {
         throw new Error(TeamErrorCodes.TaskListNotFound);
+      }
+
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
       }
 
       const batch = this.afs.firestore.batch();
@@ -580,6 +619,8 @@ export class TeamService {
     team?: Team;
   }) {
     try {
+      const { id: idCurrentUser } = await this.storageService.get('user');
+
       if (!team) {
         team = await firstValueFrom(this.getTeam(idTeam));
       }
@@ -588,9 +629,12 @@ export class TeamService {
         throw new Error(TeamErrorCodes.TeamNotFound);
       }
 
+      if (!team.userMembers[idCurrentUser] || !team.userMembers[idUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
+      }
+
       if (executedByAdmin) {
-        const currentUser = await this.storageService.get('user');
-        const currentUserRole = team.userMembers[currentUser.id].role;
+        const currentUserRole = team.userMembers[idCurrentUser].role;
         if (currentUserRole !== 'admin') {
           throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
         }
@@ -659,13 +703,18 @@ export class TeamService {
 
   async changeUserRole(idTeam: string, idUser: string, role: 'admin' | 'member') {
     try {
-      const currentUser = await this.storageService.get('user');
+      const { id: idCurrentUser } = await this.storageService.get('user');
       const team = await firstValueFrom(this.getTeamObservable(idTeam));
+
       if (!team) {
         throw new Error(TeamErrorCodes.TeamNotFound);
       }
 
-      const currentUserRole = team.userMembers[currentUser.id].role;
+      if (!team.userMembers[idCurrentUser] || !team.userMembers[idUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
+      }
+
+      const currentUserRole = team.userMembers[idCurrentUser].role;
       if (currentUserRole !== 'admin') {
         throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
       }
@@ -765,8 +814,9 @@ export class TeamService {
 
   async completePreferencesDistribution(idTeam: string, idTaskList: string) {
     try {
+      const { id: idCurrentUser } = await this.storageService.get('user');
       const [team, tasksUnassigned] = await Promise.all([
-        firstValueFrom(this.getTeam(idTeam)),
+        firstValueFrom(this.getTeam(idTeam, idCurrentUser)),
         firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))
       ]);
 
@@ -776,6 +826,10 @@ export class TeamService {
 
       if (tasksUnassigned.length === 0) {
         throw new Error(TeamErrorCodes.TeamEmptyTaskList);
+      }
+
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
       }
 
       if (tasksUnassigned.length >= MAX_TASKS_PER_DISTRIBUTION) {

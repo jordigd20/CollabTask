@@ -66,7 +66,12 @@ export class TaskDetailPage implements OnInit {
         takeUntil(this.destroy$)
       )
       .subscribe((team) => {
-        if (!team || !this.task) {
+        if (
+          !team ||
+          !team.taskLists[this.idTaskList!] ||
+          !team.userMembers[this.idUser!] ||
+          !this.task
+        ) {
           this.router.navigate(['/tabs/lists']);
           return;
         }
@@ -157,13 +162,21 @@ export class TaskDetailPage implements OnInit {
             dangerType: false,
             confirmHandler: () => {
               if (this.task) {
-                this.taskService.updateTaskAvailability(this.task.id, this.task.idTaskList, !this.task.availableToAssign);
+                this.taskService.updateTaskAvailability(
+                  this.task.id,
+                  this.task.idTaskList,
+                  !this.task.availableToAssign
+                );
               }
             },
             modalController: this.modalController
           });
         } else {
-          this.taskService.updateTaskAvailability(this.task.id, this.task.idTaskList, !this.task.availableToAssign);
+          this.taskService.updateTaskAvailability(
+            this.task.id,
+            this.task.idTaskList,
+            !this.task.availableToAssign
+          );
         }
       }
     };
