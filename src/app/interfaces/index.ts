@@ -1,3 +1,5 @@
+export { Rating } from './models/rating.interface';
+export { RatingData } from './data/rating-data.interface';
 export { MarkTaskData } from './data/mark-task-data.interface';
 export { TaskData } from './data/task-data.interface';
 export { LoginData } from './data/login-data.interface';

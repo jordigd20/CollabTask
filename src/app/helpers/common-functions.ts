@@ -69,6 +69,7 @@ export const collabTaskErrors: { [key: string]: string } = {
   [TeamErrorCodes.TeamEmptyTaskList]: 'No hay tareas para repartir',
   [TeamErrorCodes.TeamTasksExceedMaxPerDistribution]:
     'El número de tareas supera el máximo permitido para realizar el reparto',
+  [TeamErrorCodes.UserDoesNotBelongToTeam]: 'El usuario no pertenece al equipo',
   [TaskErrorCodes.TaskNotFound]: 'No se ha encontrado la tarea',
   [TaskErrorCodes.TasksNotFound]: 'No se han encontrado las tareas',
   [TaskErrorCodes.TaskCouldNotBeCompleted]: 'No se ha podido completar la tarea',

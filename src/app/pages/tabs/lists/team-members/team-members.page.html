@@ -16,14 +16,20 @@
       >
         <ng-container *ngIf="team.userMembers[user.id!]">
           <ion-avatar slot="start" class="user-avatar">
-            <ion-img [src]="user.photoURL || '../../../../../assets/no-photo.jpg'"></ion-img>
+            <ion-img
+              [src]="user.photoURL || '../../../../../assets/no-photo.jpg'"
+              [alt]="'Avatar de' + team.userMembers[user.id!].name"
+              referrerpolicy="no-referrer"
+            ></ion-img>
             <div class="pie-wrapper">
               <app-circle-chart [pieData]="user.qualityMark"></app-circle-chart>
             </div>
           </ion-avatar>
 
           <ion-label style="margin: 5px 0">
-            <h3 class="fw-bold" style="letter-spacing: 0">{{user.username}}</h3>
+            <h3 class="fw-bold" style="letter-spacing: 0">
+              {{user.username}} {{ user.id === idUser ? '(Tú)' : '' }}
+            </h3>
 
             <ion-chip
               *ngIf="team.userMembers[user.id!].role === 'admin'"

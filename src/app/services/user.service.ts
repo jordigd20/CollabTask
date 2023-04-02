@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Observable, debounceTime, shareReplay } from 'rxjs';
+import { Observable, debounceTime, map, shareReplay } from 'rxjs';
 import { User } from '../interfaces';
 
 @Injectable({
@@ -48,6 +48,14 @@ export class UserService {
 
     console.log('this.user$ is defined');
     return this.lastUser$;
+  }
+
+  getUserByTeam(idTeam: string, idUser: string) {
+    return this.getUsersByTeam(idTeam).pipe(
+      map((users) => {
+        return users.find((user) => user.id === idUser);
+      })
+    );
   }
 
   getUsersByTeam(idTeam: string) {

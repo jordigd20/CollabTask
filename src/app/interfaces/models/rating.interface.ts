@@ -6,5 +6,5 @@ export interface Rating {
     work: number;
     communication: number;
     attitude: number;
-    general: number;
+    overall: number;
 }

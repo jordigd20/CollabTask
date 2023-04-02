@@ -25,7 +25,6 @@ export class CircleChartComponent implements OnInit {
   ngOnInit() {}
 
   ngOnChanges() {
-    console.log(this.pieData);
     this.sectorAngle = Math.ceil(360 * (this.pieData / 100));
     this.startAngle = this.endAngle;
     this.endAngle = this.startAngle + this.sectorAngle;

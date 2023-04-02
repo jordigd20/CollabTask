@@ -73,19 +73,6 @@ export class TeamService {
     }
   }
 
-  getUserMembersFromTeam(idTeam: string) {
-    return this.getTeam(idTeam).pipe(
-      take(1),
-      map((team) => {
-        if (team) {
-          return Object.values(team.userMembers);
-        } else {
-          return [];
-        }
-      })
-    );
-  }
-
   getUserTasksPreferredFromTaskList(idTeam: string, idTaskList: string, idUser: string) {
     return this.getTeamObservable(idTeam).pipe(
       switchMap((team) => {

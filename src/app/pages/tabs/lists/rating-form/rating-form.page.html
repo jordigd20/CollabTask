@@ -1,0 +1,119 @@
+<app-back-header title="Valora a tus compañeros"></app-back-header>
+
+<ion-content color="tertiary" class="ion-padding">
+  <ion-list class="root-list settings-list" lines="none" mode="md">
+    <ion-item class="sub-item" style="--padding-start: 10px; --padding-end: 5px">
+      <ng-container *ngIf="user; else loading">
+        <ion-avatar slot="start" class="user-avatar">
+          <ion-img
+            [src]="user.photoURL || '../../../../../assets/no-photo.jpg'"
+            [alt]="'Avatar de' + user.username"
+            referrerpolicy="no-referrer"
+          ></ion-img>
+          <div class="pie-wrapper">
+            <app-circle-chart [pieData]="user.qualityMark"></app-circle-chart>
+          </div>
+        </ion-avatar>
+
+        <ion-label style="margin: 5px 0">
+          <h3 class="fw-bold" style="letter-spacing: 0">{{ user.username }}</h3>
+        </ion-label>
+      </ng-container>
+
+      <ng-template #loading>
+        <ion-spinner class="spinner" name="circles" color="primary"></ion-spinner>
+      </ng-template>
+    </ion-item>
+
+    <ion-item class="sub-item" style="--padding-start: 10px; --padding-end: 10px">
+      <ion-label style="margin: 5px 0">
+        <h3 class="fw-bold" style="letter-spacing: 0">Trabajo</h3>
+        <p class="item-description">¿Consideras que hace bien su trabajo?</p>
+
+        <ion-button
+          *ngFor="let number of [1, 2, 3, 4, 5]"
+          (click)="changeRatingAspect('work', number)"
+          class="star-button"
+          fill="clear"
+          shape="round"
+        >
+          <ion-icon
+            slot="icon-only"
+            [name]=" ratingAspects['work'] !== 0 && number <= ratingAspects['work'] ? 'star' : 'star-outline'"
+          ></ion-icon>
+        </ion-button>
+      </ion-label>
+    </ion-item>
+
+    <ion-item class="sub-item" style="--padding-start: 10px; --padding-end: 10px">
+      <ion-label style="margin: 5px 0">
+        <h3 class="fw-bold" style="letter-spacing: 0">Comunicación</h3>
+        <p class="item-description">¿Consideras que se comunica bien con el equipo?</p>
+
+        <ion-button
+          *ngFor="let number of [1, 2, 3, 4, 5]"
+          (click)="changeRatingAspect('communication', number)"
+          class="star-button"
+          fill="clear"
+          shape="round"
+        >
+          <ion-icon
+            slot="icon-only"
+            [name]=" ratingAspects['communication'] !== 0 && number <= ratingAspects['communication'] ? 'star' : 'star-outline'"
+          ></ion-icon>
+        </ion-button>
+      </ion-label>
+    </ion-item>
+
+    <ion-item class="sub-item" style="--padding-start: 10px; --padding-end: 10px">
+      <ion-label style="margin: 5px 0">
+        <h3 class="fw-bold" style="letter-spacing: 0">Actitud</h3>
+        <p class="item-description">¿Cómo calificarías su actitud respecto al equipo?</p>
+
+        <ion-button
+          *ngFor="let number of [1, 2, 3, 4, 5]"
+          (click)="changeRatingAspect('attitude', number)"
+          class="star-button"
+          fill="clear"
+          shape="round"
+        >
+          <ion-icon
+            slot="icon-only"
+            [name]=" ratingAspects['attitude'] !== 0 && number <= ratingAspects['attitude'] ? 'star' : 'star-outline'"
+          ></ion-icon>
+        </ion-button>
+      </ion-label>
+    </ion-item>
+
+    <ion-item class="sub-item" style="--padding-start: 10px; --padding-end: 10px">
+      <ion-label style="margin: 5px 0">
+        <h3 class="fw-bold" style="letter-spacing: 0">Valoración general</h3>
+        <p class="item-description">¿En general que valoración le darías?</p>
+
+        <ion-button
+          *ngFor="let number of [1, 2, 3, 4, 5]"
+          (click)="changeRatingAspect('overall', number)"
+          class="star-button"
+          fill="clear"
+          shape="round"
+        >
+          <ion-icon
+            slot="icon-only"
+            [name]=" ratingAspects['overall'] !== 0 && number <= ratingAspects['overall'] ? 'star' : 'star-outline'"
+          ></ion-icon>
+        </ion-button>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-button
+    [disabled]="isButtonDisabled || isLoading"
+    (click)="submitRating()"
+    type="submit"
+    expand="block"
+    shape="round"
+  >
+    <ion-spinner *ngIf="isLoading" name="circles" style="margin-right: 5px"></ion-spinner>
+    Enviar valoración
+  </ion-button>
+</ion-content>

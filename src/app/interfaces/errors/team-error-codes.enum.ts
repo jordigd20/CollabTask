@@ -11,5 +11,6 @@ export enum TeamErrorCodes {
   TeamReachedMaxTasksPreferred = 'team/reached-max-tasks-preferred',
   TeamEmptyTaskList = 'team/empty-task-list',
   TeamTasksExceedMaxPerDistribution = 'team/tasks-exceed-max-per-distribution',
+  UserDoesNotBelongToTeam = 'team/user-does-not-belong-to-team',
   FirestorePermissionDenied = 'permission-denied'
 }
