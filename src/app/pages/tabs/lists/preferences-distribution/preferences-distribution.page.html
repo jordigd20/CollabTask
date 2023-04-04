@@ -32,7 +32,7 @@
         <ion-label><h3 class="list-title">Tu lista de preferencia</h3></ion-label>
         <ion-chip
           class="info-chip"
-          [ngClass]="{ 'chip-active':  team.taskLists[idTaskList!].userTasksPreferred[idUser].length === maxNumberOfTasks}"
+          [ngClass]="{ 'chip-active':  team.taskLists[idTaskList!].userTasksPreferred[idUser].length === maxNumberOfTasks }"
           [disabled]="true"
         >
           <ion-label>
@@ -47,9 +47,17 @@
           <ion-label>No tienes ninguna tarea seleccionada</ion-label>
         </ion-item>
 
-        <ion-item *ngFor="let task of userTasksPreferred; trackBy: identify" class="root-helper helper sub-item">
+        <ion-item
+          *ngFor="let task of userTasksPreferred; trackBy: identify"
+          class="root-helper helper sub-item"
+        >
           <ion-label>{{ task!.title }}</ion-label>
-          <ion-button (click)="unmarkTaskPreferred(task!.id)" color="medium" fill="clear" slot="end">
+          <ion-button
+            (click)="unmarkTaskPreferred(task!.id)"
+            color="medium"
+            fill="clear"
+            slot="end"
+          >
             <ion-icon slot="icon-only" name="close-outline"></ion-icon>
           </ion-button>
         </ion-item>
@@ -60,7 +68,7 @@
       <span class="regular-text">Han terminado</span>
       <ion-chip
         class="info-chip"
-        [ngClass]="{ 'chip-active':  team.taskLists[idTaskList!].idCompletedUsers.length === team!.idUserMembers.length}"
+        [ngClass]="{ 'chip-active':  team.taskLists[idTaskList!].idCompletedUsers.length === team!.idUserMembers.length }"
         [disabled]="true"
       >
         <ion-label>

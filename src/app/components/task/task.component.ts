@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActionSheetController, ModalController } from '@ionic/angular';
 import { TeamService } from '../../services/team.service';
 import { Task, UserMember } from '../../interfaces';
@@ -6,6 +6,7 @@ import { TaskService } from '../../services/task.service';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { presentConfirmationModal } from '../../helpers/common-functions';
+import { TradeFormComponent } from '../trade-form/trade-form.component';
 
 @Component({
   selector: 'app-task',
@@ -22,6 +23,11 @@ export class TaskComponent implements OnInit {
   @Input() showDistributionMode: boolean = false;
   @Input() showMoreOptions: boolean = false;
   @Input() distributionMode: 'none' | 'preferences' | 'manual' = 'none';
+  @Input() isTaskSelectedForTrade: boolean = false;
+  @Input() tradeMode: boolean = false;
+  @Input() idSelectedTask: string = '';
+
+  @Output() idSelectedTaskToSlide: EventEmitter<string> = new EventEmitter();
 
   photoURL: string = '';
   username: string = '';
@@ -30,6 +36,7 @@ export class TaskComponent implements OnInit {
   isTaskPreferred: boolean = false;
   isLoading: boolean = false;
   disableMoreOptions: boolean = false;
+
   destroy$ = new Subject<void>();
 
   constructor(
@@ -76,14 +83,6 @@ export class TaskComponent implements OnInit {
             team.taskLists[this.task.idTaskList].userTasksPreferred[this.idUser] ?? [];
           this.isTaskPreferred = userTasksPreferred.includes(this.task.id);
         }
-
-        const userRole = this.teamMembers[this.currentUserId]?.role;
-
-        if (!this.showDistributionMode && userRole === 'member' && !this.task.completed) {
-          this.disableMoreOptions = true;
-        } else {
-          this.disableMoreOptions = false;
-        }
       });
   }
 
@@ -92,6 +91,15 @@ export class TaskComponent implements OnInit {
   }
 
   navigateToDetail() {
+    if(this.isTaskSelectedForTrade) {
+      return;
+    }
+
+    if (this.tradeMode) {
+      this.idSelectedTaskToSlide.emit(this.task.id);
+      return;
+    }
+
     const optParams = {
       fromDistribution: this.showDistributionMode
     };
@@ -192,6 +200,25 @@ export class TaskComponent implements OnInit {
       }
     };
 
+    const tradeTaskButton = {
+      text: 'Ofrecer intercambio de tarea',
+      icon: 'swap-horizontal-outline',
+      cssClass: 'action-sheet-custom-icon',
+      handler: async() => {
+        const modal = await this.modalController.create({
+          component: TradeFormComponent,
+          componentProps: {
+            taskToTrade: this.task,
+          },
+          initialBreakpoint: 1,
+          breakpoints: [0, 1],
+          cssClass: 'auto-sheet-modal'
+        })
+
+        modal.present();
+      }
+    };
+
     const userRole = this.teamMembers[this.currentUserId]?.role;
     let buttons = [
       editTaskButton,
@@ -203,6 +230,10 @@ export class TaskComponent implements OnInit {
     if (!this.showDistributionMode && userRole === 'member') {
       buttons = [];
 
+      if (this.task.idUserAssigned !== this.currentUserId && !this.task.completed) {
+        buttons.push(tradeTaskButton);
+      }
+
       if (this.task.completed) {
         buttons.push(toggleTaskAvailabilityButton);
       }
@@ -210,6 +241,10 @@ export class TaskComponent implements OnInit {
 
     if (!this.showDistributionMode && userRole === 'admin') {
       buttons = [editTaskButton, toggleTaskAvailabilityButton, deleteTaskButton];
+
+      if (this.task.idUserAssigned !== this.currentUserId && !this.task.completed) {
+        buttons.splice(1, 0, tradeTaskButton);
+      }
     }
 
     if (buttons.length > 0) {

@@ -1,0 +1,21 @@
+.task-list-container {
+  padding: 10px;
+  background-color: var(--ion-color-tertiary);
+  width: 100%;
+
+  ion-item {
+    margin-bottom: 0 !important;
+  }
+}
+
+.list-radio {
+  ion-item {
+    --padding-start: 0px;
+  }
+}
+
+.error-message {
+  display: block;
+  margin-bottom: -5px;
+}
+

@@ -9,6 +9,7 @@
         placeholder="Introduce el título de la tarea"
         formControlName="title"
         maxlength="75"
+        autocapitalize="on"
       ></ion-input>
       <ion-note slot="error" *ngIf="title?.touched && title?.errors">
         Debes introducir un título de almenos 3 carácteres
@@ -22,6 +23,7 @@
         placeholder="Introduce una descripción de la tarea"
         formControlName="description"
         maxlength="200"
+        autocapitalize="on"
       ></ion-textarea>
     </ion-item>
 

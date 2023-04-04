@@ -1,0 +1,111 @@
+<form (ngSubmit)="sendRequest()" class="inner-content" [formGroup]="tradeForm">
+  <div class="d-flex justify-center align-items-center ion-padding" style="gap: 5px">
+    <ion-icon slot="start" name="swap-horizontal-outline" class="large-text"></ion-icon>
+    <h3 class="fw-bold" style="margin: 0">Intercambiar tarea</h3>
+  </div>
+
+  <p class="fw-bold ion-no-margin ion-padding-horizontal">Tarea a intercambiar</p>
+
+  <div class="slide-flex-container" style="padding-top: 5px; padding-bottom: 10px">
+    <ng-container *ngIf="taskToTrade && idCurrentUser; else loadingTeam">
+      <ion-list class="task-list-container" lines="none" mode="md">
+        <app-task
+          [task]="taskToTrade"
+          [idUser]="idCurrentUser"
+          [showCompleteButton]="false"
+          [showDistributionMode]="false"
+          [showMoreOptions]="false"
+          [distributionMode]="'none'"
+          [withoutUserAssigned]="false"
+          [isTaskSelectedForTrade]="true"
+        ></app-task>
+      </ion-list>
+    </ng-container>
+
+    <ng-template #loadingTeam>
+      <ion-spinner class="spinner" name="circles" color="primary"></ion-spinner>
+    </ng-template>
+  </div>
+
+  <div class="main-container ion-padding-horizontal">
+    <p class="fw-bold ion-no-margin">Tipo de intercambio</p>
+
+    <ion-list class="list-radio">
+      <ion-radio-group formControlName="tradeType" value="score">
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Por puntos</ion-label>
+          <ion-radio value="score"></ion-radio>
+        </ion-item>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Por otra tarea</ion-label>
+          <ion-radio value="task"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-list>
+
+    <ng-container *ngIf="tradeType && tradeType.value === 'score' && score">
+      <p class="fw-bold ion-no-margin ion-margin-top">Puntos a ofrecer</p>
+
+      <div class="d-flex align-items-center ion-margin-bottom" style="gap: 5px">
+        <ion-button
+          (click)="displayScoreModal()"
+          class="secondary-button fw-regular"
+          color="light"
+          shape="round"
+        >
+          <ion-icon slot="start" src="../../../../assets/icons/score.svg"></ion-icon>
+          Puntos
+        </ion-button>
+        <ion-chip class="info-chip chip-active score-chip" [disabled]="true">
+          <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 6px"></ion-icon>
+          <span>{{ score.value }} Puntos</span>
+        </ion-chip>
+      </div>
+    </ng-container>
+  </div>
+
+  <ng-container *ngIf="tradeType && tradeType.value === 'task'">
+    <p class="fw-bold ion-no-margin ion-margin-top ion-padding-horizontal">
+      Selecciona una tarea a cambio
+    </p>
+
+    <ion-text *ngIf="showTaskError" color="danger">
+      <span class="error-message regular-text ion-padding-horizontal">
+        Debes seleccionar una tarea
+      </span>
+    </ion-text>
+
+    <ion-list
+      *ngIf="team && tasks && idCurrentUser; else loadingTasks"
+      lines="none"
+      mode="md"
+      class="ion-margin-bottom"
+      style="margin-top: 5px"
+    >
+      <app-task-slide
+        [tasks]="tasks"
+        [idUser]="idCurrentUser"
+        [withoutUsers]="false"
+        [showMoreOptions]="false"
+        noTasksMessage="No tienes tareas para intercambiar"
+        [tradeMode]="true"
+        (idSelectedTaskToTrade)="onIdTaskSelected($event)"
+      ></app-task-slide>
+    </ion-list>
+
+    <ng-template #loadingTasks>
+      <ion-spinner class="spinner" name="circles" color="primary"></ion-spinner>
+    </ng-template>
+  </ng-container>
+
+  <ion-button
+    class="ion-padding-horizontal ion-margin-bottom"
+    type="submit"
+    expand="block"
+    shape="round"
+  >
+    <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
+    Enviar petición
+  </ion-button>
+</form>

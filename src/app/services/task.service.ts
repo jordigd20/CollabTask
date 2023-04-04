@@ -76,6 +76,33 @@ export class TaskService {
     );
   }
 
+  getAllUncompletedTasksByUser(idTasklist: string, idUser: string) {
+    return this.afs
+      .collection<Task>('tasks', (ref) =>
+        ref
+          .where('idTaskList', '==', idTasklist)
+          .where('idUserAssigned', '==', idUser)
+          .where('completed', '==', false)
+          .where('availableToAssign', '==', false)
+      )
+      .valueChanges()
+      .pipe(
+        debounceTime(350),
+        map((tasks) => {
+          return tasks.map((task) => {
+            const date = task.date as firebase.firestore.Timestamp;
+            const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+
+            task.date = this.convertTimestampToString(date);
+            task.dateLimit = this.convertTimestampToString(dateLimit);
+
+            return task;
+          });
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
+      );
+  }
+
   getAllTasksByTaskList(idTaskList: string) {
     if (!this.tasks$ || this.currentIdTaskList !== idTaskList) {
       console.log('this.tasks$ is undefined');

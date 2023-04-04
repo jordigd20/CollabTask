@@ -7,9 +7,12 @@
           [idUser]="idUser"
           [showCompleteButton]="false"
           [showDistributionMode]="true"
-          [showMoreOptions]="true"
+          [showMoreOptions]="showMoreOptions"
           [distributionMode]="distributionMode"
           [withoutUserAssigned]="withoutUsers"
+          [tradeMode]="tradeMode"
+          [idSelectedTask]="idSelectedTask"
+          (idSelectedTaskToSlide)="onIdTaskSelected($event)"
         ></app-task>
       </ng-template>
     </swiper>

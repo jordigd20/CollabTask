@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Task } from '../../interfaces';
 import { SwiperOptions } from 'swiper';
 
@@ -11,8 +11,13 @@ export class TaskSlideComponent implements OnInit {
   @Input() tasks: Task[] = [];
   @Input() idUser: string = '';
   @Input() withoutUsers: boolean = false;
-  @Input() distributionMode: 'preferences' | 'manual' = 'manual';
+  @Input() distributionMode: 'preferences' | 'manual' | 'none' = 'none';
+  @Input() tradeMode: boolean = false;
+  @Input() showMoreOptions: boolean = true;
   @Input() noTasksMessage: string = 'No hay tareas para asignar';
+  @Input() idSelectedTask: string = '';
+
+  @Output() idSelectedTaskToTrade: EventEmitter<string> = new EventEmitter();
 
   slideOpts: SwiperOptions = {
     slidesPerView: 1.4,
@@ -26,5 +31,10 @@ export class TaskSlideComponent implements OnInit {
 
   identify(index: number, item: Task) {
     return item.id;
+  }
+
+  onIdTaskSelected(idTask: string) {
+    this.idSelectedTask = idTask;
+    this.idSelectedTaskToTrade.emit(idTask);
   }
 }

@@ -1,9 +1,15 @@
 <ion-item
   (click)="navigateToDetail()"
   class="task-item"
-  [ngClass]="{ 'disable-ripple-touch': showDistributionMode && !showCompleteButton }"
-  button
-  [ngStyle]="{ 'margin-bottom': showDistributionMode && !showCompleteButton ? '0px' : '10px' }"
+  [ngClass]="{
+    'disable-ripple-touch': showDistributionMode && !showCompleteButton,
+    'trade-task-selected': task.id === idSelectedTask && tradeMode
+  }"
+  [ngStyle]="{
+    'margin-bottom':
+      showDistributionMode && !showCompleteButton ? '0px' : isTaskSelectedForTrade ? '0px' : '10px'
+  }"
+  [button]="!isTaskSelectedForTrade"
 >
   <div class="main-container">
     <div

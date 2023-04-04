@@ -18,6 +18,7 @@ import { InfoManualDistributionComponent } from './info-manual-distribution/info
 import { PipesModule } from '../pipes/pipes.module';
 import { InfoPreferencesDistributionComponent } from './info-preferences-distribution/info-preferences-distribution.component';
 import { CircleChartComponent } from './circle-chart/circle-chart.component';
+import { TradeFormComponent } from './trade-form/trade-form.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { CircleChartComponent } from './circle-chart/circle-chart.component';
     TaskSlideComponent,
     InfoManualDistributionComponent,
     InfoPreferencesDistributionComponent,
-    CircleChartComponent
+    CircleChartComponent,
+    TradeFormComponent
   ],
   imports: [
     CommonModule,
@@ -57,7 +59,8 @@ import { CircleChartComponent } from './circle-chart/circle-chart.component';
     TaskSlideComponent,
     InfoManualDistributionComponent,
     InfoPreferencesDistributionComponent,
-    CircleChartComponent
+    CircleChartComponent,
+    TradeFormComponent
   ]
 })
 export class ComponentsModule { }
