@@ -37,7 +37,7 @@ export class PeriodicDateModalComponent implements OnInit {
 
   cancel() {
     this.modalController.dismiss({
-      canceled: true
+      cancelled: true
     });
   }
 

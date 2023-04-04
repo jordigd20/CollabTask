@@ -23,7 +23,7 @@ export class TaskComponent implements OnInit {
   @Input() showDistributionMode: boolean = false;
   @Input() showMoreOptions: boolean = false;
   @Input() distributionMode: 'none' | 'preferences' | 'manual' = 'none';
-  @Input() isTaskSelectedForTrade: boolean = false;
+  @Input() isTaskRequested: boolean = false;
   @Input() tradeMode: boolean = false;
   @Input() idSelectedTask: string = '';
 
@@ -91,7 +91,7 @@ export class TaskComponent implements OnInit {
   }
 
   navigateToDetail() {
-    if(this.isTaskSelectedForTrade) {
+    if (this.isTaskRequested) {
       return;
     }
 
@@ -204,16 +204,16 @@ export class TaskComponent implements OnInit {
       text: 'Ofrecer intercambio de tarea',
       icon: 'swap-horizontal-outline',
       cssClass: 'action-sheet-custom-icon',
-      handler: async() => {
+      handler: async () => {
         const modal = await this.modalController.create({
           component: TradeFormComponent,
           componentProps: {
-            taskToTrade: this.task,
+            taskRequested: this.task
           },
           initialBreakpoint: 1,
           breakpoints: [0, 1],
           cssClass: 'auto-sheet-modal'
-        })
+        });
 
         modal.present();
       }

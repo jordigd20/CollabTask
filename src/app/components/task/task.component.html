@@ -7,9 +7,9 @@
   }"
   [ngStyle]="{
     'margin-bottom':
-      showDistributionMode && !showCompleteButton ? '0px' : isTaskSelectedForTrade ? '0px' : '10px'
+      showDistributionMode && !showCompleteButton ? '0px' : isTaskRequested ? '0px' : '10px'
   }"
-  [button]="!isTaskSelectedForTrade"
+  [button]="!isTaskRequested"
 >
   <div class="main-container">
     <div

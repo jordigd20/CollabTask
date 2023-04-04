@@ -158,7 +158,7 @@ export class TaskFormPage implements OnInit {
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-    if (data.canceled) {
+    if (data.cancelled) {
       return;
     }
 
@@ -172,15 +172,13 @@ export class TaskFormPage implements OnInit {
       componentProps: {
         previousScore
       },
+      backdropDismiss: false,
       cssClass: 'responsive-modal transparent-modal'
     });
 
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-    if (data.canceled) {
-      return;
-    }
 
     this.taskForm.patchValue({
       score: data.selectedScore
@@ -200,9 +198,6 @@ export class TaskFormPage implements OnInit {
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-    if (data.canceled) {
-      return;
-    }
 
     this.taskForm.patchValue({
       datePeriodic: data.selectedDays

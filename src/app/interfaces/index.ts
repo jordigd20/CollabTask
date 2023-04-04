@@ -1,3 +1,4 @@
+export { Trade } from './models/trade.interface';
 export { Rating } from './models/rating.interface';
 export { RatingData } from './data/rating-data.interface';
 export { MarkTaskData } from './data/mark-task-data.interface';

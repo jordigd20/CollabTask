@@ -17,7 +17,12 @@ import { TeamErrorCodes } from '../interfaces/errors/team-error-codes.enum';
 import { UserService } from './user.service';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { nanoid } from 'nanoid';
-import { dataURItoBlob, collabTaskErrors } from '../helpers/common-functions';
+import {
+  dataURItoBlob,
+  collabTaskErrors,
+  convertStringToTimestamp,
+  convertTimestampToString
+} from '../helpers/common-functions';
 import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
 
 @Injectable({
@@ -93,8 +98,8 @@ export class TaskService {
             const date = task.date as firebase.firestore.Timestamp;
             const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
 
-            task.date = this.convertTimestampToString(date);
-            task.dateLimit = this.convertTimestampToString(dateLimit);
+            task.date = convertTimestampToString(date);
+            task.dateLimit = convertTimestampToString(dateLimit);
 
             return task;
           });
@@ -118,8 +123,8 @@ export class TaskService {
               const date = task.date as firebase.firestore.Timestamp;
               const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
 
-              task.date = this.convertTimestampToString(date);
-              task.dateLimit = this.convertTimestampToString(dateLimit);
+              task.date = convertTimestampToString(date);
+              task.dateLimit = convertTimestampToString(dateLimit);
 
               return task;
             });
@@ -146,8 +151,8 @@ export class TaskService {
               const date = task.date as firebase.firestore.Timestamp;
               const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
 
-              task.date = this.convertTimestampToString(date);
-              task.dateLimit = this.convertTimestampToString(dateLimit);
+              task.date = convertTimestampToString(date);
+              task.dateLimit = convertTimestampToString(dateLimit);
             }
 
             return task;
@@ -179,8 +184,8 @@ export class TaskService {
   }: TaskData) {
     try {
       const { id: userId } = await this.storageService.get('user');
-      const dateTimestamp = this.convertStringToTimestamp(date as string);
-      const dateLimitTimestamp = this.convertStringToTimestamp(dateLimit as string);
+      const dateTimestamp = convertStringToTimestamp(date as string);
+      const dateLimitTimestamp = convertStringToTimestamp(dateLimit as string);
       const id = this.afs.createId();
       const task: Task = {
         id,
@@ -226,8 +231,8 @@ export class TaskService {
           throw new Error(TaskErrorCodes.TaskNotFound);
         }
 
-        taskData.date = this.convertStringToTimestamp(taskData.date as string);
-        taskData.dateLimit = this.convertStringToTimestamp(taskData.dateLimit as string);
+        taskData.date = convertStringToTimestamp(taskData.date as string);
+        taskData.dateLimit = convertStringToTimestamp(taskData.dateLimit as string);
 
         await this.afs.doc<Task>(`tasks/${idTask}`).update(taskData);
 
@@ -430,14 +435,5 @@ export class TaskService {
       icon: 'close-circle',
       cssClass: 'toast-error'
     });
-  }
-
-  private convertStringToTimestamp(date: string) {
-    const convertedDate = new Date(date);
-    return firebase.firestore.Timestamp.fromDate(convertedDate);
-  }
-
-  private convertTimestampToString(date: firebase.firestore.Timestamp) {
-    return date.toDate().toISOString();
   }
 }

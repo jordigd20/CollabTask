@@ -8,6 +8,7 @@ import { TaskService } from 'src/app/services/task.service';
 import { ModalController } from '@ionic/angular';
 import { ScoreModalComponent } from '../score-modal/score-modal.component';
 import { FormBuilder, Validators } from '@angular/forms';
+import { TradeService } from 'src/app/services/trade.service';
 
 @Component({
   selector: 'app-trade-form',
@@ -15,7 +16,7 @@ import { FormBuilder, Validators } from '@angular/forms';
   styleUrls: ['./trade-form.component.scss']
 })
 export class TradeFormComponent implements OnInit {
-  @Input() taskToTrade: Task | undefined;
+  @Input() taskRequested: Task | undefined;
 
   idCurrentUser: string | undefined;
   team: Team | undefined;
@@ -34,6 +35,7 @@ export class TradeFormComponent implements OnInit {
     private storageService: StorageService,
     private teamService: TeamService,
     private taskService: TaskService,
+    private tradeService: TradeService,
     private modalController: ModalController,
     private router: Router
   ) {}
@@ -52,7 +54,7 @@ export class TradeFormComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (!this.taskToTrade) {
+    if (!this.taskRequested) {
       return;
     }
 
@@ -62,7 +64,7 @@ export class TradeFormComponent implements OnInit {
           if (user) {
             this.idCurrentUser = user.id;
             return this.taskService.getAllUncompletedTasksByUser(
-              this.taskToTrade!.idTaskList,
+              this.taskRequested!.idTaskList,
               this.idCurrentUser!
             );
           }
@@ -72,7 +74,7 @@ export class TradeFormComponent implements OnInit {
         switchMap((tasks) => {
           if (tasks) {
             this.tasks = tasks;
-            return this.teamService.getTeamObservable(this.taskToTrade!.idTeam);
+            return this.teamService.getTeamObservable(this.taskRequested!.idTeam);
           }
 
           return of();
@@ -82,13 +84,12 @@ export class TradeFormComponent implements OnInit {
       .subscribe((team) => {
         if (
           !team ||
-          !team.taskLists[this.taskToTrade!.idTaskList] ||
+          !team.taskLists[this.taskRequested!.idTaskList] ||
           !team.userMembers[this.idCurrentUser!]
         ) {
           this.router.navigate(['tabs/lists']);
           return;
         }
-        console.log(team);
 
         this.team = team;
       });
@@ -99,7 +100,7 @@ export class TradeFormComponent implements OnInit {
   }
 
   onIdTaskSelected(idTask: string) {
-   this.tradeForm.patchValue({
+    this.tradeForm.patchValue({
       task: idTask
     });
   }
@@ -111,27 +112,41 @@ export class TradeFormComponent implements OnInit {
       componentProps: {
         previousScore
       },
+      backdropDismiss: false,
       cssClass: 'responsive-modal transparent-modal'
     });
 
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-    if (data.canceled) {
-      return;
-    }
 
     this.tradeForm.patchValue({
       score: data.selectedScore
     });
   }
 
-  sendRequest() {
+  async sendRequest() {
     if (!this.selectedTrade) {
       this.showTaskError = true;
       return;
     }
 
     this.showTaskError = false;
+    const tradeData = this.tradeForm.value;
+
+    this.isLoading = true;
+    await this.tradeService.createTrade({
+      idTeam: this.taskRequested!.idTeam,
+      idTaskList: this.taskRequested!.idTaskList,
+      idTaskRequested: this.taskRequested!.id,
+      idUserSender: this.idCurrentUser!,
+      idUserReceiver: this.taskRequested!.idUserAssigned,
+      tradeType: tradeData.tradeType as 'score' | 'task',
+      scoreOffered: tradeData.score as number,
+      taskOffered: tradeData.task as string,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    });
+    this.isLoading = false;
   }
 }

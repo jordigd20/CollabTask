@@ -7,17 +7,17 @@
   <p class="fw-bold ion-no-margin ion-padding-horizontal">Tarea a intercambiar</p>
 
   <div class="slide-flex-container" style="padding-top: 5px; padding-bottom: 10px">
-    <ng-container *ngIf="taskToTrade && idCurrentUser; else loadingTeam">
+    <ng-container *ngIf="taskRequested && idCurrentUser; else loadingTeam">
       <ion-list class="task-list-container" lines="none" mode="md">
         <app-task
-          [task]="taskToTrade"
+          [task]="taskRequested"
           [idUser]="idCurrentUser"
           [showCompleteButton]="false"
           [showDistributionMode]="false"
           [showMoreOptions]="false"
           [distributionMode]="'none'"
           [withoutUserAssigned]="false"
-          [isTaskSelectedForTrade]="true"
+          [isTaskRequested]="true"
         ></app-task>
       </ion-list>
     </ng-container>
@@ -100,6 +100,7 @@
   </ng-container>
 
   <ion-button
+    [disabled]="isLoading"
     class="ion-padding-horizontal ion-margin-bottom"
     type="submit"
     expand="block"

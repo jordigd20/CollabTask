@@ -458,7 +458,7 @@ ion-spinner.loading-content {
 
   &::part(content) {
     overflow: unset;
-    border-radius: 20px;
+    border-radius: 20px 20px 0px 0px;
   }
 
   &::part(handle) {
@@ -508,9 +508,13 @@ ion-modal.periodic-modal::part(content) {
   max-width: 350px;
 }
 
-ion-modal.transparent-modal::part(content) {
-  background-color: transparent;
-  max-width: 350px;
+ion-modal.transparent-modal {
+  --backdrop-opacity: var(--ion-backdrop-opacity, 0.5);
+
+  &::part(content) {
+    background-color: transparent;
+    max-width: 350px;
+  }
 }
 
 ion-alert.alert-error .alert-title {

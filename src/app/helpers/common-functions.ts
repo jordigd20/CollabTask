@@ -2,6 +2,7 @@ import { ModalController } from '@ionic/angular';
 import { ConfirmationModalComponent } from '../components/confirmation-modal/confirmation-modal.component';
 import { TeamErrorCodes } from '../interfaces/errors/team-error-codes.enum';
 import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
+import firebase from 'firebase/compat/app';
 
 interface ConfirmationModal {
   title: string;
@@ -51,6 +52,15 @@ export const dataURItoBlob = (dataURI: string) => {
   return new Blob([byteNumbers], { type: mimeString });
 };
 
+export const convertStringToTimestamp = (date: string) => {
+  const convertedDate = new Date(date);
+  return firebase.firestore.Timestamp.fromDate(convertedDate);
+};
+
+export const convertTimestampToString = (date: firebase.firestore.Timestamp) => {
+  return date.toDate().toISOString();
+};
+
 export const collabTaskErrors: { [key: string]: string } = {
   [TeamErrorCodes.TeamNotFound]: 'No se ha encontrado el equipo',
   [TeamErrorCodes.TaskListNotFound]: 'No se ha encontrado la lista de tareas',
@@ -72,5 +82,5 @@ export const collabTaskErrors: { [key: string]: string } = {
   [TeamErrorCodes.UserDoesNotBelongToTeam]: 'El usuario no pertenece al equipo',
   [TaskErrorCodes.TaskNotFound]: 'No se ha encontrado la tarea',
   [TaskErrorCodes.TasksNotFound]: 'No se han encontrado las tareas',
-  [TaskErrorCodes.TaskCouldNotBeCompleted]: 'No se ha podido completar la tarea',
+  [TaskErrorCodes.TaskCouldNotBeCompleted]: 'No se ha podido completar la tarea'
 };

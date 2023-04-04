@@ -24,7 +24,7 @@ export class DatetimeModalComponent implements OnInit {
   async cancel() {
     await this.datetime.cancel();
     this.modalController.dismiss({
-      canceled: true
+      cancelled: true
     });
   }
 
