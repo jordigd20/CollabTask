@@ -512,7 +512,10 @@ export class TeamService {
   async deleteTask(idTeam: string, idTaskList: string, idTask: string) {
     try {
       const { id: idCurrentUser } = await this.storageService.get('user');
-      const team = await firstValueFrom(this.getTeam(idTeam));
+      const [team, task] = await Promise.all([
+        firstValueFrom(this.getTeam(idTeam, idCurrentUser)),
+        firstValueFrom(this.taskService.getTaskObservable(idTask))
+      ]);
 
       if (!team) {
         throw new Error(TeamErrorCodes.TeamNotFound);
@@ -524,6 +527,10 @@ export class TeamService {
 
       if (!team.userMembers[idCurrentUser]) {
         throw new Error(TeamErrorCodes.UserNotFound);
+      }
+
+      if (!task) {
+        throw new Error(TaskErrorCodes.TaskNotFound);
       }
 
       const batch = this.afs.firestore.batch();
@@ -542,6 +549,11 @@ export class TeamService {
             firebase.firestore.FieldValue.arrayRemove(idTask)
           );
         }
+      }
+
+      if (task.isInvolvedInTrade) {
+        const tradeRef = this.afs.firestore.doc(`trades/${task.idTrade}`);
+        batch.delete(tradeRef);
       }
 
       await batch.commit();

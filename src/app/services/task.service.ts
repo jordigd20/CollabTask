@@ -203,6 +203,8 @@ export class TaskService {
         datePeriodic,
         imageURL: '',
         completed: false,
+        isInvolvedInTrade: false,
+        idTrade: '',
         createdByUser: {
           id: userId,
           date: firebase.firestore.Timestamp.now()

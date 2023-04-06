@@ -134,13 +134,13 @@
     <div *ngIf="!withoutUserAssigned" class="bottom-container">
       <ion-avatar class="user-task-avatar">
         <img
-          [src]="photoURL || '../../../assets/no-photo.jpg'"
-          [alt]="'Avatar de ' + username"
+          [src]="teamMembers[idUser].photoURL || '../../../assets/no-photo.jpg'"
+          [alt]="'Avatar de ' + teamMembers[idUser].name"
           referrerpolicy="no-referrer"
         />
       </ion-avatar>
       <p class="username-container username">
-        {{ username }}
+        {{ teamMembers[idUser].name }}
       </p>
       <div class="score-task">
         <ion-icon src="../../../../assets/icons/score.svg" style="margin-bottom: 1px"></ion-icon>

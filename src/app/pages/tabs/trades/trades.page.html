@@ -58,14 +58,37 @@
             </div>
 
             <div class="trade-offer" *ngIf="trade.tradeType === 'task'">
-              <span class="text-offer fw-bold"> Tarea 1 </span>
+              <span class="text-offer fw-bold"> {{ taskNameByTrade[trade.taskOffered] }} </span>
             </div>
 
             <div class="bottom-container">
-              <ion-button class="secondary-button fw-regular" color="white" shape="round">
+              <ion-button
+                (click)="rejectTrade(trade)"
+                [disabled]="loadingTrade[trade.id].rejecting || loadingTrade[trade.id].accepting"
+                class="secondary-button fw-regular"
+                color="white"
+                shape="round"
+              >
+                <ion-spinner
+                  name="circles"
+                  color="primary"
+                  style="margin-right: 5px; transform: scale(0.9)"
+                  *ngIf="loadingTrade[trade.id].rejecting"
+                ></ion-spinner>
                 Rechazar
               </ion-button>
-              <ion-button shape="round"> Aceptar</ion-button>
+              <ion-button
+                (click)="acceptTrade(trade)"
+                [disabled]="loadingTrade[trade.id].rejecting || loadingTrade[trade.id].accepting"
+                shape="round"
+              >
+                <ion-spinner
+                  name="circles"
+                  style="margin-right: 5px; transform: scale(0.9)"
+                  *ngIf="loadingTrade[trade.id].accepting"
+                ></ion-spinner>
+                Aceptar</ion-button
+              >
             </div>
           </div>
         </ion-item>
@@ -103,14 +126,21 @@
                 >{{ trade.scoreOffered }} puntos
               </span>
               <span *ngIf="trade.tradeType === 'task'" class="fw-bold">
-                {{ taskNameByTrade[trade.id] }}
+                {{ taskNameByTrade[trade.taskOffered] }}
               </span>
               <span *ngIf="trade.status === 'rejected'">ha sido rechazada </span>
               <span *ngIf="trade.status === 'accepted'">ha sido aceptada </span>
               <span *ngIf="trade.status === 'pending'">sigue pendiente </span>
             </span>
           </ion-label>
-          <ion-button class="more-opts-btn" fill="clear" color="secondary" shape="round" slot="end">
+          <ion-button
+            (click)="deleteTrade(trade)"
+            class="more-opts-btn"
+            fill="clear"
+            color="secondary"
+            shape="round"
+            slot="end"
+          >
             <ion-icon slot="icon-only" name="close-outline"></ion-icon>
           </ion-button>
         </ion-item>

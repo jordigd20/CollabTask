@@ -3,6 +3,7 @@ import { ConfirmationModalComponent } from '../components/confirmation-modal/con
 import { TeamErrorCodes } from '../interfaces/errors/team-error-codes.enum';
 import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
 import firebase from 'firebase/compat/app';
+import { TradeErrorCodes } from '../interfaces/errors/trade-error-codes.enum';
 
 interface ConfirmationModal {
   title: string;
@@ -82,5 +83,12 @@ export const collabTaskErrors: { [key: string]: string } = {
   [TeamErrorCodes.UserDoesNotBelongToTeam]: 'El usuario no pertenece al equipo',
   [TaskErrorCodes.TaskNotFound]: 'No se ha encontrado la tarea',
   [TaskErrorCodes.TasksNotFound]: 'No se han encontrado las tareas',
-  [TaskErrorCodes.TaskCouldNotBeCompleted]: 'No se ha podido completar la tarea'
+  [TaskErrorCodes.TaskCouldNotBeCompleted]: 'No se ha podido completar la tarea',
+  [TradeErrorCodes.TradeNotFound]: 'No se ha encontrado el intercambio',
+  [TradeErrorCodes.TaskRequestedIsAlreadyCompleted]: 'La tarea solicitada ya ha sido completada. Se ha rechazado el intercambio.',
+  [TradeErrorCodes.TaskOfferedIsAlreadyCompleted]: 'La tarea ofrecida ya ha sido completada. Se ha rechazado el intercambio.',
+  [TradeErrorCodes.TaskRequestedAlreadyBelongsToAnotherUser]: 'La tarea solicitada ya pertenece a otro usuario',
+  [TradeErrorCodes.TaskOfferedAlreadyBelongsToAnotherUser]: 'La tarea ofrecida ya pertenece a otro usuario',
+  [TradeErrorCodes.UserDoesNotHaveEnoughScore]: 'No tienes suficientes puntos para realizar el intercambio',
+  [TradeErrorCodes.TaskRequestedIsAlreadyInvolvedInTrade]: 'La tarea solicitada ya está involucrada en otro intercambio',
 };

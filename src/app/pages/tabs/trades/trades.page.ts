@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { TradeService } from '../../../services/trade.service';
-import { Subject, forkJoin, from, of, switchMap, take, takeUntil } from 'rxjs';
+import { Observable, Subject, forkJoin, from, of, switchMap, take, takeUntil } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
 import { Task, Trade } from '../../../interfaces';
 import { TaskService } from '../../../services/task.service';
+import { presentConfirmationModal } from 'src/app/helpers/common-functions';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-trades',
@@ -20,12 +22,19 @@ export class TradesPage implements OnInit {
   taskNameByTrade: {
     [key: string]: string;
   } = {};
+  loadingTrade: {
+    [key: string]: {
+      rejecting: boolean;
+      accepting: boolean;
+    };
+  } = {};
   destroy$ = new Subject<void>();
 
   constructor(
     private storageService: StorageService,
     private tradeService: TradeService,
-    private taskService: TaskService
+    private taskService: TaskService,
+    private modalController: ModalController
   ) {}
 
   ngOnInit() {
@@ -48,9 +57,16 @@ export class TradesPage implements OnInit {
             console.log('tradesReceived: ', trades);
             this.tradesReceived = trades;
 
-            const tasks$ = [];
+            const tasks$: Observable<Task | undefined>[] = [];
             for (const trade of trades) {
+              this.loadingTrade[trade.id] = {
+                rejecting: false,
+                accepting: false
+              };
               tasks$.push(this.taskService.getTaskObservable(trade.idTaskRequested).pipe(take(1)));
+              if (trade.tradeType === 'task' && trade.taskOffered) {
+                tasks$.push(this.taskService.getTaskObservable(trade.taskOffered).pipe(take(1)));
+              }
             }
 
             if (tasks$.length === 0) {
@@ -78,7 +94,17 @@ export class TradesPage implements OnInit {
           if (task) {
             this.taskNameByTrade[trade.id] = task.title;
           }
+
+          if (trade.tradeType === 'task') {
+            const taskOffered = tasks.find((task) => task?.id === trade.taskOffered);
+
+            if (taskOffered) {
+              this.taskNameByTrade[trade.taskOffered] = taskOffered.title;
+            }
+          }
         }
+
+        console.log(this.taskNameByTrade);
       });
   }
 
@@ -98,8 +124,11 @@ export class TradesPage implements OnInit {
               console.log('tradesSent: ', trades);
               this.tradesSent = trades;
 
-              const tasks$ = [];
+              const tasks$: Observable<Task | undefined>[] = [];
               for (const trade of trades) {
+                tasks$.push(
+                  this.taskService.getTaskObservable(trade.idTaskRequested).pipe(take(1))
+                );
                 if (trade.tradeType === 'task' && trade.taskOffered) {
                   tasks$.push(this.taskService.getTaskObservable(trade.taskOffered).pipe(take(1)));
                 }
@@ -125,11 +154,17 @@ export class TradesPage implements OnInit {
           this.tasksSent = tasks;
 
           for (const trade of this.tradesSent) {
-            if (trade.tradeType === 'task') {
-              const task = tasks.find((task) => task?.id === trade.taskOffered);
+            const task = tasks.find((task) => task?.id === trade.idTaskRequested);
 
-              if (task) {
-                this.taskNameByTrade[trade.id] = task.title;
+            if (task) {
+              this.taskNameByTrade[trade.id] = task.title;
+            }
+
+            if (trade.tradeType === 'task') {
+              const taskOffered = tasks.find((task) => task?.id === trade.taskOffered);
+
+              if (taskOffered) {
+                this.taskNameByTrade[trade.taskOffered] = taskOffered.title;
               }
             }
           }
@@ -143,6 +178,33 @@ export class TradesPage implements OnInit {
 
     if (value === 'tradesSent') {
       this.getTradesSent();
+    }
+  }
+
+  async acceptTrade(trade: Trade) {
+    this.loadingTrade[trade.id].accepting = true;
+    await this.tradeService.acceptTrade(trade);
+    this.loadingTrade[trade.id].accepting = false;
+  }
+
+  async rejectTrade(trade: Trade) {
+    this.loadingTrade[trade.id].rejecting = true;
+    await this.tradeService.rejectTrade(trade);
+    this.loadingTrade[trade.id].rejecting = false;
+  }
+
+  async deleteTrade(trade: Trade) {
+    if (trade.status === 'pending') {
+      await presentConfirmationModal({
+        title: 'Eliminar intercambio',
+        message: '¿Este intercambio sigue pendiente, estás seguro de que quieres eliminarlo?',
+        confirmText: 'Eliminar',
+        dangerType: true,
+        confirmHandler: () => this.tradeService.deleteTrade(trade),
+        modalController: this.modalController
+      });
+    } else {
+      await this.tradeService.deleteTrade(trade);
     }
   }
 }

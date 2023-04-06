@@ -29,8 +29,6 @@ export class TaskComponent implements OnInit {
 
   @Output() idSelectedTaskToSlide: EventEmitter<string> = new EventEmitter();
 
-  photoURL: string = '';
-  username: string = '';
   teamMembers: { [key: string]: UserMember } = {};
   userTeamMembersList: UserMember[] = [];
   isTaskPreferred: boolean = false;
@@ -68,15 +66,6 @@ export class TaskComponent implements OnInit {
 
         this.teamMembers = team.userMembers;
         this.userTeamMembersList = Object.values(team.userMembers);
-        const currentUser = this.userTeamMembersList.find((user) => user.id === this.idUser);
-
-        if (currentUser && this.photoURL !== currentUser.photoURL) {
-          this.photoURL = currentUser.photoURL;
-        }
-
-        if (currentUser && this.username !== currentUser.name) {
-          this.username = currentUser.name;
-        }
 
         if (this.distributionMode === 'preferences') {
           const userTasksPreferred =

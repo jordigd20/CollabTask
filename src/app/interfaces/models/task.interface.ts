@@ -16,6 +16,8 @@ export interface Task {
   datePeriodic: string[];
   imageURL: string;
   completed: boolean;
+  isInvolvedInTrade: boolean;
+  idTrade: string;
   createdByUser: {
     id: string;
     date: firebase.firestore.Timestamp | string;

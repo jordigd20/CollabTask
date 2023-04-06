@@ -86,7 +86,7 @@ export class TaskListPage implements OnInit {
   }
 
   identify(index: number, item: Task) {
-    return item.id;
+    return index;
   }
 
   handlePreferences() {}
