@@ -1,0 +1,115 @@
+.list-container {
+  background-color: var(--ion-color-tertiary);
+}
+
+ion-item.trade-item {
+  --border-radius: 6px;
+  margin-bottom: 10px;
+  --inner-padding-end: 0px;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  font-size: 14px;
+
+  .main-container {
+    width: 100%;
+  }
+
+  .top-container {
+    display: flex;
+    gap: 10px;
+  }
+
+  .trade-info {
+    white-space: break-spaces;
+    width: 100%;
+    flex: 0 1 auto;
+  }
+
+  .trade-offer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    ion-icon {
+      font-size: 20px;
+      color: var(--ion-color-primary);
+    }
+
+    .text-offer {
+      font-size: 16px;
+      color: var(--ion-color-primary);
+    }
+
+    .text-offer .number {
+      font-size: 24px;
+    }
+  }
+
+  .bottom-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2px;
+
+    ion-button {
+      width: 100%;
+    }
+  }
+}
+
+ion-item.response-trade {
+  --border-radius: 6px;
+  margin-bottom: 10px;
+  --inner-padding-end: 0px;
+  --padding-start: 5px;
+  --padding-end: 5px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  font-size: 14px;
+  position: relative;
+
+  .response-icon {
+    font-size: 50px;
+    margin: 0;
+  }
+
+  .response-text {
+    white-space: break-spaces;
+    width: 100%;
+    margin: 0;
+  }
+
+  &::part(native) {
+    align-items: flex-start;
+    overflow: visible;
+  }
+
+  .more-opts-btn {
+    margin: 0;
+    margin-top: -7px;
+    --padding-start: 2px;
+    --padding-end: 2px;
+  }
+
+  .accepted {
+    color: var(--ion-color-success);
+  }
+
+  .rejected {
+    color: var(--ion-color-danger);
+  }
+
+  .pending {
+    color: #007FFF;
+    transform: scale(1.5);
+    margin: 10px;
+  }
+}
+
+ion-avatar.user-avatar {
+  width: 45px;
+  height: 45px;
+  flex: 0 0 auto;
+}

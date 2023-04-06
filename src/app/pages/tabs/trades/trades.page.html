@@ -1,9 +1,124 @@
 <ion-header mode="md">
-  <ion-toolbar>
-    <ion-title>trades</ion-title>
+  <ion-toolbar mode="md">
+    <ion-title class="fw-bold large-text ion-text-center">Intercambios</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content color="tertiary" class="ion-padding">
+  <ion-segment
+    class="ios-segment"
+    mode="ios"
+    value="tradesReceived"
+    (ionChange)="handleSegmentActive($event)"
+  >
+    <ion-segment-button value="tradesReceived">
+      <ion-label>Recibidos</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="tradesSent">
+      <ion-label>Enviados</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
+  <ion-list class="list-container ion-padding-vertical" mode="md" lines="none">
+    <ng-container *ngIf="segmentActive === 'tradesReceived'; else tradesSentTemplate">
+      <ng-container
+        *ngIf="tradesReceived !== undefined && tasksReceived !== undefined; else loading"
+      >
+        <ng-container *ngIf="tradesReceived.length === 0">
+          <ion-item class="root-helper helper sub-item">
+            <ion-label>No has recibido ningun intercambio</ion-label>
+          </ion-item>
+        </ng-container>
+
+        <ion-item *ngFor="let trade of tradesReceived" class="trade-item">
+          <div class="main-container">
+            <div class="top-container">
+              <ion-avatar class="user-avatar">
+                <ion-img
+                  [src]="trade.userSender.photoURL || '../../../../assets/no-photo.jpg'"
+                  [alt]="'Avatar de ' + trade.userSender.name"
+                  referrerpolicy="no-referrer"
+                ></ion-img>
+              </ion-avatar>
+
+              <ion-label class="trade-info">
+                <span>
+                  <span class="fw-bold">{{ trade.userSender.name }}</span> quiere intercambiar tu
+                  tarea <span class="fw-bold"> {{ taskNameByTrade[trade.id!] }}</span> por:
+                </span>
+              </ion-label>
+            </div>
+
+            <div class="trade-offer" *ngIf="trade.tradeType === 'score'">
+              <ion-icon slot="start" src="../../../../assets/icons/score.svg"></ion-icon>
+              <span class="text-offer">
+                <span class="fw-bold number">{{ trade.scoreOffered }}</span>
+                Puntos
+              </span>
+            </div>
+
+            <div class="trade-offer" *ngIf="trade.tradeType === 'task'">
+              <span class="text-offer fw-bold"> Tarea 1 </span>
+            </div>
+
+            <div class="bottom-container">
+              <ion-button class="secondary-button fw-regular" color="white" shape="round">
+                Rechazar
+              </ion-button>
+              <ion-button shape="round"> Aceptar</ion-button>
+            </div>
+          </div>
+        </ion-item>
+      </ng-container>
+    </ng-container>
+
+    <ng-template #tradesSentTemplate>
+      <ng-container *ngIf="tradesSent !== undefined && tasksSent !== undefined; else loading">
+        <ng-container *ngIf="tradesSent.length === 0">
+          <ion-item class="root-helper helper sub-item">
+            <ion-label>No has enviado ningun intercambio</ion-label>
+          </ion-item>
+        </ng-container>
+
+        <ion-item *ngFor="let trade of tradesSent" class="response-trade">
+          <ion-icon
+            *ngIf="trade.status !== 'pending'"
+            class="response-icon"
+            [ngClass]="trade.status === 'accepted' ? 'accepted' : 'rejected'"
+            slot="start"
+            [name]="trade.status === 'accepted' ? 'checkmark-outline' : 'close-outline'"
+          ></ion-icon>
+          <ion-spinner
+            *ngIf="trade.status === 'pending'"
+            slot="start"
+            class="pending"
+            name="circles"
+          ></ion-spinner>
+          <ion-label class="response-text">
+            <span
+              >Tu petición de intercambio de la tarea
+              <span class="fw-bold">{{ taskNameByTrade[trade.id!] }}</span> a
+              <span class="fw-bold">{{ trade.userReceiver.name }}</span> por
+              <span *ngIf="trade.tradeType === 'score'" class="fw-bold"
+                >{{ trade.scoreOffered }} puntos
+              </span>
+              <span *ngIf="trade.tradeType === 'task'" class="fw-bold">
+                {{ taskNameByTrade[trade.id] }}
+              </span>
+              <span *ngIf="trade.status === 'rejected'">ha sido rechazada </span>
+              <span *ngIf="trade.status === 'accepted'">ha sido aceptada </span>
+              <span *ngIf="trade.status === 'pending'">sigue pendiente </span>
+            </span>
+          </ion-label>
+          <ion-button class="more-opts-btn" fill="clear" color="secondary" shape="round" slot="end">
+            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ng-container>
+    </ng-template>
+
+    <ng-template #loading>
+      <ion-spinner class="loading-content" name="circles" color="primary"></ion-spinner>
+    </ng-template>
+  </ion-list>
 </ion-content>

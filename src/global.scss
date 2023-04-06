@@ -597,6 +597,11 @@ ion-searchbar {
   }
 }
 
+.more-opts-btn {
+  --padding-start: 5px;
+  --padding-end: 5px;
+}
+
 .secondary-button {
   &::part(native) {
     border: 1px solid var(--ion-color-border);
@@ -695,6 +700,20 @@ ion-item.settings-item {
   position: absolute;
   top: -2px;
   right: -3px;
+}
+
+ion-segment.ios-segment {
+  --background: var(--ion-color-white);
+
+  ion-segment-button.segment-button-checked::part(native) {
+    font-weight: bold;
+    color: #fff;
+    letter-spacing: 0.2px;
+  }
+
+  ion-segment-button::part(indicator-background) {
+    background-color: var(--ion-color-primary);
+  }
 }
 
 .firebase-emulator-warning {

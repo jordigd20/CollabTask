@@ -1,12 +1,21 @@
 import firebase from 'firebase/compat/app';
 
 export interface Trade {
-  id?: string;
+  id: string;
   idTaskList: string;
   idTeam: string;
   idTaskRequested: string;
-  idUserSender: string;
-  idUserReceiver: string;
+  userSender: {
+    id: string;
+    name: string;
+    photoURL: string;
+  }
+  userReceiver: {
+    id: string;
+    name: string;
+    photoURL: string;
+  }
+  idUsersInvolved: string[];
   tradeType: 'score' | 'task';
   taskOffered: string;
   scoreOffered: number;

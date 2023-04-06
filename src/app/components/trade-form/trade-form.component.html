@@ -11,7 +11,7 @@
       <ion-list class="task-list-container" lines="none" mode="md">
         <app-task
           [task]="taskRequested"
-          [idUser]="idCurrentUser"
+          [idUser]="taskRequested.idUserAssigned"
           [showCompleteButton]="false"
           [showDistributionMode]="false"
           [showMoreOptions]="false"

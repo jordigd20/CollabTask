@@ -144,8 +144,6 @@ export class TradeFormComponent implements OnInit {
       tradeType: tradeData.tradeType as 'score' | 'task',
       scoreOffered: tradeData.score as number,
       taskOffered: tradeData.task as string,
-      status: 'pending',
-      createdAt: new Date().toISOString()
     });
     this.isLoading = false;
   }
