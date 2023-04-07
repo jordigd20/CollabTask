@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
+import { FcmService } from 'src/app/services/fcm.service';
 
 @Component({
   selector: 'app-home',
@@ -8,9 +9,10 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class HomePage implements OnInit {
 
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private fcm: FcmService) { }
 
   ngOnInit() {
+    this.fcm.initPush();
   }
 
   async logOut() {
