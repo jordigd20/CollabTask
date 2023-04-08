@@ -8,7 +8,8 @@ import {
   TaskListData,
   TaskList,
   MarkTaskData,
-  Task
+  Task,
+  Trade
 } from '../interfaces';
 import { nanoid } from 'nanoid';
 import { StorageService } from './storage.service';
@@ -652,7 +653,17 @@ export class TeamService {
         }
       }
 
-      const tasks = await firstValueFrom(this.taskService.getAllTasksByTeam(idTeam));
+      const [tasks, trades] = await Promise.all([
+        firstValueFrom(this.taskService.getAllTasksByTeam(idTeam)),
+        firstValueFrom(
+          this.afs
+            .collection<Trade>('trades', (ref) =>
+              ref.where('idUsersInvolved', 'array-contains', idUser)
+            )
+            .valueChanges({ idField: 'id' })
+        )
+      ]);
+
       if (!tasks) {
         throw new Error(TaskErrorCodes.TasksNotFound);
       }
@@ -661,14 +672,28 @@ export class TeamService {
 
       // Unassign the user from all tasks
       for (const task of tasks) {
-        if (task.idUserAssigned === idUser || task.idTemporalUserAssigned === idUser) {
+        const isUserAssigned = task.idUserAssigned === idUser;
+        if (isUserAssigned || task.idTemporalUserAssigned === idUser) {
           const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
 
-          batch.update(taskRef, {
+          const dataToUpdate: any = {
             idUserAssigned: '',
             idTemporalUserAssigned: ''
-          });
+          };
+
+          if (isUserAssigned && task.isInvolvedInTrade) {
+            dataToUpdate.isInvolvedInTrade = false;
+            dataToUpdate.idTrade = '';
+          }
+
+          batch.update(taskRef, dataToUpdate);
         }
+      }
+
+      // Delete all trades where the user is involved
+      for (const trade of trades) {
+        const tradeRef = this.afs.firestore.doc(`trades/${trade.id}`);
+        batch.delete(tradeRef);
       }
 
       // Delete user score from all task lists

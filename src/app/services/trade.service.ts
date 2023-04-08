@@ -26,7 +26,6 @@ export class TradeService {
     private afs: AngularFirestore,
     private teamService: TeamService,
     private taskService: TaskService,
-    private userService: UserService,
     private toastService: ToastService
   ) {}
 
@@ -224,7 +223,7 @@ export class TradeService {
           }),
           this.afs.doc<Task>(`tasks/${trade.idTaskRequested}`).update({
             isInvolvedInTrade: false,
-            idTrade: '',
+            idTrade: ''
           })
         ]);
 
