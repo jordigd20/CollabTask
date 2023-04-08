@@ -8,6 +8,7 @@ import {
 } from '@capacitor/push-notifications';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { StorageService } from './storage.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,8 @@ export class FcmService {
   constructor(
     private platform: Platform,
     private afs: AngularFirestore,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private router: Router
   ) {}
 
   initPush() {
@@ -39,7 +41,7 @@ export class FcmService {
     PushNotifications.addListener('registration', async (token: Token) => {
       const user = await this.storageService.get('user');
       await this.afs
-        .collection('FCMTokens')
+        .collection('fcmTokens')
         .doc(user.id)
         .set({ idUser: user.id, token: token.value });
       console.log('Push registration success, token: ' + token.value);
@@ -54,7 +56,7 @@ export class FcmService {
     PushNotifications.addListener(
       'pushNotificationReceived',
       (notification: PushNotificationSchema) => {
-        alert('Push received: ' + JSON.stringify(notification));
+        console.log(notification);
       }
     );
 
@@ -62,7 +64,13 @@ export class FcmService {
     PushNotifications.addListener(
       'pushNotificationActionPerformed',
       (notification: ActionPerformed) => {
-        alert('Push action performed: ' + JSON.stringify(notification));
+        console.log(notification);
+        const { data } = notification.notification;
+        if (data.isTradeNotification === 'true') {
+          const queryParams = data.isTradeSent === 'true' ? { activateSentTrades: true } : {};
+          this.router.navigate(['/tabs/trades'], { queryParams });
+          return;
+        }
       }
     );
   }

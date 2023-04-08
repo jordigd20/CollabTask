@@ -17,11 +17,11 @@
         button
       >
         <ion-avatar slot="start" class="user-avatar">
-          <ion-img
+          <img
             [src]="user.photoURL || '../../../../../assets/no-photo.jpg'"
             [alt]="'Avatar de' + user.username"
             referrerpolicy="no-referrer"
-          ></ion-img>
+          />
           <div class="pie-wrapper">
             <app-circle-chart [pieData]="user.qualityMark"></app-circle-chart>
           </div>

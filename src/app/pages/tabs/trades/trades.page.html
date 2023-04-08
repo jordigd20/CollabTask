@@ -6,6 +6,7 @@
 
 <ion-content color="tertiary" class="ion-padding">
   <ion-segment
+    #ionSegment
     class="ios-segment"
     mode="ios"
     value="tradesReceived"
@@ -34,11 +35,11 @@
           <div class="main-container">
             <div class="top-container">
               <ion-avatar class="user-avatar">
-                <ion-img
+                <img
                   [src]="trade.userSender.photoURL || '../../../../assets/no-photo.jpg'"
                   [alt]="'Avatar de ' + trade.userSender.name"
                   referrerpolicy="no-referrer"
-                ></ion-img>
+                />
               </ion-avatar>
 
               <ion-label class="trade-info">

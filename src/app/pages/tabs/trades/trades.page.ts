@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { TradeService } from '../../../services/trade.service';
 import { Observable, Subject, forkJoin, from, of, switchMap, take, takeUntil } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
 import { Task, Trade } from '../../../interfaces';
 import { TaskService } from '../../../services/task.service';
 import { presentConfirmationModal } from 'src/app/helpers/common-functions';
-import { ModalController } from '@ionic/angular';
+import { IonSegment, ModalController } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-trades',
@@ -13,6 +14,8 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./trades.page.scss']
 })
 export class TradesPage implements OnInit {
+  @ViewChild('ionSegment', { static: true }) ionSegment: IonSegment = {} as IonSegment;
+
   segmentActive: 'tradesReceived' | 'tradesSent' = 'tradesReceived';
   idUser: string | undefined;
   tradesReceived: Trade[] | undefined;
@@ -31,6 +34,7 @@ export class TradesPage implements OnInit {
   destroy$ = new Subject<void>();
 
   constructor(
+    private activeRoute: ActivatedRoute,
     private storageService: StorageService,
     private tradeService: TradeService,
     private taskService: TaskService,
@@ -38,6 +42,11 @@ export class TradesPage implements OnInit {
   ) {}
 
   ngOnInit() {
+    if (this.activeRoute.snapshot.queryParams['activateSentTrades']) {
+      this.ionSegment.value = 'tradesSent';
+      this.segmentActive = 'tradesSent';
+    }
+
     if (this.segmentActive === 'tradesSent') {
       this.getTradesSent();
     }
@@ -116,9 +125,16 @@ export class TradesPage implements OnInit {
 
   getTradesSent() {
     if (this.tradesSent === undefined) {
-      this.tradeService
-        .getTradesSent(this.idUser!)
+      from(this.storageService.get('user'))
         .pipe(
+          switchMap((user) => {
+            if (user) {
+              this.idUser = user.id;
+              return this.tradeService.getTradesSent(this.idUser!);
+            }
+
+            return of();
+          }),
           switchMap((trades) => {
             if (trades) {
               console.log('tradesSent: ', trades);

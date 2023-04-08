@@ -16,11 +16,11 @@
       >
         <ng-container *ngIf="team.userMembers[user.id!]">
           <ion-avatar slot="start" class="user-avatar">
-            <ion-img
+            <img
               [src]="user.photoURL || '../../../../../assets/no-photo.jpg'"
               [alt]="'Avatar de' + team.userMembers[user.id!].name"
               referrerpolicy="no-referrer"
-            ></ion-img>
+            />
             <div class="pie-wrapper">
               <app-circle-chart [pieData]="user.qualityMark"></app-circle-chart>
             </div>
