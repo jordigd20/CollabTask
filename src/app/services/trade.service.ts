@@ -13,7 +13,6 @@ import { Observable, debounceTime, firstValueFrom, map, shareReplay } from 'rxjs
 import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
 import { TradeData } from '../interfaces/data/trade-data.interface';
 import firebase from 'firebase/compat/app';
-import { UserService } from './user.service';
 import { TradeErrorCodes } from '../interfaces/errors/trade-error-codes.enum';
 @Injectable({
   providedIn: 'root'

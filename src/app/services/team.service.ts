@@ -281,6 +281,7 @@ export class TeamService {
         throw new Error(TeamErrorCodes.TaskListNotFound);
       }
 
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
       const batch = this.afs.firestore.batch();
 
       // If team is changing from manual to preferences, we need to reset
@@ -299,7 +300,18 @@ export class TeamService {
         }
       }
 
-      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      // If team is changing from preferences to manual, we need to reset
+      // the tasksPreferred of all users
+      if (
+        distributionType === 'manual' &&
+        team.taskLists[idTaskList].distributionType === 'preferences'
+      ) {
+        for (const user of Object.values(team.userMembers)) {
+          batch.update(teamRef, {
+            [`taskLists.${idTaskList}.userTasksPreferred.${user.id}`]: []
+          });
+        }
+      }
       const dataToUpdate: { [key: string]: string | string[] | boolean } = {};
 
       if (name) {
@@ -588,7 +600,14 @@ export class TeamService {
 
   async deleteTeam(idTeam: string) {
     try {
-      const tasks = await firstValueFrom(this.taskService.getAllTasksByTeam(idTeam));
+      const [tasks, trades] = await Promise.all([
+        firstValueFrom(this.taskService.getAllTasksByTeam(idTeam)),
+        firstValueFrom(
+          this.afs
+            .collection<Trade>('trades', (ref) => ref.where('idTeam', '==', idTeam))
+            .valueChanges({ idField: 'id' })
+        )
+      ]);
 
       if (!tasks) {
         throw new Error(TaskErrorCodes.TasksNotFound);
@@ -599,6 +618,11 @@ export class TeamService {
       for (const task of tasks) {
         const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
         batch.delete(taskRef);
+      }
+
+      for (const trade of trades) {
+        const tradeRef = this.afs.firestore.doc(`trades/${trade.id}`);
+        batch.delete(tradeRef);
       }
 
       const { id: idUser } = await this.storageService.get('user');
@@ -678,7 +702,8 @@ export class TeamService {
 
           const dataToUpdate: any = {
             idUserAssigned: '',
-            idTemporalUserAssigned: ''
+            idTemporalUserAssigned: '',
+            availableToAssign: true
           };
 
           if (isUserAssigned && task.isInvolvedInTrade) {

@@ -61,7 +61,7 @@ exports.sendTradeAcceptedNotification = functions.firestore
 
             const body = trade.status === "accepted" ?
               `${trade.userReceiver.name} ha aceptado tu intercambio 🤝🏼` :
-              `${trade.userReceiver.name} ha rechazado tu intercambio`;
+              `${trade.userReceiver.name} ha rechazado tu intercambio ❌`;
 
             const payload = {
               token: token,
