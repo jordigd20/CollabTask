@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Task, TeamErrorCodes, Trade, User } from '../interfaces';
+import { Task, Team, TeamErrorCodes, Trade, User } from '../interfaces';
 import { TeamService } from './team.service';
 import { TaskService } from './task.service';
 import {
@@ -259,15 +259,27 @@ export class TradeService {
       });
 
       if (trade.tradeType === 'score') {
+        const teamRef = this.afs.doc<Team>(`teams/${idTeam}`).ref;
         const userReceiverRef = this.afs.doc<User>(`users/${userReceiver.id}`).ref;
         const userSenderRef = this.afs.doc<User>(`users/${userSender.id}`).ref;
 
-        batch.update(userReceiverRef, {
-          score: firebase.firestore.FieldValue.increment(trade.scoreOffered)
+        batch.update(teamRef, {
+          [`taskLists.${idTaskList}.userScore.${userReceiver.id}`]:
+            firebase.firestore.FieldValue.increment(trade.scoreOffered),
+          [`userMembers.${userReceiver.id}.userTotalScore`]:
+            firebase.firestore.FieldValue.increment(trade.scoreOffered),
+          [`taskLists.${idTaskList}.userScore.${userSender.id}`]:
+            firebase.firestore.FieldValue.increment(-trade.scoreOffered),
+          [`userMembers.${userSender.id}.userTotalScore`]:
+            firebase.firestore.FieldValue.increment(-trade.scoreOffered)
         });
 
         batch.update(userSenderRef, {
-          score: firebase.firestore.FieldValue.increment(-trade.scoreOffered)
+          totalTasksAssigned: firebase.firestore.FieldValue.increment(1)
+        });
+
+        batch.update(userReceiverRef, {
+          totalTasksAssigned: firebase.firestore.FieldValue.increment(-1)
         });
       } else {
         const taskOfferedRef = this.afs.doc<Task>(`tasks/${trade.taskOffered}`).ref;

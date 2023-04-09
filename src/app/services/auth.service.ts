@@ -77,10 +77,16 @@ export class AuthService {
         email: email.trim(),
         photoURL: result.user?.photoURL || '',
         username: restData.username.trim(),
+        rating: {
+          workRate: 0,
+          communicationRate: 0,
+          attitudeRate: 0,
+          overallRate: 0,
+        },
         efficiency: 0,
         qualityMark: 0,
-        tasksAssigned: 0,
-        tasksCompleted: 0,
+        totalTasksAssigned: 0,
+        totalTasksCompleted: 0,
         idTeams: []
       };
 
@@ -123,9 +129,15 @@ export class AuthService {
           photoURL: result.user?.photoURL || '',
           username: result.user?.displayName || '',
           efficiency: 0,
+          rating: {
+            workRate: 0,
+            communicationRate: 0,
+            attitudeRate: 0,
+            overallRate: 0,
+          },
           qualityMark: 0,
-          tasksAssigned: 0,
-          tasksCompleted: 0,
+          totalTasksAssigned: 0,
+          totalTasksCompleted: 0,
           idTeams: []
         };
 

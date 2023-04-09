@@ -288,10 +288,8 @@ export class TaskService {
       const taskRef = this.afs.firestore.doc(`tasks/${idTask}`);
       const userRef = this.afs.firestore.doc(`users/${idUser}`);
 
-      //TODO: qualityMark
       batch.update(userRef, {
-        tasksCompleted: firebase.firestore.FieldValue.increment(1),
-        efficiency: user.tasksCompleted / user.tasksAssigned
+        totalTasksCompleted: firebase.firestore.FieldValue.increment(1)
       });
 
       // if (task.selectedDate === 'datePeriodic') {
@@ -307,8 +305,9 @@ export class TaskService {
         [`taskLists.${idTaskList}.userScore.${idUser}`]: firebase.firestore.FieldValue.increment(
           task.score
         ),
-        [`taskLists.${idTaskList}.userMembers.${idUser}.userTotalScore`]:
-          firebase.firestore.FieldValue.increment(task.score)
+        [`userMembers.${idUser}.userTotalScore`]: firebase.firestore.FieldValue.increment(
+          task.score
+        )
       });
 
       await batch.commit();
@@ -354,7 +353,9 @@ export class TaskService {
         throw new Error(TeamErrorCodes.TeamEmptyTaskList);
       }
 
+      const tasksCountByUser = new Map<string, number>();
       const batch = this.afs.firestore.batch();
+
       for (let task of temporalTasks) {
         const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
         batch.update(taskRef, {
@@ -362,6 +363,18 @@ export class TaskService {
           idTemporalUserAssigned: '',
           availableToAssign: false,
           completed: false
+        });
+
+        tasksCountByUser.set(
+          task.idTemporalUserAssigned,
+          (tasksCountByUser.get(task.idTemporalUserAssigned) || 0) + 1
+        );
+      }
+
+      for (let [idUser, tasksCount] of tasksCountByUser) {
+        const userRef = this.afs.firestore.doc(`users/${idUser}`);
+        batch.update(userRef, {
+          totalTasksAssigned: firebase.firestore.FieldValue.increment(tasksCount)
         });
       }
 

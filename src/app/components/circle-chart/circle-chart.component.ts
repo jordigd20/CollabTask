@@ -6,8 +6,8 @@ import { Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@ang
   styleUrls: ['./circle-chart.component.scss']
 })
 export class CircleChartComponent implements OnInit {
-  @ViewChild('pieChart', { static: true }) pieChart: ElementRef<SVGElement> =
-    {} as ElementRef<SVGElement>;
+  @ViewChild('path', { static: true }) path: ElementRef<SVGPathElement> =
+    {} as ElementRef<SVGPathElement>;
 
   @Input() pieData: number = 0;
 
@@ -25,6 +25,9 @@ export class CircleChartComponent implements OnInit {
   ngOnInit() {}
 
   ngOnChanges() {
+    this.startAngle = 0;
+    this.endAngle = 0;
+
     this.sectorAngle = Math.ceil(360 * (this.pieData / 100));
     this.startAngle = this.endAngle;
     this.endAngle = this.startAngle + this.sectorAngle;
@@ -44,9 +47,6 @@ export class CircleChartComponent implements OnInit {
     this.y2 = 200 + 180 * Math.sin((this.endAngle * Math.PI) / 180);
 
     const path = `M 200 200 L ${this.x1} ${this.y1} A 180 180 0 ${overHalf} 1 ${this.x2} ${this.y2} Z`;
-    const pathEl = this.renderer.createElement('path', 'http://www.w3.org/2000/svg');
-    this.renderer.setAttribute(pathEl, 'd', path);
-    this.renderer.setAttribute(pathEl, 'fill', 'var(--ion-color-primary)');
-    this.renderer.appendChild(this.pieChart.nativeElement, pathEl);
+    this.renderer.setAttribute(this.path.nativeElement, 'd', path);
   }
 }

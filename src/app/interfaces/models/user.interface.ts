@@ -4,8 +4,14 @@ export interface User {
   photoURL: string;
   username: string;
   efficiency: number;
+  rating: {
+    workRate: number;
+    communicationRate: number;
+    attitudeRate: number;
+    overallRate: number;
+  };
   qualityMark: number;
-  tasksAssigned: number;
-  tasksCompleted: number;
+  totalTasksAssigned: number;
+  totalTasksCompleted: number;
   idTeams: string[];
 }

@@ -944,8 +944,7 @@ export class TeamService {
 
             console.log(`Assigning task ${task.id} to HIGHEST user ${selectedUserId}`);
             idAssignedTasks.push(task.id);
-            const userRef = this.afs.firestore.doc(`users/${selectedUserId}`);
-            batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
+
             batch.update(taskRef, {
               idUserAssigned: selectedUserId,
               availableToAssign: false,
@@ -971,8 +970,7 @@ export class TeamService {
 
           console.log(`Assigning task ${task.id} DIRECTLY to user ${usersWithPreference[0][0]}`);
           idAssignedTasks.push(task.id);
-          const userRef = this.afs.firestore.doc(`users/${usersWithPreference[0][0]}`);
-          batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
+
           batch.update(taskRef, {
             idUserAssigned: usersWithPreference[0][0],
             availableToAssign: false,
@@ -1008,9 +1006,8 @@ export class TeamService {
           tasksCountByUser.set(user.id, (tasksCountByUser.get(user.id) || 0) + 1);
           console.log(`Assigning task ${task.id} to user ${user.id}`);
           idAssignedTasks.push(task.id);
+
           const taskRef = this.afs.firestore.doc(`tasks/${task.id}`);
-          const userRef = this.afs.firestore.doc(`users/${user.id}`);
-          batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
           batch.update(taskRef, {
             idUserAssigned: user.id,
             availableToAssign: false,
@@ -1033,13 +1030,16 @@ export class TeamService {
         );
         idAssignedTasks.push(tasksWithoutPreference[i].id);
         const taskRef = this.afs.firestore.doc(`tasks/${tasksWithoutPreference[i].id}`);
-        const userRef = this.afs.firestore.doc(`users/${userMembersWithScore[i].id}`);
-        batch.update(userRef, { tasksAssigned: firebase.firestore.FieldValue.increment(1) });
         batch.update(taskRef, {
           idUserAssigned: userMembersWithScore[i].id,
           availableToAssign: false,
           completed: false
         });
+      }
+
+      for (let [userId, tasksCount] of tasksCountByUser) {
+        const userRef = this.afs.firestore.doc(`users/${userId}`);
+        batch.update(userRef, { totalTasksAssigned: firebase.firestore.FieldValue.increment(tasksCount) });
       }
 
       // Clear the preferences

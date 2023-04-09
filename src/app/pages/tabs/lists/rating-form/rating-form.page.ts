@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject, map, of, switchMap, takeUntil, tap } from 'rxjs';
 import { User } from '../../../../interfaces';
 import { UserService } from 'src/app/services/user.service';
@@ -29,7 +29,8 @@ export class RatingFormPage implements OnInit {
   constructor(
     private activeRoute: ActivatedRoute,
     private userService: UserService,
-    private ratingService: RatingService
+    private ratingService: RatingService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -118,5 +119,6 @@ export class RatingFormPage implements OnInit {
       ...this.ratingAspects
     });
     this.isLoading = false;
+    this.router.navigate(['tabs/lists/ratings', this.idTeam, this.idTaskList]);
   }
 }
