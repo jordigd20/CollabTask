@@ -65,6 +65,10 @@ ion-header.header-md {
   }
 }
 
+.header-no-border {
+  box-shadow: none !important;
+}
+
 ion-button {
   text-transform: none;
   --box-shadow: none;

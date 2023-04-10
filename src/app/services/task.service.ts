@@ -224,7 +224,7 @@ export class TaskService {
     }
   }
 
-  async updateTask({ idTask, idTaskList, ...taskData }: TaskData) {
+  async updateTask({ idTask, idTaskList, date, dateLimit, ...taskData }: TaskData) {
     try {
       if (idTask && idTaskList) {
         const task = await firstValueFrom(this.getTask(idTask, idTaskList));
@@ -233,10 +233,14 @@ export class TaskService {
           throw new Error(TaskErrorCodes.TaskNotFound);
         }
 
-        taskData.date = convertStringToTimestamp(taskData.date as string);
-        taskData.dateLimit = convertStringToTimestamp(taskData.dateLimit as string);
+        const dateTimestamp = convertStringToTimestamp(date as string);
+        const dateLimitTimestamp = convertStringToTimestamp(dateLimit as string);
 
-        await this.afs.doc<Task>(`tasks/${idTask}`).update(taskData);
+        await this.afs.doc<Task>(`tasks/${idTask}`).update({
+          date: dateTimestamp,
+          dateLimit: dateLimitTimestamp,
+          ...taskData
+        });
 
         this.toastService.showToast({
           message: 'Tarea actualizada correctamente',

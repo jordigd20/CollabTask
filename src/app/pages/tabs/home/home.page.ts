@@ -9,11 +9,9 @@ import { FcmService } from 'src/app/services/fcm.service';
 })
 export class HomePage implements OnInit {
 
-  constructor(private authService: AuthService, private fcm: FcmService) { }
+  constructor(private authService: AuthService) { }
 
-  ngOnInit() {
-    this.fcm.initPush();
-  }
+  ngOnInit() {}
 
   async logOut() {
     await this.authService.logOut();

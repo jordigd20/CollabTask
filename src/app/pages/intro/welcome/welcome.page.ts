@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { FcmService } from '../../../services/fcm.service';
 
 @Component({
   selector: 'app-welcome',
@@ -8,10 +7,8 @@ import { FcmService } from '../../../services/fcm.service';
 })
 export class WelcomePage implements OnInit {
 
-  constructor(private fcmService: FcmService) { }
+  constructor() { }
 
-  ngOnInit() {
-    this.fcmService.initPush();
-  }
+  ngOnInit() {}
 
 }

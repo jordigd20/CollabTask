@@ -13,6 +13,7 @@ import { LoadingController } from '@ionic/angular';
 import { StorageService } from './storage.service';
 import { UserService } from './user.service';
 import { ToastService } from './toast.service';
+import { FcmService } from './fcm.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,7 @@ export class AuthService {
     private toastService: ToastService,
     private storageService: StorageService,
     private userService: UserService,
+    private fcmService: FcmService,
     private router: Router
   ) {
     try {
@@ -47,6 +49,7 @@ export class AuthService {
           if (user) {
             this.userService.init(user.id!);
             await this.setUserInStorage(user);
+            this.fcmService.initPush();
           }
         });
     } catch (error) {

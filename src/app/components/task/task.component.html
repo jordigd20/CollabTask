@@ -80,7 +80,7 @@
               <span style="font-size: 14px">{{
                 task.selectedDate === 'withoutDate'
                   ? 'Sin fecha'
-                  : [task.date + '' | date : 'd MMM y']
+                  : [task[task.selectedDate] + '' | date : 'd MMM y']
               }}</span>
             </div>
 
