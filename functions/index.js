@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+require("firebase-functions/logger/compat");
 
 admin.initializeApp();
 
@@ -176,6 +177,183 @@ exports.updateUserQualityMark = functions.firestore
                 qualityMark,
                 efficiency,
               });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+exports.updatePeriodicTasks = functions
+    .runWith({memory: "1GB"})
+    .pubsub.schedule("0 0 * * *")
+    .timeZone("Europe/Madrid")
+    .onRun(async (context) => {
+      try {
+        const dayOfTheWeek = new Date().getDay();
+        const weekDays = {
+          0: "domingo",
+          1: "lunes",
+          2: "martes",
+          3: "miercoles",
+          4: "jueves",
+          5: "viernes",
+          6: "sabado",
+        };
+        const today = weekDays[dayOfTheWeek];
+        console.log("Today is: ", today);
+
+        const tasks = await admin
+            .firestore()
+            .collection("tasks")
+            .where("selectedDate", "==", "datePeriodic")
+            .where("datePeriodic", "array-contains", today)
+            .where("completed", "==", true)
+            .where("idUserAssigned", "!=", "")
+            .get();
+
+        const idTasksUpdated = [];
+        for (const taskDoc of tasks.docs) {
+          const task = taskDoc.data();
+          await admin
+              .firestore()
+              .collection("tasks")
+              .doc(task.id)
+              .update({
+                completed: false,
+              });
+          idTasksUpdated.push(task.id);
+        }
+
+        console.log("IDs tasks updated:", idTasksUpdated);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+exports.sendDaylyTasksNotification = functions
+    .runWith({memory: "2GB"})
+    .pubsub.schedule("0 12 * * *")
+    .timeZone("Europe/Madrid")
+    .onRun(async (context) => {
+      try {
+        const today = new Date();
+        const dayOfTheWeek = today.getDay();
+        const weekDays = {
+          0: "domingo",
+          1: "lunes",
+          2: "martes",
+          3: "miercoles",
+          4: "jueves",
+          5: "viernes",
+          6: "sabado",
+        };
+        const todayName = weekDays[dayOfTheWeek];
+        console.log("Today is: ", todayName);
+
+        const tasks = await admin
+            .firestore()
+            .collection("tasks")
+            .where("idUserAssigned", "!=", "")
+            .where("completed", "==", false)
+            .get();
+
+        const usersToNotify = new Set();
+        const periodicCountByUser = new Map();
+        const dateLimitCountByUser = new Map();
+        const dateCountByUser = new Map();
+
+        for (let i = 0; i < tasks.docs.length; i++) {
+          const task = tasks.docs[i].data();
+
+          if (task.selectedDate === "datePeriodic" &&
+            task.datePeriodic.includes(todayName)) {
+            usersToNotify.add(task.idUserAssigned);
+            periodicCountByUser.set(
+                task.idUserAssigned,
+                (periodicCountByUser.get(task.idUserAssigned) || 0) + 1,
+            );
+            console.log("DatePeriodic: ", {
+              idUserAssigned: task.idUserAssigned,
+            });
+          } else if (task.selectedDate === "dateLimit") {
+            const dateLimit = new Date(task.dateLimit.toDate().toISOString());
+            const dayBefore = new Date(task.dateLimit.toDate().toISOString());
+            dayBefore.setDate(dayBefore.getDate() - 1);
+
+            if (today.getDate() === dateLimit.getDate() ||
+              today.getDate() === dayBefore.getDate()) {
+              console.log("DateLimit: ", {
+                idUserAssigned: task.idUserAssigned,
+                dateLimit,
+              });
+              usersToNotify.add(task.idUserAssigned);
+              dateLimitCountByUser.set(
+                  task.idUserAssigned,
+                  (dateLimitCountByUser.get(task.idUserAssigned) || 0) + 1,
+              );
+            }
+          } else if (task.selectedDate === "date") {
+            const date = new Date(task.date.toDate().toISOString());
+
+            if (today.getDate() === date.getDate()) {
+              console.log("Date: ", {
+                idUserAssigned: task.idUserAssigned,
+                date,
+              });
+              usersToNotify.add(task.idUserAssigned);
+              dateCountByUser.set(
+                  task.idUserAssigned,
+                  (dateCountByUser.get(task.idUserAssigned) || 0) + 1,
+              );
+            }
+          }
+        }
+
+        console.log("Users to notify: ", usersToNotify);
+
+        for (const user of usersToNotify) {
+          const userSenderFcmDoc = await admin
+              .firestore()
+              .collection("fcmTokens")
+              .doc(user)
+              .get();
+
+          const token = userSenderFcmDoc.data().token;
+
+          if (token) {
+            const periodicPlusDate = Number(
+                periodicCountByUser.get(user) ?? 0,
+            ) + Number(dateCountByUser.get(user) ?? 0);
+            const dateLimitCount = Number(dateLimitCountByUser.get(user) ?? 0);
+            const title = "Recordatiorio diario 📅";
+
+            const justDate = `Hoy tienes ${periodicPlusDate} ${periodicPlusDate === 1 ? "tarea pendiente" : "tareas pendientes"}`;
+            const justDateLimit = `Se acerca la fecha límite de ${dateLimitCount} ${dateLimitCount === 1 ? "tarea" : "tareas"} ⏲`;
+            const everyDate = `${justDate} y se acerca la fecha límite de ${dateLimitCount === 1 ? "otra tarea" : `${dateLimitCount} tareas`}`;
+
+            const body = `${periodicPlusDate > 0 && dateLimitCount > 0 ?
+              everyDate :
+              (periodicPlusDate > 0) ?
+                justDate :
+                justDateLimit
+            }`;
+
+            console.log("Notification: ", body);
+
+            const payload = {
+              token: token,
+              notification: {
+                title,
+                body,
+              },
+              data: {
+                isDailyNotification: "true",
+              },
+            };
+
+            await admin.messaging().send(payload);
+            console.log("Notification sent succesfully");
+          }
         }
       } catch (error) {
         console.error(error);
