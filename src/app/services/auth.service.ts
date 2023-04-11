@@ -5,7 +5,7 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController } from '@ionic/angular';
-import { lastValueFrom, of, map, switchMap } from 'rxjs';
+import { lastValueFrom, of, map, switchMap, throwError, retry } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData, AuthErrorCode } from '../interfaces';
 import { Router } from '@angular/router';
@@ -30,31 +30,42 @@ export class AuthService {
     private fcmService: FcmService,
     private router: Router
   ) {
-    try {
-      this.auth.authState
-        .pipe(
-          switchMap((authUser) => {
-            if (authUser) {
-              return this.afs
-                .doc<User>(`users/${authUser?.uid}`)
-                .get()
-                .pipe(map((doc) => doc.data()));
-            } else {
-              return of(null);
-            }
-          })
-        )
-        .subscribe(async (user) => {
+    this.auth.authState
+      .pipe(
+        switchMap((authUser) => {
+          if (authUser) {
+            return this.afs
+              .doc<User>(`users/${authUser?.uid}`)
+              .get()
+              .pipe(map((doc) => doc.data()));
+          }
+
+          return of();
+        }),
+        switchMap((user) => {
+          // It's possible that the user is still not created in the database
+          // so it retries 2 more times to try to get the user
+          if (user == null) {
+            return throwError(() => new Error("User not found"));
+          }
+
+          return of(user);
+        }),
+        retry(2)
+      )
+      .subscribe({
+        next: async (user) => {
           console.log('authService', user);
           if (user) {
             this.userService.init(user.id!);
             await this.setUserInStorage(user);
             this.fcmService.initPush();
           }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      });
   }
 
   async logIn({ email, password }: LoginData) {
@@ -84,7 +95,7 @@ export class AuthService {
           workRate: 0,
           communicationRate: 0,
           attitudeRate: 0,
-          overallRate: 0,
+          overallRate: 0
         },
         efficiency: 0,
         qualityMark: 0,
@@ -136,7 +147,7 @@ export class AuthService {
             workRate: 0,
             communicationRate: 0,
             attitudeRate: 0,
-            overallRate: 0,
+            overallRate: 0
           },
           qualityMark: 0,
           totalTasksAssigned: 0,

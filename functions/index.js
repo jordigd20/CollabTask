@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const {FieldValue} = require("firebase-admin/firestore");
 require("firebase-functions/logger/compat");
 
 admin.initializeApp();
@@ -28,6 +29,9 @@ exports.sendTradeCreatedNotification = functions.firestore
             },
             data: {
               isTradeNotification: "true",
+            },
+            android: {
+              priority: "high",
             },
           };
 
@@ -73,6 +77,9 @@ exports.sendTradeAcceptedNotification = functions.firestore
               data: {
                 isTradeNotification: "true",
                 isTradeSent: "true",
+              },
+              android: {
+                priority: "high",
               },
             };
 
@@ -183,13 +190,21 @@ exports.updateUserQualityMark = functions.firestore
       }
     });
 
+const oneSecond = () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, 1010);
+  });
+};
+
 exports.updatePeriodicTasks = functions
     .runWith({memory: "1GB"})
-    .pubsub.schedule("0 0 * * *")
+    .pubsub.schedule("0 3 * * *")
     .timeZone("Europe/Madrid")
     .onRun(async (context) => {
       try {
-        const dayOfTheWeek = new Date().getDay();
+        const dayOfTheWeek = new Date("2023-04-10").getDay();
         const weekDays = {
           0: "domingo",
           1: "lunes",
@@ -200,8 +215,12 @@ exports.updatePeriodicTasks = functions
           6: "sabado",
         };
         const today = weekDays[dayOfTheWeek];
-        console.log("Today is: ", today);
+        let counter = 0;
+        let commitCounter = 0;
+        const batches = [];
+        batches[commitCounter] = admin.firestore().batch();
 
+        console.log("Today is: ", today);
         const tasks = await admin
             .firestore()
             .collection("tasks")
@@ -212,27 +231,41 @@ exports.updatePeriodicTasks = functions
             .get();
 
         const idTasksUpdated = [];
-        for (const taskDoc of tasks.docs) {
-          const task = taskDoc.data();
-          await admin
-              .firestore()
-              .collection("tasks")
-              .doc(task.id)
-              .update({
-                completed: false,
-              });
-          idTasksUpdated.push(task.id);
+        for (let i = 0; i < tasks.docs.length; i++) {
+          if (counter <= 248) {
+            const task = tasks.docs[i].data();
+            const userRef = admin
+                .firestore().collection("users").doc(task.idUserAssigned);
+            batches[commitCounter].update(tasks.docs[i].ref, {
+              completed: false,
+            });
+            batches[commitCounter].update(userRef, {
+              totalTasksCompleted: FieldValue.increment(1),
+            });
+            counter++;
+            idTasksUpdated.push(task.id);
+          } else {
+            counter = 0;
+            commitCounter++;
+            batches[commitCounter] = admin.firestore().batch();
+          }
         }
 
-        console.log("IDs tasks updated:", idTasksUpdated);
+        for (const batch of batches) {
+          await oneSecond();
+          await batch.commit();
+          console.log("Wrote batch");
+        }
+
+        console.log("IDs tasks updated succesfully:", idTasksUpdated);
       } catch (error) {
         console.error(error);
       }
     });
 
 exports.sendDaylyTasksNotification = functions
-    .runWith({memory: "2GB"})
-    .pubsub.schedule("0 12 * * *")
+    .runWith({memory: "1GB"})
+    .pubsub.schedule("00 12 * * *")
     .timeZone("Europe/Madrid")
     .onRun(async (context) => {
       try {
@@ -310,6 +343,9 @@ exports.sendDaylyTasksNotification = functions
         }
 
         console.log("Users to notify: ", usersToNotify);
+        console.log("periodicCountByUser", periodicCountByUser);
+        console.log("dateLimitCountByUser", dateLimitCountByUser);
+        console.log("dateCountByUser", dateCountByUser);
 
         for (const user of usersToNotify) {
           const userSenderFcmDoc = await admin
@@ -338,8 +374,6 @@ exports.sendDaylyTasksNotification = functions
                 justDateLimit
             }`;
 
-            console.log("Notification: ", body);
-
             const payload = {
               token: token,
               notification: {
@@ -349,12 +383,16 @@ exports.sendDaylyTasksNotification = functions
               data: {
                 isDailyNotification: "true",
               },
+              android: {
+                priority: "high",
+              },
             };
 
             await admin.messaging().send(payload);
-            console.log("Notification sent succesfully");
           }
         }
+
+        console.log("All notifications sent succesfully");
       } catch (error) {
         console.error(error);
       }

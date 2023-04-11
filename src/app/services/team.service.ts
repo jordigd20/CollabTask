@@ -753,7 +753,7 @@ export class TeamService {
       await batch.commit();
 
       this.toastService.showToast({
-        message: 'Has abandonado el equipo correctamente',
+        message: executedByAdmin ? 'El usuario ha sido expulsado del equipo' : 'Has abandonado el equipo correctamente',
         icon: 'checkmark-circle',
         cssClass: 'toast-success'
       });

@@ -192,12 +192,16 @@ export class TaskFormPage implements OnInit {
       componentProps: {
         previousSelectedDays
       },
+      backdropDismiss: false,
       cssClass: 'responsive-modal periodic-modal'
     });
 
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
+    if (data.cancelled) {
+      return;
+    }
 
     this.taskForm.patchValue({
       datePeriodic: data.selectedDays
