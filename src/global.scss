@@ -433,6 +433,8 @@ ion-spinner.loading-content {
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
+  padding-top: 3px;
+  padding-bottom: 3px;
 
   ion-chip.info-chip {
     flex: 0 0 auto;

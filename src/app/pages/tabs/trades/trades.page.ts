@@ -72,9 +72,11 @@ export class TradesPage implements OnInit {
                 rejecting: false,
                 accepting: false
               };
-              tasks$.push(this.taskService.getTaskObservable(trade.idTaskRequested).pipe(take(1)));
-              if (trade.tradeType === 'task' && trade.taskOffered) {
-                tasks$.push(this.taskService.getTaskObservable(trade.taskOffered).pipe(take(1)));
+              tasks$.push(this.taskService.getTaskObservable(trade.taskOffered).pipe(take(1)));
+              if (trade.tradeType === 'task' && trade.idTaskRequested) {
+                tasks$.push(
+                  this.taskService.getTaskObservable(trade.idTaskRequested).pipe(take(1))
+                );
               }
             }
 
@@ -98,17 +100,17 @@ export class TradesPage implements OnInit {
         this.tasksReceived = tasks;
 
         for (const trade of this.tradesReceived) {
-          const task = tasks.find((task) => task?.id === trade.idTaskRequested);
+          const task = tasks.find((task) => task?.id === trade.taskOffered);
 
           if (task) {
             this.taskNameByTrade[trade.id] = task.title;
           }
 
           if (trade.tradeType === 'task') {
-            const taskOffered = tasks.find((task) => task?.id === trade.taskOffered);
+            const taskRequested = tasks.find((task) => task?.id === trade.idTaskRequested);
 
-            if (taskOffered) {
-              this.taskNameByTrade[trade.taskOffered] = taskOffered.title;
+            if (taskRequested) {
+              this.taskNameByTrade[trade.idTaskRequested] = taskRequested.title;
             }
           }
         }
@@ -142,11 +144,11 @@ export class TradesPage implements OnInit {
 
               const tasks$: Observable<Task | undefined>[] = [];
               for (const trade of trades) {
-                tasks$.push(
-                  this.taskService.getTaskObservable(trade.idTaskRequested).pipe(take(1))
-                );
-                if (trade.tradeType === 'task' && trade.taskOffered) {
-                  tasks$.push(this.taskService.getTaskObservable(trade.taskOffered).pipe(take(1)));
+                tasks$.push(this.taskService.getTaskObservable(trade.taskOffered).pipe(take(1)));
+                if (trade.tradeType === 'task' && trade.idTaskRequested) {
+                  tasks$.push(
+                    this.taskService.getTaskObservable(trade.idTaskRequested).pipe(take(1))
+                  );
                 }
               }
 
@@ -170,17 +172,17 @@ export class TradesPage implements OnInit {
           this.tasksSent = tasks;
 
           for (const trade of this.tradesSent) {
-            const task = tasks.find((task) => task?.id === trade.idTaskRequested);
+            const task = tasks.find((task) => task?.id === trade.taskOffered);
 
             if (task) {
               this.taskNameByTrade[trade.id] = task.title;
             }
 
             if (trade.tradeType === 'task') {
-              const taskOffered = tasks.find((task) => task?.id === trade.taskOffered);
+              const taskRequested = tasks.find((task) => task?.id === trade.idTaskRequested);
 
-              if (taskOffered) {
-                this.taskNameByTrade[trade.taskOffered] = taskOffered.title;
+              if (taskRequested) {
+                this.taskNameByTrade[trade.idTaskRequested] = taskRequested.title;
               }
             }
           }

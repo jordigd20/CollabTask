@@ -8,6 +8,25 @@
   }
 }
 
+.users-container {
+  display: flex;
+}
+
+.loading-tasks {
+  height: 85px;
+
+  ion-spinner {
+    transform: scale(2);
+    margin: 0 auto;
+    display: block;
+    margin-top: 40px;
+  }
+}
+
+.trade-type {
+  margin-bottom: 10px;
+}
+
 .list-radio {
   ion-item {
     --padding-start: 0px;
@@ -18,4 +37,3 @@
   display: block;
   margin-bottom: -5px;
 }
-

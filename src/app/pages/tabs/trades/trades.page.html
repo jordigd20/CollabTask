@@ -43,9 +43,16 @@
               </ion-avatar>
 
               <ion-label class="trade-info">
-                <span>
+                <span *ngIf="trade.tradeType === 'score'">
+                  <span class="fw-bold">{{ trade.userSender.name }}</span> quiere que te quedes con
+                  su tarea <span class="fw-bold"> {{ taskNameByTrade[trade.id] }}</span> a cambio
+                  de:
+                </span>
+
+                <span *ngIf="trade.tradeType === 'task'">
                   <span class="fw-bold">{{ trade.userSender.name }}</span> quiere intercambiar tu
-                  tarea <span class="fw-bold"> {{ taskNameByTrade[trade.id!] }}</span> por:
+                  tarea <span class="fw-bold"> {{ taskNameByTrade[trade.idTaskRequested] }}</span> a
+                  cambio de:
                 </span>
               </ion-label>
             </div>
@@ -59,7 +66,7 @@
             </div>
 
             <div class="trade-offer" *ngIf="trade.tradeType === 'task'">
-              <span class="text-offer fw-bold"> {{ taskNameByTrade[trade.taskOffered] }} </span>
+              <span class="text-offer fw-bold"> {{ taskNameByTrade[trade.id] }} </span>
             </div>
 
             <div class="bottom-container">
@@ -127,7 +134,7 @@
                 >{{ trade.scoreOffered }} puntos
               </span>
               <span *ngIf="trade.tradeType === 'task'" class="fw-bold">
-                {{ taskNameByTrade[trade.taskOffered] }}
+                {{ taskNameByTrade[trade.idTaskRequested] }}
               </span>
               <span *ngIf="trade.status === 'rejected'">ha sido rechazada </span>
               <span *ngIf="trade.status === 'accepted'">ha sido aceptada </span>

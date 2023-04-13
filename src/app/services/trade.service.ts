@@ -83,16 +83,16 @@ export class TradeService {
 
   async createTrade({ idUserSender, idUserReceiver, ...tradeData }: TradeData) {
     try {
-      const [team, taskRequested] = await Promise.all([
+      const [team, taskOffered] = await Promise.all([
         firstValueFrom(this.teamService.getTeam(tradeData.idTeam)),
-        firstValueFrom(this.taskService.getTaskObservable(tradeData.idTaskRequested))
+        firstValueFrom(this.taskService.getTaskObservable(tradeData.taskOffered))
       ]);
 
-      let taskOffered: Task | undefined;
+      let taskRequested: Task | undefined;
 
-      if (tradeData.tradeType === 'task' && tradeData.taskOffered) {
-        taskOffered = await firstValueFrom(
-          this.taskService.getTaskObservable(tradeData.taskOffered)
+      if (tradeData.tradeType === 'task' && tradeData.idTaskRequested) {
+        taskRequested = await firstValueFrom(
+          this.taskService.getTaskObservable(tradeData.idTaskRequested)
         );
       }
 
@@ -100,7 +100,7 @@ export class TradeService {
         throw new Error(TeamErrorCodes.TeamNotFound);
       }
 
-      if (!taskRequested || (tradeData.tradeType === 'task' && !taskOffered)) {
+      if (!taskOffered || (tradeData.tradeType === 'task' && !taskRequested)) {
         throw new Error(TaskErrorCodes.TaskNotFound);
       }
 
@@ -112,8 +112,8 @@ export class TradeService {
         throw new Error(TeamErrorCodes.UserDoesNotBelongToTeam);
       }
 
-      if (taskRequested.isInvolvedInTrade) {
-        throw new Error(TradeErrorCodes.TaskRequestedIsAlreadyInvolvedInTrade);
+      if (taskOffered.isInvolvedInTrade) {
+        throw new Error(TradeErrorCodes.TaskOfferedIsAlreadyInvolvedInTrade);
       }
 
       if (
@@ -123,20 +123,20 @@ export class TradeService {
         throw new Error(TradeErrorCodes.UserDoesNotHaveEnoughScore);
       }
 
-      if (taskRequested.completed) {
-        throw new Error(TradeErrorCodes.TaskRequestedIsAlreadyCompleted);
-      }
-
-      if (tradeData.tradeType === 'task' && taskOffered!.completed) {
+      if (taskOffered.completed) {
         throw new Error(TradeErrorCodes.TaskOfferedIsAlreadyCompleted);
       }
 
-      if (taskRequested.idUserAssigned !== idUserReceiver) {
+      if (tradeData.tradeType === 'task' && taskRequested!.completed) {
+        throw new Error(TradeErrorCodes.TaskRequestedIsAlreadyCompleted);
+      }
+
+      if (taskOffered.idUserAssigned !== idUserSender) {
         throw new Error(TradeErrorCodes.TaskRequestedAlreadyBelongsToAnotherUser);
       }
 
-      if (tradeData.tradeType === 'task' && taskOffered!.idUserAssigned !== idUserSender) {
-        throw new Error(TradeErrorCodes.TaskOfferedAlreadyBelongsToAnotherUser);
+      if (tradeData.tradeType === 'task' && taskRequested!.idUserAssigned !== idUserReceiver) {
+        throw new Error(TradeErrorCodes.TaskRequestedAlreadyBelongsToAnotherUser);
       }
 
       const userSender = {
@@ -167,8 +167,8 @@ export class TradeService {
       const tradeRef = this.afs.doc<Trade>(`trades/${id}`).ref;
       batch.set(tradeRef, { ...trade, id });
 
-      const taskRequestedRef = this.afs.doc<Task>(`tasks/${trade.idTaskRequested}`).ref;
-      batch.update(taskRequestedRef, {
+      const taskOfferedRef = this.afs.doc<Task>(`tasks/${trade.taskOffered}`).ref;
+      batch.update(taskOfferedRef, {
         isInvolvedInTrade: true,
         idTrade: id
       });
@@ -189,21 +189,22 @@ export class TradeService {
   async acceptTrade(trade: Trade) {
     try {
       const { idTeam, idTaskList, idTaskRequested, userReceiver, userSender } = trade;
-      const [team, taskRequested] = await Promise.all([
+      const [team, taskOffered] = await Promise.all([
         firstValueFrom(this.teamService.getTeam(idTeam)),
-        firstValueFrom(this.taskService.getTaskObservable(idTaskRequested))
+        firstValueFrom(this.taskService.getTaskObservable(trade.taskOffered))
       ]);
-      let taskOffered: Task | undefined;
+
+      let taskRequested: Task | undefined;
 
       if (trade.tradeType === 'task' && trade.taskOffered) {
-        taskOffered = await firstValueFrom(this.taskService.getTaskObservable(trade.taskOffered));
+        taskRequested = await firstValueFrom(this.taskService.getTaskObservable(idTaskRequested));
       }
 
       if (!team) {
         throw new Error(TeamErrorCodes.TeamNotFound);
       }
 
-      if (!taskRequested || (trade.tradeType === 'task' && !taskOffered)) {
+      if (!taskOffered || (trade.tradeType === 'task' && !taskRequested)) {
         throw new Error(TaskErrorCodes.TaskNotFound);
       }
 
@@ -215,45 +216,51 @@ export class TradeService {
         throw new Error(TeamErrorCodes.UserDoesNotBelongToTeam);
       }
 
-      if (taskRequested.completed) {
+      if (taskOffered.completed) {
         await Promise.all([
           this.afs.doc<Trade>(`trades/${trade.id}`).update({
             status: 'rejected'
           }),
-          this.afs.doc<Task>(`tasks/${trade.idTaskRequested}`).update({
+          this.afs.doc<Task>(`tasks/${trade.taskOffered}`).update({
             isInvolvedInTrade: false,
             idTrade: ''
           })
         ]);
 
-        throw new Error(TradeErrorCodes.TaskRequestedIsAlreadyCompleted);
-      }
-
-      if (trade.tradeType === 'task' && taskOffered!.completed) {
-        await this.afs.doc<Trade>(`trades/${trade.id}`).update({
-          status: 'rejected'
-        });
         throw new Error(TradeErrorCodes.TaskOfferedIsAlreadyCompleted);
       }
 
-      if (taskRequested.idUserAssigned !== userReceiver.id) {
-        await this.afs.doc<Trade>(`trades/${trade.id}`).update({
-          status: 'rejected'
-        });
-        throw new Error(TradeErrorCodes.TaskRequestedAlreadyBelongsToAnotherUser);
+      if (trade.tradeType === 'task' && taskRequested!.completed) {
+        await Promise.all([
+          this.afs.doc<Trade>(`trades/${trade.id}`).update({
+            status: 'rejected'
+          }),
+          this.afs.doc<Task>(`tasks/${trade.taskOffered}`).update({
+            isInvolvedInTrade: false,
+            idTrade: ''
+          })
+        ]);
+        throw new Error(TradeErrorCodes.TaskRequestedIsAlreadyCompleted);
       }
 
-      if (trade.tradeType === 'task' && taskOffered!.idUserAssigned !== userSender.id) {
+      if (taskOffered.idUserAssigned !== userSender.id) {
         await this.afs.doc<Trade>(`trades/${trade.id}`).update({
           status: 'rejected'
         });
         throw new Error(TradeErrorCodes.TaskOfferedAlreadyBelongsToAnotherUser);
       }
 
+      if (trade.tradeType === 'task' && taskRequested!.idUserAssigned !== userReceiver.id) {
+        await this.afs.doc<Trade>(`trades/${trade.id}`).update({
+          status: 'rejected'
+        });
+        throw new Error(TradeErrorCodes.TaskRequestedAlreadyBelongsToAnotherUser);
+      }
+
       const batch = this.afs.firestore.batch();
-      const taskRequestedRef = this.afs.doc<Task>(`tasks/${idTaskRequested}`).ref;
-      batch.update(taskRequestedRef, {
-        idUserAssigned: userSender.id,
+      const taskOfferedRef = this.afs.doc<Task>(`tasks/${taskOffered.id}`).ref;
+      batch.update(taskOfferedRef, {
+        idUserAssigned: userReceiver.id,
         isInvolvedInTrade: false,
         idTrade: ''
       });
@@ -275,16 +282,16 @@ export class TradeService {
         });
 
         batch.update(userSenderRef, {
-          totalTasksAssigned: firebase.firestore.FieldValue.increment(1)
+          totalTasksAssigned: firebase.firestore.FieldValue.increment(-1)
         });
 
         batch.update(userReceiverRef, {
-          totalTasksAssigned: firebase.firestore.FieldValue.increment(-1)
+          totalTasksAssigned: firebase.firestore.FieldValue.increment(1)
         });
       } else {
-        const taskOfferedRef = this.afs.doc<Task>(`tasks/${trade.taskOffered}`).ref;
-        batch.update(taskOfferedRef, {
-          idUserAssigned: userReceiver.id
+        const taskRequestedRef = this.afs.doc<Task>(`tasks/${idTaskRequested}`).ref;
+        batch.update(taskRequestedRef, {
+          idUserAssigned: userSender.id
         });
       }
 
@@ -308,10 +315,10 @@ export class TradeService {
 
   async rejectTrade(trade: Trade) {
     try {
-      const { idTeam, idTaskList, idTaskRequested, userReceiver, userSender } = trade;
-      const [team, taskRequested] = await Promise.all([
+      const { idTeam, idTaskList, userReceiver, userSender } = trade;
+      const [team, taskOffered] = await Promise.all([
         firstValueFrom(this.teamService.getTeam(idTeam)),
-        firstValueFrom(this.taskService.getTaskObservable(idTaskRequested))
+        firstValueFrom(this.taskService.getTaskObservable(trade.taskOffered))
       ]);
 
       if (!team) {
@@ -326,7 +333,7 @@ export class TradeService {
         throw new Error(TeamErrorCodes.UserDoesNotBelongToTeam);
       }
 
-      if (!taskRequested) {
+      if (!taskOffered) {
         throw new Error(TaskErrorCodes.TaskNotFound);
       }
 
@@ -336,8 +343,8 @@ export class TradeService {
         status: 'rejected'
       });
 
-      const taskRequestedRef = this.afs.doc<Task>(`tasks/${idTaskRequested}`).ref;
-      batch.update(taskRequestedRef, {
+      const taskOfferedRef = this.afs.doc<Task>(`tasks/${trade.taskOffered}`).ref;
+      batch.update(taskOfferedRef, {
         isInvolvedInTrade: false,
         idTrade: ''
       });
@@ -356,7 +363,7 @@ export class TradeService {
   }
 
   async deleteTrade(trade: Trade) {
-    const { idTeam, idTaskList, idTaskRequested, userReceiver, userSender } = trade;
+    const { idTeam, idTaskList, userReceiver, userSender } = trade;
     const team = await firstValueFrom(this.teamService.getTeam(idTeam));
 
     if (!team) {
@@ -376,13 +383,13 @@ export class TradeService {
     batch.delete(tradeRef);
 
     if (trade.status === 'pending') {
-      const taskRequested = await firstValueFrom(
-        this.taskService.getTaskObservable(idTaskRequested)
+      const taskOffered = await firstValueFrom(
+        this.taskService.getTaskObservable(trade.taskOffered)
       );
 
-      if (taskRequested) {
-        const taskRequestedRef = this.afs.doc<Task>(`tasks/${idTaskRequested}`).ref;
-        batch.update(taskRequestedRef, {
+      if (taskOffered) {
+        const taskOfferedRef = this.afs.doc<Task>(`tasks/${trade.taskOffered}`).ref;
+        batch.update(taskOfferedRef, {
           isInvolvedInTrade: false,
           idTrade: ''
         });

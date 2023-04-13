@@ -6,7 +6,6 @@ import { TaskService } from '../../services/task.service';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { presentConfirmationModal } from '../../helpers/common-functions';
-import { TradeFormComponent } from '../trade-form/trade-form.component';
 
 @Component({
   selector: 'app-task',
@@ -189,25 +188,6 @@ export class TaskComponent implements OnInit {
       }
     };
 
-    const tradeTaskButton = {
-      text: 'Ofrecer intercambio de tarea',
-      icon: 'swap-horizontal-outline',
-      cssClass: 'action-sheet-custom-icon',
-      handler: async () => {
-        const modal = await this.modalController.create({
-          component: TradeFormComponent,
-          componentProps: {
-            taskRequested: this.task
-          },
-          initialBreakpoint: 1,
-          breakpoints: [0, 1],
-          cssClass: 'auto-sheet-modal'
-        });
-
-        modal.present();
-      }
-    };
-
     const userRole = this.teamMembers[this.currentUserId]?.role;
     let buttons = [
       editTaskButton,
@@ -219,10 +199,6 @@ export class TaskComponent implements OnInit {
     if (!this.showDistributionMode && userRole === 'member') {
       buttons = [];
 
-      if (this.task.idUserAssigned !== this.currentUserId && !this.task.completed) {
-        buttons.push(tradeTaskButton);
-      }
-
       if (this.task.completed) {
         buttons.push(toggleTaskAvailabilityButton);
       }
@@ -230,10 +206,6 @@ export class TaskComponent implements OnInit {
 
     if (!this.showDistributionMode && userRole === 'admin') {
       buttons = [editTaskButton, toggleTaskAvailabilityButton, deleteTaskButton];
-
-      if (this.task.idUserAssigned !== this.currentUserId && !this.task.completed) {
-        buttons.splice(1, 0, tradeTaskButton);
-      }
     }
 
     if (buttons.length > 0) {

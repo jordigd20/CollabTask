@@ -23,7 +23,7 @@ exports.sendTradeCreatedNotification = functions.firestore
           const payload = {
             token: token,
             notification: {
-              title: "¡Has recibido un nuevo intercambio!",
+              title: "¡Has recibido un nuevo intercambio! 🔄",
               body: `${trade.userSender.name} quiere intercambiar contigo
                       una de tus tareas`,
             },
@@ -32,6 +32,9 @@ exports.sendTradeCreatedNotification = functions.firestore
             },
             android: {
               priority: "high",
+              notification: {
+                tag: "trade",
+              },
             },
           };
 
@@ -65,7 +68,7 @@ exports.sendTradeAcceptedNotification = functions.firestore
               "Tu intercambio ha sido rechazado";
 
             const body = trade.status === "accepted" ?
-              `${trade.userReceiver.name} ha aceptado tu intercambio 🤝🏼` :
+              `${trade.userReceiver.name} ha aceptado tu intercambio ✅` :
               `${trade.userReceiver.name} ha rechazado tu intercambio ❌`;
 
             const payload = {
@@ -80,6 +83,9 @@ exports.sendTradeAcceptedNotification = functions.firestore
               },
               android: {
                 priority: "high",
+                notification: {
+                  tag: "trade",
+                },
               },
             };
 

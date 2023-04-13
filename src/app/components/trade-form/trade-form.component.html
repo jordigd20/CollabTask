@@ -4,85 +4,16 @@
     <h3 class="fw-bold" style="margin: 0">Intercambiar tarea</h3>
   </div>
 
-  <p class="fw-bold ion-no-margin ion-padding-horizontal">Tarea a intercambiar</p>
+  <ng-container *ngIf="tradeType">
+    <p class="fw-bold ion-no-margin ion-padding-horizontal">Tu tarea a ofrecer</p>
 
-  <div class="slide-flex-container" style="padding-top: 5px; padding-bottom: 10px">
-    <ng-container *ngIf="taskRequested && idCurrentUser; else loadingTeam">
-      <ion-list class="task-list-container" lines="none" mode="md">
-        <app-task
-          [task]="taskRequested"
-          [idUser]="taskRequested.idUserAssigned"
-          [showCompleteButton]="false"
-          [showDistributionMode]="false"
-          [showMoreOptions]="false"
-          [distributionMode]="'none'"
-          [withoutUserAssigned]="false"
-          [isTaskRequested]="true"
-        ></app-task>
-      </ion-list>
-    </ng-container>
-
-    <ng-template #loadingTeam>
-      <ion-spinner class="spinner" name="circles" color="primary"></ion-spinner>
-    </ng-template>
-  </div>
-
-  <div class="main-container ion-padding-horizontal">
-    <p class="fw-bold ion-no-margin">Tipo de intercambio</p>
-
-    <ion-list class="list-radio">
-      <ion-radio-group formControlName="tradeType" value="score">
-        <ion-item mode="md" class="item-radio">
-          <ion-label>Por puntos</ion-label>
-          <ion-radio value="score"></ion-radio>
-        </ion-item>
-
-        <ion-item mode="md" class="item-radio">
-          <ion-label>Por otra tarea</ion-label>
-          <ion-radio value="task"></ion-radio>
-        </ion-item>
-      </ion-radio-group>
-    </ion-list>
-
-    <ng-container *ngIf="tradeType && tradeType.value === 'score' && score">
-      <p class="fw-bold ion-no-margin ion-margin-top">Puntos a ofrecer</p>
-
-      <div class="d-flex align-items-center ion-margin-bottom" style="gap: 5px">
-        <ion-button
-          (click)="displayScoreModal()"
-          class="secondary-button fw-regular"
-          color="light"
-          shape="round"
-        >
-          <ion-icon slot="start" src="../../../../assets/icons/score.svg"></ion-icon>
-          Puntos
-        </ion-button>
-        <ion-chip class="info-chip chip-active score-chip" [disabled]="true">
-          <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 6px"></ion-icon>
-          <span>{{ score.value }} Puntos</span>
-        </ion-chip>
-      </div>
-    </ng-container>
-  </div>
-
-  <ng-container *ngIf="tradeType && tradeType.value === 'task'">
-    <p class="fw-bold ion-no-margin ion-margin-top ion-padding-horizontal">
-      Selecciona una tarea a cambio
-    </p>
-
-    <ion-text *ngIf="showTaskError" color="danger">
+    <ion-text *ngIf="errors.taskOffered.show" color="danger">
       <span class="error-message regular-text ion-padding-horizontal">
-        Debes seleccionar una tarea
+        {{ errors.taskOffered.message }}
       </span>
     </ion-text>
 
-    <ion-list
-      *ngIf="team && tasks && idCurrentUser; else loadingTasks"
-      lines="none"
-      mode="md"
-      class="ion-margin-bottom"
-      style="margin-top: 5px"
-    >
+    <ion-list *ngIf="team && tasks && idCurrentUser; else loadingTasks" lines="none" mode="md">
       <app-task-slide
         [tasks]="tasks"
         [idUser]="idCurrentUser"
@@ -90,14 +21,135 @@
         [showMoreOptions]="false"
         noTasksMessage="No tienes tareas para intercambiar"
         [tradeMode]="true"
-        (idSelectedTaskToTrade)="onIdTaskSelected($event)"
+        (idSelectedTaskToTrade)="onIdTaskOfferedSelected($event)"
       ></app-task-slide>
     </ion-list>
 
     <ng-template #loadingTasks>
-      <ion-spinner class="spinner" name="circles" color="primary"></ion-spinner>
+      <div class="loading-tasks">
+        <ion-spinner class="spinner ion-margin-start" name="circles" color="primary"></ion-spinner>
+      </div>
     </ng-template>
   </ng-container>
+
+  <div class="trade-type ion-padding-horizontal">
+    <p class="fw-bold ion-no-margin">Tipo de intercambio</p>
+
+    <ion-list class="list-radio">
+      <ion-radio-group formControlName="tradeType" value="task">
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Por otra tarea</ion-label>
+          <ion-radio value="task"></ion-radio>
+        </ion-item>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Por puntos</ion-label>
+          <ion-radio value="score"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-list>
+  </div>
+
+  <div class="user-container">
+    <p class="fw-bold ion-no-margin ion-padding-horizontal">Miembro del equipo</p>
+
+    <ion-text *ngIf="errors.user.show" color="danger">
+      <span class="error-message regular-text ion-padding-horizontal">
+        {{ errors.user.message }}
+      </span>
+    </ion-text>
+
+    <div *ngIf="team; else loadingUsers" class="slide-flex-container ion-padding-start">
+      <ng-container *ngFor="let user of team.userMembers | objSortedValues">
+        <ion-chip
+          *ngIf="user.id !== idCurrentUser"
+          (click)="selectUserToTrade(user.id)"
+          class="info-chip"
+          [ngClass]="{ 'chip-primary': user.id === idUserReceiver }"
+        >
+          <ion-avatar>
+            <img
+              [src]="user.photoURL || '../../../assets/no-photo.jpg'"
+              referrerpolicy="no-referrer"
+            />
+          </ion-avatar>
+          <span>{{ user.name }}</span>
+        </ion-chip>
+      </ng-container>
+    </div>
+
+    <ng-template #loadingUsers>
+      <div class="slide-flex-container ion-padding-start">
+        <ion-chip class="info-chip">
+          <ion-avatar>
+            <img [src]="'../../../assets/no-photo.jpg'" />
+          </ion-avatar>
+          <ion-skeleton-text animated style="width: 115px"></ion-skeleton-text>
+        </ion-chip>
+        <ion-chip class="info-chip">
+          <ion-avatar>
+            <img [src]="'../../../assets/no-photo.jpg'" />
+          </ion-avatar>
+          <ion-skeleton-text animated style="width: 115px"></ion-skeleton-text>
+        </ion-chip>
+      </div>
+    </ng-template>
+  </div>
+
+  <ng-container *ngIf="tradeType && tradeType.value === 'score' && score">
+    <p class="fw-bold ion-no-margin ion-padding-horizontal">Puntos a ofrecer</p>
+
+    <div
+      class="d-flex align-items-center ion-margin-bottom ion-padding-horizontal"
+      style="gap: 5px"
+    >
+      <ion-button
+        (click)="displayScoreModal()"
+        class="secondary-button fw-regular"
+        color="light"
+        shape="round"
+      >
+        <ion-icon slot="start" src="../../../../assets/icons/score.svg"></ion-icon>
+        Puntos
+      </ion-button>
+      <ion-chip class="info-chip chip-active score-chip" [disabled]="true">
+        <ion-icon src="../../../assets/icons/score.svg" style="margin-inline: 0px 6px"></ion-icon>
+        <span>{{ score.value }} Puntos</span>
+      </ion-chip>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="tradeType && tradeType.value === 'task'">
+    <p class="fw-bold ion-no-margin ion-padding-horizontal">Tu tarea a recibir</p>
+
+    <ion-text *ngIf="errors.taskRequested.show" color="danger">
+      <span class="error-message regular-text ion-padding-horizontal">
+        {{ errors.taskRequested.message }}
+      </span>
+    </ion-text>
+
+    <ion-list lines="none" mode="md">
+      <app-task-slide
+        [tasks]="tasksByUser.get(idUserReceiver!) ?? []"
+        [idUser]="idUserReceiver || idCurrentUser!"
+        [withoutUsers]="false"
+        [showMoreOptions]="false"
+        [noTasksMessage]="
+          tasksByUser.get(idUserReceiver!) == null
+            ? 'No hay ningún usuario seleccionado'
+            : 'Este usuario no tiene tareas para intercambiar'
+        "
+        [tradeMode]="true"
+        (idSelectedTaskToTrade)="onIdTaskRequestedSelected($event)"
+      ></app-task-slide>
+    </ion-list>
+  </ng-container>
+
+  <ion-text *ngIf="errors.wrongUserSelected.show" color="danger">
+    <span class="error-message regular-text ion-padding-horizontal" style="margin-bottom: 10px">
+      {{ errors.wrongUserSelected.message }}
+    </span>
+  </ion-text>
 
   <ion-button
     [disabled]="isLoading"

@@ -90,5 +90,5 @@ export const collabTaskErrors: { [key: string]: string } = {
   [TradeErrorCodes.TaskRequestedAlreadyBelongsToAnotherUser]: 'La tarea solicitada ya pertenece a otro usuario',
   [TradeErrorCodes.TaskOfferedAlreadyBelongsToAnotherUser]: 'La tarea ofrecida ya pertenece a otro usuario',
   [TradeErrorCodes.UserDoesNotHaveEnoughScore]: 'No tienes suficientes puntos para realizar el intercambio',
-  [TradeErrorCodes.TaskRequestedIsAlreadyInvolvedInTrade]: 'La tarea solicitada ya está involucrada en otro intercambio',
+  [TradeErrorCodes.TaskOfferedIsAlreadyInvolvedInTrade]: 'La tarea ofrecida ya está involucrada en otro intercambio',
 };

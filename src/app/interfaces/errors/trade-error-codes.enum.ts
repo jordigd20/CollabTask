@@ -7,4 +7,5 @@ export enum TradeErrorCodes {
   TaskRequestedAlreadyBelongsToAnotherUser = 'trade/task-requested-already-belongs-to-another-user',
   TaskOfferedAlreadyBelongsToAnotherUser = 'trade/task-offered-already-belongs-to-another-user',
   TaskRequestedIsAlreadyInvolvedInTrade = 'trade/task-requested-is-already-involved-in-trade',
+  TaskOfferedIsAlreadyInvolvedInTrade = 'trade/task-offered-is-already-involved-in-trade',
 }
