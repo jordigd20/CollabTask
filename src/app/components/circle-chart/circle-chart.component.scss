@@ -8,3 +8,10 @@ svg {
   top: 4px;
   right: 4px;
 }
+
+.relative-logo {
+  font-size: 60px;
+  top: 50%;
+  left: calc(50% + 2px);
+  transform: translate(-50%, -50%);
+}

@@ -46,7 +46,7 @@ export class AuthService {
           // It's possible that the user is still not created in the database
           // so it retries 2 more times to try to get the user
           if (user == null) {
-            return throwError(() => new Error("User not found"));
+            return throwError(() => new Error('User not found'));
           }
 
           return of(user);
@@ -92,15 +92,28 @@ export class AuthService {
         photoURL: result.user?.photoURL || '',
         username: restData.username.trim(),
         rating: {
-          workRate: 0,
-          communicationRate: 0,
-          attitudeRate: 0,
-          overallRate: 0
+          work: {
+            rate: 0,
+            totalStars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          },
+          communication: {
+            rate: 0,
+            totalStars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          },
+          attitude: {
+            rate: 0,
+            totalStars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          },
+          overall: {
+            rate: 0,
+            totalStars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          }
         },
         efficiency: 0,
         qualityMark: 0,
         totalTasksAssigned: 0,
         totalTasksCompleted: 0,
+        totalRatings: 0,
         idTeams: []
       };
 
@@ -144,14 +157,27 @@ export class AuthService {
           username: result.user?.displayName || '',
           efficiency: 0,
           rating: {
-            workRate: 0,
-            communicationRate: 0,
-            attitudeRate: 0,
-            overallRate: 0
+            work: {
+              rate: 0,
+              totalStars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            },
+            communication: {
+              rate: 0,
+              totalStars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            },
+            attitude: {
+              rate: 0,
+              totalStars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            },
+            overall: {
+              rate: 0,
+              totalStars: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            }
           },
           qualityMark: 0,
           totalTasksAssigned: 0,
           totalTasksCompleted: 0,
+          totalRatings: 0,
           idTeams: []
         };
 

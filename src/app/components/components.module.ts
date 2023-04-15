@@ -19,6 +19,8 @@ import { PipesModule } from '../pipes/pipes.module';
 import { InfoPreferencesDistributionComponent } from './info-preferences-distribution/info-preferences-distribution.component';
 import { CircleChartComponent } from './circle-chart/circle-chart.component';
 import { TradeFormComponent } from './trade-form/trade-form.component';
+import { EfficiencyCardComponent } from './efficiency-card/efficiency-card.component';
+import { RatingCardComponent } from './rating-card/rating-card.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +38,9 @@ import { TradeFormComponent } from './trade-form/trade-form.component';
     InfoManualDistributionComponent,
     InfoPreferencesDistributionComponent,
     CircleChartComponent,
-    TradeFormComponent
+    TradeFormComponent,
+    EfficiencyCardComponent,
+    RatingCardComponent
   ],
   imports: [
     CommonModule,
@@ -60,7 +64,9 @@ import { TradeFormComponent } from './trade-form/trade-form.component';
     InfoManualDistributionComponent,
     InfoPreferencesDistributionComponent,
     CircleChartComponent,
-    TradeFormComponent
+    TradeFormComponent,
+    EfficiencyCardComponent,
+    RatingCardComponent
   ]
 })
 export class ComponentsModule { }

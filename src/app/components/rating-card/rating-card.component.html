@@ -1,0 +1,52 @@
+<div class="profile-card-container" [ngStyle]="{ 'margin-bottom': last ? '0px' : '15px' }">
+  <span class="fw-bold">{{ title }}</span>
+  <p class="ion-no-margin">{{ description }}</p>
+
+  <div [ngClass]="reverse ? 'rating-data-reversed' : 'rating-data'">
+    <div class="avg-container">
+      <span class="avg-number">4,7</span>
+      <div class="stars">
+        <ion-icon
+          *ngFor="let number of [1, 2, 3, 4, 5]"
+          [name]="rate >= number ? 'star' : rate >= number - 0.5 ? 'star-half' : 'star-outline'"
+          class="star-icon"
+          slot="start"
+        ></ion-icon>
+      </div>
+      <span>de 12</span>
+    </div>
+
+    <div class="star-count-container">
+      <div class="progress-container">
+        <span class="star-number">5</span>
+        <div class="progress-bar">
+          <div class="progress" style="width: 50%"></div>
+        </div>
+      </div>
+      <div class="progress-container">
+        <span class="star-number">4</span>
+        <div class="progress-bar">
+          <div class="progress" style="width: 75%"></div>
+        </div>
+      </div>
+      <div class="progress-container">
+        <span class="star-number">3</span>
+        <div class="progress-bar">
+          <div class="progress" style="width: 25%"></div>
+        </div>
+      </div>
+      <div class="progress-container">
+        <span class="star-number">2</span>
+        <div class="progress-bar">
+          <div class="progress" style="width: 10%"></div>
+        </div>
+      </div>
+      <div class="progress-container">
+        <span class="star-number" style="padding-right: 3px">1</span>
+        <div class="progress-bar">
+          <div class="progress" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

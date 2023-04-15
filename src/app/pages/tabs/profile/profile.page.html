@@ -1,9 +1,70 @@
-<ion-header mode="md">
+<ion-header mode="md" class="header-transparent">
   <ion-toolbar>
-    <ion-title>profile</ion-title>
+    <ion-buttons slot="secondary">
+      <ion-button>
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="profile-content" [fullscreen]="true">
+  <div class="gradient-background"></div>
+  <div class="profile-main-content">
+    <ion-avatar class="user">
+      <img [src]="'../../../../assets/no-photo.jpg'" />
+    </ion-avatar>
+    <h2 class="username">Jordi Gómez</h2>
 
+    <div class="user-row-data">
+      <div class="user-col-data">
+        <span class="data">241</span>
+        <span class="label">Tareas</span>
+      </div>
+      <div class="vertical-line"></div>
+      <div class="user-col-data">
+        <span class="data">3</span>
+        <span class="label">Equipos</span>
+      </div>
+      <div class="vertical-line"></div>
+      <div class="user-col-data">
+        <span class="data">12</span>
+        <span class="label">Valoraciones</span>
+      </div>
+    </div>
+
+    <div class="quality-mark-container ion-margin-horizontal">
+      <div class="quality-info">
+        <span class="quality-title fw-bold">Sello de calidad</span>
+        <p>Obtén buenas valoraciones y completa tus tareas para mejorar tu sello de calidad</p>
+      </div>
+      <div class="chart-container">
+        <app-circle-chart [pieData]="0.5 * 100" position="relative"></app-circle-chart>
+      </div>
+    </div>
+
+    <h3 class="ion-text-center">Puntuaciones</h3>
+    <div class="ratings-container ion-padding">
+      <app-efficiency-card [efficiency]="90"></app-efficiency-card>
+      <app-rating-card
+        title="Trabajo"
+        description="Valoración de tus compañeros acerca de cómo de bien haces tu trabajo"
+      ></app-rating-card>
+      <app-rating-card
+        title="Comunicación"
+        description="Valoración de tus compañeros acerca de tu comunicación con el equipo"
+        [reverse]="true"
+      ></app-rating-card>
+      <app-rating-card
+        title="Actitud"
+        description="Valoración de tus compañeros acerca de tu actitud respecto al equipo"
+      ></app-rating-card>
+      <app-rating-card
+        title="Valoración general"
+        description="Valoración de tus compañeros acerca de tu rendimiento general en el equipo"
+        [reverse]="true"
+        [last]="true"
+      ></app-rating-card>
+    </div>
+  </div>
 </ion-content>

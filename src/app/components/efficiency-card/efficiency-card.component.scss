@@ -1,0 +1,47 @@
+svg {
+  transform: rotate(-90deg);
+
+  circle {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
+    stroke: var(--ion-color-border);
+    stroke-width: 1.4em;
+  }
+
+  .bar {
+    stroke: var(--ion-color-primary);
+  }
+}
+
+.efficiency-container {
+  background-color: var(--ion-color-white);
+  padding: 10px;
+  border-radius: 6px;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+.efficiency-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding-top: 10px;
+}
+
+.progress-bar {
+  position: relative;
+
+  .progress-number {
+    position: absolute;
+    font-weight: bold;
+    font-size: 30px;
+    top: calc(50% - 2px);
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    .percentage {
+      font-size: 20px;
+    }
+  }
+}

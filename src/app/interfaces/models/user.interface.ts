@@ -5,13 +5,50 @@ export interface User {
   username: string;
   efficiency: number;
   rating: {
-    workRate: number;
-    communicationRate: number;
-    attitudeRate: number;
-    overallRate: number;
+    work: {
+      rate: number;
+      totalStars: {
+        1: number;
+        2: number;
+        3: number;
+        4: number;
+        5: number;
+      };
+    };
+    communication: {
+      rate: number;
+      totalStars: {
+        1: number;
+        2: number;
+        3: number;
+        4: number;
+        5: number;
+      };
+    };
+    attitude: {
+      rate: number;
+      totalStars: {
+        1: number;
+        2: number;
+        3: number;
+        4: number;
+        5: number;
+      };
+    };
+    overall: {
+      rate: number;
+      totalStars: {
+        1: number;
+        2: number;
+        3: number;
+        4: number;
+        5: number;
+      };
+    };
   };
   qualityMark: number;
   totalTasksAssigned: number;
   totalTasksCompleted: number;
+  totalRatings: number;
   idTeams: string[];
 }

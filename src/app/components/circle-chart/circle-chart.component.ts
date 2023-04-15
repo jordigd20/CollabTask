@@ -10,6 +10,7 @@ export class CircleChartComponent implements OnInit {
     {} as ElementRef<SVGPathElement>;
 
   @Input() pieData: number = 0;
+  @Input() position: 'absolute' | 'relative' = 'absolute';
 
   sectorAngle: number = 0;
   startAngle: number = 0;

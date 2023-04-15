@@ -1,0 +1,58 @@
+.rating-data {
+  display: flex;
+  gap: 10px;
+}
+
+.rating-data-reversed {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 10px;
+}
+
+.avg-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 1.5 auto;
+  width: 100%;
+
+  .star-icon {
+    color: var(--ion-color-primary);
+    font-size: 20px;
+    margin-inline: 0 3px !important;
+  }
+
+  .avg-number {
+    font-size: 30px;
+    font-weight: bold;
+  }
+}
+
+.star-count-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 1 auto;
+  width: 100%;
+
+  .progress-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .progress-bar {
+    height: 12px;
+    width: 100%;
+    border-radius: 10px;
+    background-color: var(--ion-color-border);
+  }
+
+  .progress {
+    height: 100%;
+    border-radius: 10px;
+    background-color: var(--ion-color-primary);
+  }
+}

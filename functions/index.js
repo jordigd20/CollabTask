@@ -114,22 +114,79 @@ exports.updateUserRating = functions.firestore
             .where("idUserReceiver", "==", rating.idUserReceiver)
             .get();
         const rateMap = new Map([
-          ["work", 0],
-          ["communication", 0],
-          ["attitude", 0],
-          ["overall", 0],
+          ["work", {
+            totalAmount: 0,
+            starsCount: {
+              1: 0,
+              2: 0,
+              3: 0,
+              4: 0,
+              5: 0,
+            },
+          }],
+          ["communication", {
+            totalAmount: 0,
+            starsCount: {
+              1: 0,
+              2: 0,
+              3: 0,
+              4: 0,
+              5: 0,
+            },
+          }],
+          ["attitude", {
+            totalAmount: 0,
+            starsCount: {
+              1: 0,
+              2: 0,
+              3: 0,
+              4: 0,
+              5: 0,
+            },
+          }],
+          ["overall", {
+            totalAmount: 0,
+            starsCount: {
+              1: 0,
+              2: 0,
+              3: 0,
+              4: 0,
+              5: 0,
+            },
+          }],
         ]);
-        const total = userRatings.size * 5;
+        const maxStars = userRatings.size * 5;
 
         for (const ratingDoc of userRatings.docs) {
           const rating = ratingDoc.data();
           console.log(rating);
-          rateMap.set("work", rateMap.get("work") + rating.work);
-          rateMap.set("communication", rateMap.get("communication") +
-            rating.communication);
-          rateMap.set("attitude", rateMap.get("attitude") + rating.attitude);
-          rateMap.set("overall", rateMap.get("overall") + rating.overall);
+
+          const work = rateMap.get("work");
+          work.totalAmount += rating.work;
+          work.starsCount[rating.work] += 1;
+          rateMap.set("work", work);
+
+          const communication = rateMap.get("communication");
+          communication.totalAmount += rating.communication;
+          communication.starsCount[rating.communication] += 1;
+          rateMap.set("communication", communication);
+
+          const attitude = rateMap.get("attitude");
+          attitude.totalAmount += rating.attitude;
+          attitude.starsCount[rating.attitude] += 1;
+          rateMap.set("attitude", attitude);
+
+          const overall = rateMap.get("overall");
+          overall.totalAmount += rating.overall;
+          overall.starsCount[rating.overall] += 1;
+          rateMap.set("overall", overall);
         }
+
+        console.log(rateMap.entries());
+        const work = rateMap.get("work");
+        const communication = rateMap.get("communication");
+        const attitude = rateMap.get("attitude");
+        const overall = rateMap.get("overall");
 
         await admin
             .firestore()
@@ -137,12 +194,48 @@ exports.updateUserRating = functions.firestore
             .doc(rating.idUserReceiver)
             .update({
               rating: {
-                workRate: (rateMap.get("work") / total) * 0.08,
-                communicationRate:
-                  (rateMap.get("communication") / total) * 0.08,
-                attitudeRate: (rateMap.get("attitude") / total) * 0.08,
-                overallRate: (rateMap.get("overall") / total) * 0.16,
+                work: {
+                  rate: (work.totalAmount / maxStars) * 0.08,
+                  totalStars: {
+                    1: work.starsCount[1],
+                    2: work.starsCount[2],
+                    3: work.starsCount[3],
+                    4: work.starsCount[4],
+                    5: work.starsCount[5],
+                  },
+                },
+                communication: {
+                  rate: (communication.totalAmount / maxStars) * 0.08,
+                  totalStars: {
+                    1: communication.starsCount[1],
+                    2: communication.starsCount[2],
+                    3: communication.starsCount[3],
+                    4: communication.starsCount[4],
+                    5: communication.starsCount[5],
+                  },
+                },
+                attitude: {
+                  rate: (attitude.totalAmount / maxStars) * 0.08,
+                  totalStars: {
+                    1: attitude.starsCount[1],
+                    2: attitude.starsCount[2],
+                    3: attitude.starsCount[3],
+                    4: attitude.starsCount[4],
+                    5: attitude.starsCount[5],
+                  },
+                },
+                overall: {
+                  rate: (overall.totalAmount / maxStars) * 0.16,
+                  totalStars: {
+                    1: overall.starsCount[1],
+                    2: overall.starsCount[2],
+                    3: overall.starsCount[3],
+                    4: overall.starsCount[4],
+                    5: overall.starsCount[5],
+                  },
+                },
               },
+              totalRatings: userRatings.size,
             });
       } catch (error) {
         console.error(error);
@@ -161,10 +254,11 @@ exports.updateUserQualityMark = functions.firestore
         }
 
         const isRatingUpdated =
-        user.rating.workRate !== userBefore.rating.workRate ||
-        user.rating.communicationRate !== userBefore.rating.communicationRate ||
-        user.rating.attitudeRate !== userBefore.rating.attitudeRate ||
-        user.rating.overallRate !== userBefore.rating.overallRate;
+          user.rating.work.rate !== userBefore.rating.work.rate ||
+          user.rating.communication.rate !==
+            userBefore.rating.communication.rate ||
+          user.rating.attitude.rate !== userBefore.rating.attitude.rate ||
+          user.rating.overall.rate !== userBefore.rating.overall.rate;
 
         if (
           user.totalTasksAssigned !== userBefore.totalTasksAssigned ||
@@ -176,10 +270,10 @@ exports.updateUserQualityMark = functions.firestore
           console.log("Efficiency (after): ", efficiency);
 
           const qualityMark =
-            user.rating.workRate +
-            user.rating.communicationRate +
-            user.rating.attitudeRate +
-            user.rating.overallRate +
+            user.rating.work.rate +
+            user.rating.communication.rate +
+            user.rating.attitude.rate +
+            user.rating.overall.rate +
             efficiency * 0.6;
 
           await admin
@@ -200,7 +294,7 @@ const oneSecond = () => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
-    }, 1010);
+    }, 1000);
   });
 };
 
@@ -210,7 +304,7 @@ exports.updatePeriodicTasks = functions
     .timeZone("Europe/Madrid")
     .onRun(async (context) => {
       try {
-        const dayOfTheWeek = new Date("2023-04-10").getDay();
+        const dayOfTheWeek = new Date().getDay();
         const weekDays = {
           0: "domingo",
           1: "lunes",

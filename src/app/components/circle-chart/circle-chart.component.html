@@ -1,5 +1,9 @@
 <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="200" cy="200" r="175" fill="var(--ion-color-secondary)"></circle>
+  <circle cx="200" cy="200" r="179" fill="var(--ion-color-secondary)"></circle>
   <path #path d="" fill="var(--ion-color-primary)"></path>
 </svg>
-<ion-icon class="logo" src="../../../assets/white-logo.svg"></ion-icon>
+<ion-icon
+  class="logo"
+  [ngClass]="{ 'relative-logo': position === 'relative' }"
+  src="../../../assets/white-logo.svg"
+></ion-icon>

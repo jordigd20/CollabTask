@@ -27,8 +27,8 @@
       <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
     </ion-button>
   </div>
-  <ng-container *ngIf="task && team; else loading">
-    <main class="ion-padding">
+  <div class="main-container ion-padding">
+    <ng-container *ngIf="task && team; else loading">
       <div class="d-flex justify-center align-items-center">
         <ion-button
           *ngIf="!task.completed && task.idUserAssigned === idUser"
@@ -107,8 +107,8 @@
           {{ task.description || 'Esta tarea no tiene descripción'}}
         </p>
       </ion-text>
-    </main>
-  </ng-container>
+    </ng-container>
+  </div>
 
   <ng-template #loading>
     <ion-spinner
