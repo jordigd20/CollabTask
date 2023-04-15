@@ -11,6 +11,7 @@
 
       <ion-item
         *ngFor="let user of users; trackBy: identify"
+        (click)="navigateToUserProfile(user.id!)"
         class="sub-item"
         style="--padding-start: 10px"
       >
@@ -59,7 +60,7 @@
 
           <ion-button
             *ngIf="team.userMembers[idUser].role === 'admin' && user.id! !== idUser"
-            (click)="moreOptions(user.id!)"
+            (click)="moreOptions(user.id!);$event.stopPropagation();"
             class="more-opts-btn"
             fill="clear"
             color="secondary"

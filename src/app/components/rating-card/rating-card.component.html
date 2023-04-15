@@ -4,7 +4,7 @@
 
   <div [ngClass]="reverse ? 'rating-data-reversed' : 'rating-data'">
     <div class="avg-container">
-      <span class="avg-number">4,7</span>
+      <span class="avg-number">{{ rate | number : '1.1-1' : 'es-ES' }}</span>
       <div class="stars">
         <ion-icon
           *ngFor="let number of [1, 2, 3, 4, 5]"
@@ -13,38 +13,53 @@
           slot="start"
         ></ion-icon>
       </div>
-      <span>de 12</span>
+      <span>de {{ totalRatings }}</span>
     </div>
 
     <div class="star-count-container">
       <div class="progress-container">
         <span class="star-number">5</span>
         <div class="progress-bar">
-          <div class="progress" style="width: 50%"></div>
+          <div
+            class="progress"
+            [ngStyle]="{ width: (totalStars[5] / totalRatings) * 100 + '%' }"
+          ></div>
         </div>
       </div>
       <div class="progress-container">
         <span class="star-number">4</span>
         <div class="progress-bar">
-          <div class="progress" style="width: 75%"></div>
+          <div
+            class="progress"
+            [ngStyle]="{ width: (totalStars[4] / totalRatings) * 100 + '%' }"
+          ></div>
         </div>
       </div>
       <div class="progress-container">
         <span class="star-number">3</span>
         <div class="progress-bar">
-          <div class="progress" style="width: 25%"></div>
+          <div
+            class="progress"
+            [ngStyle]="{ width: (totalStars[3] / totalRatings) * 100 + '%' }"
+          ></div>
         </div>
       </div>
       <div class="progress-container">
         <span class="star-number">2</span>
         <div class="progress-bar">
-          <div class="progress" style="width: 10%"></div>
+          <div
+            class="progress"
+            [ngStyle]="{ width: (totalStars[2] / totalRatings) * 100 + '%' }"
+          ></div>
         </div>
       </div>
       <div class="progress-container">
         <span class="star-number" style="padding-right: 3px">1</span>
         <div class="progress-bar">
-          <div class="progress" style="width: 0%"></div>
+          <div
+            class="progress"
+            [ngStyle]="{ width: (totalStars[1] / totalRatings) * 100 + '%' }"
+          ></div>
         </div>
       </div>
     </div>

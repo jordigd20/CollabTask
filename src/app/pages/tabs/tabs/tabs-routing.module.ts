@@ -106,6 +106,10 @@ const routes: Routes = [
             path: 'edit-rating/:idTeam/:idTaskList/:idRating',
             loadChildren: () =>
               import('../lists/rating-form/rating-form.module').then((m) => m.RatingFormPageModule)
+          },
+          {
+            path: 'profile/:idTeam/:idUser',
+            loadChildren: () => import('../profile/profile.module').then( m => m.ProfilePageModule)
           }
         ]
       },

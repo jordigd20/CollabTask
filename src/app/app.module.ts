@@ -1,13 +1,11 @@
-import { NgModule } from '@angular/core';
+import { LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { environment } from '../environments/environment';
-
 import {
   AngularFirestoreModule,
   USE_EMULATOR as USE_FIRESTORE_EMULATOR
@@ -28,6 +26,9 @@ import { AngularFireAuthGuardModule } from '@angular/fire/compat/auth-guard';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
 import { IonicStorageModule } from '@ionic/storage-angular';
+import localeEs from '@angular/common/locales/es';
+import { registerLocaleData } from '@angular/common';
+registerLocaleData(localeEs, 'es');
 
 @NgModule({
   declarations: [AppComponent],
@@ -43,7 +44,7 @@ import { IonicStorageModule } from '@ionic/storage-angular';
     AngularFireFunctionsModule,
     AngularFireStorageModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    IonicStorageModule.forRoot(),
+    IonicStorageModule.forRoot()
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -62,7 +63,8 @@ import { IonicStorageModule } from '@ionic/storage-angular';
     {
       provide: USE_STORAGE_EMULATOR,
       useValue: environment.useEmulators ? ['localhost', 9199] : undefined
-    }
+    },
+    { provide: LOCALE_ID, useValue: 'es' }
   ],
   bootstrap: [AppComponent]
 })

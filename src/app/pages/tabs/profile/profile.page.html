@@ -1,70 +1,93 @@
-<ion-header mode="md" class="header-transparent">
-  <ion-toolbar>
-    <ion-buttons slot="secondary">
-      <ion-button>
-        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-back-header
+  title=""
+  cssClass="header-transparent"
+  [showBackButton]="showBackButton"
+  [showSettings]="showSettings"
+></app-back-header>
 
 <ion-content class="profile-content" [fullscreen]="true">
   <div class="gradient-background"></div>
   <div class="profile-main-content">
-    <ion-avatar class="user">
-      <img [src]="'../../../../assets/no-photo.jpg'" />
-    </ion-avatar>
-    <h2 class="username">Jordi Gómez</h2>
+    <ng-container *ngIf="user; else loading">
+      <ion-avatar class="user">
+        <img [src]="user.photoURL || '../../../../assets/no-photo.jpg'" />
+      </ion-avatar>
+      <h2 class="username">{{ user.username }}</h2>
 
-    <div class="user-row-data">
-      <div class="user-col-data">
-        <span class="data">241</span>
-        <span class="label">Tareas</span>
+      <div class="user-row-data">
+        <div class="user-col-data">
+          <span class="data">{{ user.totalTasksAssigned }}</span>
+          <span class="label">Tareas</span>
+        </div>
+        <div class="vertical-line"></div>
+        <div class="user-col-data">
+          <span class="data">{{ user.idTeams.length }}</span>
+          <span class="label">Equipos</span>
+        </div>
+        <div class="vertical-line"></div>
+        <div class="user-col-data">
+          <span class="data">{{ user.totalRatings }}</span>
+          <span class="label">Valoraciones</span>
+        </div>
       </div>
-      <div class="vertical-line"></div>
-      <div class="user-col-data">
-        <span class="data">3</span>
-        <span class="label">Equipos</span>
-      </div>
-      <div class="vertical-line"></div>
-      <div class="user-col-data">
-        <span class="data">12</span>
-        <span class="label">Valoraciones</span>
-      </div>
-    </div>
 
-    <div class="quality-mark-container ion-margin-horizontal">
-      <div class="quality-info">
-        <span class="quality-title fw-bold">Sello de calidad</span>
-        <p>Obtén buenas valoraciones y completa tus tareas para mejorar tu sello de calidad</p>
+      <div class="quality-mark-container ion-margin-horizontal">
+        <div class="quality-info">
+          <span class="quality-title fw-bold">Sello de calidad</span>
+          <p>Obtén buenas valoraciones y completa tus tareas para mejorar tu sello de calidad</p>
+        </div>
+        <div class="chart-container">
+          <app-circle-chart
+            [pieData]="user.qualityMark * 100"
+            position="relative"
+          ></app-circle-chart>
+        </div>
       </div>
-      <div class="chart-container">
-        <app-circle-chart [pieData]="0.5 * 100" position="relative"></app-circle-chart>
-      </div>
-    </div>
 
-    <h3 class="ion-text-center">Puntuaciones</h3>
-    <div class="ratings-container ion-padding">
-      <app-efficiency-card [efficiency]="90"></app-efficiency-card>
-      <app-rating-card
-        title="Trabajo"
-        description="Valoración de tus compañeros acerca de cómo de bien haces tu trabajo"
-      ></app-rating-card>
-      <app-rating-card
-        title="Comunicación"
-        description="Valoración de tus compañeros acerca de tu comunicación con el equipo"
-        [reverse]="true"
-      ></app-rating-card>
-      <app-rating-card
-        title="Actitud"
-        description="Valoración de tus compañeros acerca de tu actitud respecto al equipo"
-      ></app-rating-card>
-      <app-rating-card
-        title="Valoración general"
-        description="Valoración de tus compañeros acerca de tu rendimiento general en el equipo"
-        [reverse]="true"
-        [last]="true"
-      ></app-rating-card>
-    </div>
+      <h3 class="ion-text-center">Puntuaciones</h3>
+      <div class="ratings-container ion-padding">
+        <app-efficiency-card
+          [efficiency]="user.efficiency * 100"
+          [tasksAssigned]="user.totalTasksAssigned"
+          [tasksCompleted]="user.totalTasksCompleted"
+        ></app-efficiency-card>
+        <app-rating-card
+          title="Trabajo"
+          description="Valoración de tus compañeros acerca de cómo de bien haces tu trabajo"
+          [rate]="5 * (user.rating.work.rate / 0.08)"
+          [totalStars]="user.rating.work.totalStars"
+          [totalRatings]="user.totalRatings"
+        ></app-rating-card>
+        <app-rating-card
+          title="Comunicación"
+          description="Valoración de tus compañeros acerca de tu comunicación con el equipo"
+          [reverse]="true"
+          [rate]="5 * (user.rating.communication.rate / 0.08)"
+          [totalStars]="user.rating.communication.totalStars"
+          [totalRatings]="user.totalRatings"
+        ></app-rating-card>
+        <app-rating-card
+          title="Actitud"
+          description="Valoración de tus compañeros acerca de tu actitud respecto al equipo"
+          [rate]="5 * (user.rating.attitude.rate / 0.08)"
+          [totalStars]="user.rating.attitude.totalStars"
+          [totalRatings]="user.totalRatings"
+        ></app-rating-card>
+        <app-rating-card
+          title="Valoración general"
+          description="Valoración de tus compañeros acerca de tu rendimiento general en el equipo"
+          [reverse]="true"
+          [last]="true"
+          [rate]="5 * (user.rating.overall.rate / 0.16)"
+          [totalStars]="user.rating.overall.totalStars"
+          [totalRatings]="user.totalRatings"
+        ></app-rating-card>
+      </div>
+    </ng-container>
+    <ng-template #loading>
+      <ion-skeleton-text
+        style="padding: 10px; background-color: var(--ion-color-white)"
+      ></ion-skeleton-text>
+    </ng-template>
   </div>
 </ion-content>

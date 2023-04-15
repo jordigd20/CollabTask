@@ -7,6 +7,7 @@ import { TaskService } from '../../../services/task.service';
 import { presentConfirmationModal } from 'src/app/helpers/common-functions';
 import { IonSegment, ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-trades',
@@ -36,6 +37,7 @@ export class TradesPage implements OnInit {
   constructor(
     private activeRoute: ActivatedRoute,
     private storageService: StorageService,
+    private authService: AuthService,
     private tradeService: TradeService,
     private taskService: TaskService,
     private modalController: ModalController

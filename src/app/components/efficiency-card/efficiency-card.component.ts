@@ -10,6 +10,8 @@ export class EfficiencyCardComponent implements OnInit {
     {} as ElementRef<SVGCircleElement>;
 
   @Input() efficiency: number = 0;
+  @Input() tasksAssigned: number = 0;
+  @Input() tasksCompleted: number = 0;
 
   constructor(private renderer: Renderer2) {}
 

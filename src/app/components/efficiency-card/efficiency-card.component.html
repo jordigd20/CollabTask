@@ -5,7 +5,9 @@
   </p>
   <div class="efficiency-data">
     <div class="progress-bar">
-      <span class="progress-number">60<span class="percentage">%</span></span>
+      <span class="progress-number">
+        {{ efficiency | number : '1.0-0' }}<span class="percentage">%</span>
+      </span>
       <svg
         width="100"
         height="100"
@@ -35,8 +37,12 @@
     </div>
 
     <div class="progress-data">
-      <p class="ion-no-margin"><span class="fw-bold">144</span> tareas completadas</p>
-      <p class="ion-no-margin"><span class="fw-bold">144</span> tareas asignadas</p>
+      <p class="ion-no-margin">
+        <span class="fw-bold">{{ tasksCompleted }}</span> tareas completadas
+      </p>
+      <p class="ion-no-margin">
+        <span class="fw-bold">{{ tasksAssigned }}</span> tareas asignadas
+      </p>
     </div>
   </div>
 </div>

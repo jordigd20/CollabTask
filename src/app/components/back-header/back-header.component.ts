@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-back-header',
@@ -7,16 +8,22 @@ import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 })
 export class BackHeaderComponent implements OnInit {
   @Input() title: string = '';
+  @Input() cssClass: string = '';
   @Input() showMoreOptions: boolean = false;
   @Input() showPreferences: boolean = false;
   @Input() showMoreInfo: boolean = false;
-  @Input() transparentMode: boolean = false;
+  @Input() showBackButton: boolean = true;
+  @Input() showSettings: boolean = false;
 
   @Output() moreOptions: EventEmitter<any> = new EventEmitter();
   @Output() preferences: EventEmitter<any> = new EventEmitter();
   @Output() moreInfo: EventEmitter<any> = new EventEmitter();
 
-  constructor() {}
+  constructor(private router: Router) {}
 
   ngOnInit() {}
+
+  navigateToSettings() {
+    this.router.navigate(['tabs/profile/settings']);
+  }
 }

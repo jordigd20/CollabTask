@@ -137,4 +137,8 @@ export class TeamMembersPage implements OnInit {
 
     await actionSheet.present();
   }
+
+  navigateToUserProfile(idUser: string) {
+    this.router.navigate(['tabs/lists/profile', this.idTeam, idUser]);
+  }
 }

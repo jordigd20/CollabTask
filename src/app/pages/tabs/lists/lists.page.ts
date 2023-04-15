@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { from, Subject, takeUntil, switchMap } from 'rxjs';
 import { presentConfirmationModal } from '../../../helpers/common-functions';
 import { AnimationsService } from '../../../services/animations.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-lists',
@@ -29,6 +30,7 @@ export class ListsPage implements OnInit {
   constructor(
     private actionSheetController: ActionSheetController,
     private storageService: StorageService,
+    private authService: AuthService,
     private teamService: TeamService,
     private router: Router,
     private animationService: AnimationsService,

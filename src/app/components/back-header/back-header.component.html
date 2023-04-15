@@ -1,11 +1,14 @@
-<ion-header mode="md" [ngClass]="{ 'header-transparent' : transparentMode }">
+<ion-header mode="md" [ngClass]="[cssClass]">
   <ion-toolbar>
-    <ion-buttons slot="start">
+    <ion-buttons *ngIf="showBackButton" slot="start">
       <ion-back-button defaultHref="/tabs/lists"></ion-back-button>
     </ion-buttons>
     <ion-title class="fw-bold header-title">{{ title }}</ion-title>
 
-    <ion-buttons *ngIf="showMoreOptions || showPreferences || showMoreInfo" slot="secondary">
+    <ion-buttons
+      *ngIf="showMoreOptions || showPreferences || showMoreInfo || showSettings"
+      slot="secondary"
+    >
       <ion-button *ngIf="showPreferences" (click)="preferences.emit()">
         <ion-icon slot="icon-only" name="options-outline"></ion-icon>
       </ion-button>
@@ -16,6 +19,10 @@
 
       <ion-button *ngIf="showMoreInfo" (click)="moreInfo.emit()">
         <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
+      </ion-button>
+
+      <ion-button *ngIf="showSettings" (click)="navigateToSettings()">
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
