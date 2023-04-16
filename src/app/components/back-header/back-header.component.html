@@ -1,7 +1,7 @@
 <ion-header mode="md" [ngClass]="[cssClass]">
   <ion-toolbar>
     <ion-buttons *ngIf="showBackButton" slot="start">
-      <ion-back-button defaultHref="/tabs/lists"></ion-back-button>
+      <ion-back-button [defaultHref]="defaultHref"></ion-back-button>
     </ion-buttons>
     <ion-title class="fw-bold header-title">{{ title }}</ion-title>
 
@@ -21,7 +21,7 @@
         <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
       </ion-button>
 
-      <ion-button *ngIf="showSettings" (click)="navigateToSettings()">
+      <ion-button *ngIf="showSettings" (click)="navigateToSettings.emit()">
         <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>

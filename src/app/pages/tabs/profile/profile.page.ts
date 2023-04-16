@@ -4,7 +4,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
 import { Subject, from, of, switchMap, takeUntil } from 'rxjs';
 import { User } from '../../../interfaces';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -21,7 +21,8 @@ export class ProfilePage implements OnInit {
     private activeRoute: ActivatedRoute,
     private storageService: StorageService,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -60,5 +61,9 @@ export class ProfilePage implements OnInit {
 
   ngOnDestroy() {
     this.destroy$.next();
+  }
+
+  navigateToSettings() {
+    this.router.navigate(['tabs/profile/settings', this.user?.id]);
   }
 }

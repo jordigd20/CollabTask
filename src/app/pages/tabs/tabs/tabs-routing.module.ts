@@ -109,7 +109,7 @@ const routes: Routes = [
           },
           {
             path: 'profile/:idTeam/:idUser',
-            loadChildren: () => import('../profile/profile.module').then( m => m.ProfilePageModule)
+            loadChildren: () => import('../profile/profile.module').then((m) => m.ProfilePageModule)
           }
         ]
       },
@@ -123,7 +123,17 @@ const routes: Routes = [
       },
       {
         path: 'profile',
-        loadChildren: () => import('../profile/profile.module').then((m) => m.ProfilePageModule)
+        children: [
+          {
+            path: '',
+            loadChildren: () => import('../profile/profile.module').then((m) => m.ProfilePageModule)
+          },
+          {
+            path: 'settings/:idUser',
+            loadChildren: () =>
+              import('../profile/settings/settings.module').then((m) => m.SettingsPageModule)
+          }
+        ]
       },
       {
         path: '**',

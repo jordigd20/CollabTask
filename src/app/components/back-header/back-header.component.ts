@@ -1,5 +1,4 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-back-header',
@@ -9,6 +8,7 @@ import { Router } from '@angular/router';
 export class BackHeaderComponent implements OnInit {
   @Input() title: string = '';
   @Input() cssClass: string = '';
+  @Input() defaultHref: string = '/tabs/lists';
   @Input() showMoreOptions: boolean = false;
   @Input() showPreferences: boolean = false;
   @Input() showMoreInfo: boolean = false;
@@ -18,12 +18,9 @@ export class BackHeaderComponent implements OnInit {
   @Output() moreOptions: EventEmitter<any> = new EventEmitter();
   @Output() preferences: EventEmitter<any> = new EventEmitter();
   @Output() moreInfo: EventEmitter<any> = new EventEmitter();
+  @Output() navigateToSettings: EventEmitter<any> = new EventEmitter();
 
-  constructor(private router: Router) {}
+  constructor() {}
 
   ngOnInit() {}
-
-  navigateToSettings() {
-    this.router.navigate(['tabs/profile/settings']);
-  }
 }

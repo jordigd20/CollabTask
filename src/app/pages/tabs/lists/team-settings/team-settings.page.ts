@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Team } from '../../../../interfaces';
 import { Clipboard } from '@capacitor/clipboard';
 import { ModalController } from '@ionic/angular';
-import { ConfirmationModalComponent } from '../../../../components/confirmation-modal/confirmation-modal.component';
 import { Observable, switchMap, of } from 'rxjs';
 import { presentConfirmationModal } from '../../../../helpers/common-functions';
 
