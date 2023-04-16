@@ -4,6 +4,7 @@ import { TeamErrorCodes } from '../interfaces/errors/team-error-codes.enum';
 import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
 import firebase from 'firebase/compat/app';
 import { TradeErrorCodes } from '../interfaces/errors/trade-error-codes.enum';
+import { AuthErrorCode } from '../interfaces';
 
 interface ConfirmationModal {
   title: string;
@@ -85,10 +86,29 @@ export const collabTaskErrors: { [key: string]: string } = {
   [TaskErrorCodes.TasksNotFound]: 'No se han encontrado las tareas',
   [TaskErrorCodes.TaskCouldNotBeCompleted]: 'No se ha podido completar la tarea',
   [TradeErrorCodes.TradeNotFound]: 'No se ha encontrado el intercambio',
-  [TradeErrorCodes.TaskRequestedIsAlreadyCompleted]: 'La tarea solicitada ya ha sido completada. Se ha rechazado el intercambio.',
-  [TradeErrorCodes.TaskOfferedIsAlreadyCompleted]: 'La tarea ofrecida ya ha sido completada. Se ha rechazado el intercambio.',
-  [TradeErrorCodes.TaskRequestedAlreadyBelongsToAnotherUser]: 'La tarea solicitada ya pertenece a otro usuario',
-  [TradeErrorCodes.TaskOfferedAlreadyBelongsToAnotherUser]: 'La tarea ofrecida ya pertenece a otro usuario',
-  [TradeErrorCodes.UserDoesNotHaveEnoughScore]: 'No tienes suficientes puntos para realizar el intercambio',
-  [TradeErrorCodes.TaskOfferedIsAlreadyInvolvedInTrade]: 'La tarea ofrecida ya está involucrada en otro intercambio',
+  [TradeErrorCodes.TaskRequestedIsAlreadyCompleted]:
+    'La tarea solicitada ya ha sido completada. Se ha rechazado el intercambio.',
+  [TradeErrorCodes.TaskOfferedIsAlreadyCompleted]:
+    'La tarea ofrecida ya ha sido completada. Se ha rechazado el intercambio.',
+  [TradeErrorCodes.TaskRequestedAlreadyBelongsToAnotherUser]:
+    'La tarea solicitada ya pertenece a otro usuario',
+  [TradeErrorCodes.TaskOfferedAlreadyBelongsToAnotherUser]:
+    'La tarea ofrecida ya pertenece a otro usuario',
+  [TradeErrorCodes.UserDoesNotHaveEnoughScore]:
+    'No tienes suficientes puntos para realizar el intercambio',
+  [TradeErrorCodes.TaskOfferedIsAlreadyInvolvedInTrade]:
+    'La tarea ofrecida ya está involucrada en otro intercambio'
+};
+
+export const authErrors: { [key: string]: string } = {
+  [AuthErrorCode.PopUpClosedByUser]: 'ignore',
+  [AuthErrorCode.CancelledPopUpRequest]: 'ignore',
+  [AuthErrorCode.GooglePopUpClosedByUser]: 'ignore',
+  [AuthErrorCode.GoogleAndroidPopUpClosed]: 'ignore',
+  [AuthErrorCode.InvalidEmail]: 'La dirección de correo electrónico no es válida.',
+  [AuthErrorCode.EmailAlreadyInUse]:
+    'La dirección de correo electrónico ya está siendo utilizada por otra cuenta.',
+  [AuthErrorCode.WrongPassword]: 'Usuario o contraseña incorrecto.',
+  [AuthErrorCode.UserNotFound]: 'No existe ningún usuario con ese correo electrónico.',
+  [AuthErrorCode.GoogleAccessDenied]: 'Acceso denegado. Por favor intentalo de nuevo más tarde.'
 };

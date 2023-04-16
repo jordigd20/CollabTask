@@ -132,6 +132,10 @@ const routes: Routes = [
             path: 'settings/:idUser',
             loadChildren: () =>
               import('../profile/settings/settings.module').then((m) => m.SettingsPageModule)
+          },
+          {
+            path: 'edit-profile/:idUser',
+            loadChildren: () => import('../profile/edit-profile/edit-profile.module').then( m => m.EditProfilePageModule)
           }
         ]
       },

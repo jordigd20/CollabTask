@@ -1,0 +1,77 @@
+<app-back-header title="Editar perfil" defaultHref="/tabs/profile"></app-back-header>
+
+<ion-content class="ion-padding">
+  <ion-avatar class="avatar-container">
+    <img [src]="'../../../../../assets/no-photo.jpg'" />
+  </ion-avatar>
+
+  <div class="image-buttons">
+    <ion-button shape="round">
+      <ion-icon slot="start" name="camera-outline"></ion-icon>
+      Cambiar foto
+    </ion-button>
+    <ion-button class="secondary-button" color="light" shape="round">
+      <ion-icon slot="start" name="trash-outline"></ion-icon>
+      Eliminar foto
+    </ion-button>
+  </div>
+
+  <form (ngSubmit)="updateUser()" [formGroup]="typeForm === 'user' ? userForm : googleForm">
+    <ion-list class="ion-no-padding ion-padding-bottom">
+      <ion-item mode="md" class="item-form">
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input
+          type="text"
+          placeholder="Introduce tu nombre"
+          formControlName="username"
+        ></ion-input>
+        <ion-note slot="error" *ngIf="username?.touched && username?.errors">
+          Debes introducir un nombre de usuario.
+        </ion-note>
+      </ion-item>
+
+      <ng-container *ngIf="typeForm === 'user'">
+        <ion-item mode="md" class="item-form">
+          <ion-label position="stacked">Correo electrónico</ion-label>
+          <ion-input
+            type="email"
+            placeholder="Introduce tu correo electrónico"
+            formControlName="email"
+          ></ion-input>
+          <ion-note slot="error" *ngIf="email?.touched && email?.errors">
+            Debes introducir un correo electrónico válido.
+          </ion-note>
+        </ion-item>
+
+        <ion-item mode="md" class="item-form">
+          <ion-label position="stacked">Contraseña para verificar</ion-label>
+          <ion-input
+            type="password"
+            placeholder="Introduce tu contraseña"
+            formControlName="password"
+            clearOnEdit="false"
+          ></ion-input>
+          <ion-note slot="error" *ngIf="password?.touched && password?.errors">
+            Debes introducir una contraseña de mínimo 6 caracteres.
+          </ion-note>
+        </ion-item>
+      </ng-container>
+    </ion-list>
+
+    <ion-button
+      [disabled]="
+        (typeForm === 'google' && !googleForm.valid && !isLoading) ||
+        (typeForm === 'google' && googleForm.valid && isLoading) ||
+        (typeForm === 'user' && !userForm.valid && !isLoading) ||
+        (typeForm === 'user' && userForm.valid && isLoading)"
+      type="submit"
+      color="primary"
+      expand="block"
+      shape="round"
+      class="ion-margin-top"
+    >
+      <ion-spinner name="circles" style="margin-right: 5px" *ngIf="isLoading"></ion-spinner>
+      Actualizar datos
+    </ion-button>
+  </form>
+</ion-content>

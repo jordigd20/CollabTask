@@ -5,7 +5,7 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController } from '@ionic/angular';
-import { lastValueFrom, of, map, switchMap, throwError, retry } from 'rxjs';
+import { lastValueFrom, of, map, switchMap, throwError, retry, take } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData, AuthErrorCode } from '../interfaces';
 import { Router } from '@angular/router';
@@ -14,6 +14,7 @@ import { StorageService } from './storage.service';
 import { UserService } from './user.service';
 import { ToastService } from './toast.service';
 import { FcmService } from './fcm.service';
+import { authErrors } from '../helpers/common-functions';
 
 @Injectable({
   providedIn: 'root'
@@ -34,10 +35,7 @@ export class AuthService {
       .pipe(
         switchMap((authUser) => {
           if (authUser) {
-            return this.afs
-              .doc<User>(`users/${authUser?.uid}`)
-              .get()
-              .pipe(map((doc) => doc.data()));
+            return this.userService.getUser(authUser?.uid).pipe(take(1));
           }
 
           return of();
@@ -57,7 +55,6 @@ export class AuthService {
         next: async (user) => {
           console.log('authService', user);
           if (user) {
-            this.userService.init(user.id!);
             await this.setUserInStorage(user);
             this.fcmService.initPush();
           }
@@ -73,12 +70,9 @@ export class AuthService {
       const result = await this.auth.signInWithEmailAndPassword(email, password);
       await this.setAvoidIntroPages(true);
       this.router.navigate(['/tabs/home'], { replaceUrl: true });
-
-      return result;
     } catch (error) {
       console.error(error);
       this.handleError(error, 'firebase');
-      return null;
     }
   }
 
@@ -120,12 +114,9 @@ export class AuthService {
       await this.setUserData(user);
       await this.setAvoidIntroPages(true);
       this.router.navigate(['first-time'], { replaceUrl: true });
-
-      return result;
     } catch (error) {
       console.error(error);
       this.handleError(error, 'firebase');
-      return null;
     }
   }
 
@@ -190,14 +181,15 @@ export class AuthService {
 
       await this.setAvoidIntroPages(true);
       loading.dismiss();
-
-      return result;
     } catch (error) {
       loading.dismiss();
       console.error(error);
       this.handleError(error, 'google');
-      return null;
     }
+  }
+
+  getAuthState() {
+    return this.auth.authState;
   }
 
   async setUserData(user: User) {
@@ -220,18 +212,14 @@ export class AuthService {
         icon: 'checkmark-circle',
         cssClass: 'toast-success'
       });
-
-      return;
     } catch (error) {
       console.error(error);
       this.handleError(error, 'firebase');
-      return null;
     }
   }
 
   async handleError(error: any, type: 'firebase' | 'google') {
     let errorCode = '';
-    let errorMessage = '';
 
     if (type === 'firebase' || (type === 'google' && error.code)) {
       errorCode = error.code;
@@ -239,39 +227,17 @@ export class AuthService {
       errorCode = error.error;
     }
 
-    switch (errorCode) {
-      case AuthErrorCode.PopUpClosedByUser:
-        return;
-      case AuthErrorCode.CancelledPopUpRequest:
-        return;
-      case AuthErrorCode.GooglePopUpClosedByUser:
-        return;
-      case AuthErrorCode.GoogleAndroidPopUpClosed:
-        return;
-      case AuthErrorCode.InvalidEmail:
-        errorMessage = 'La dirección de correo electrónico no es válida.';
-        break;
-      case AuthErrorCode.EmailAlreadyInUse:
-        errorMessage =
-          'La dirección de correo electrónico ya está siendo utilizada por otra cuenta.';
-        break;
-      case AuthErrorCode.WrongPassword:
-        errorMessage = 'Usuario o contraseña incorrecto.';
-        break;
-      case AuthErrorCode.UserNotFound:
-        errorMessage = 'No existe ningún usuario con ese correo electrónico.';
-        break;
-      case AuthErrorCode.GoogleAccessDenied:
-        errorMessage = 'Acceso denegado. Por favor intentalo de nuevo más tarde.';
-        break;
-      default:
-        errorMessage = 'Ha ocurrido un error inesperado. Por favor intentalo de nuevo más tarde.';
-        break;
+    const message =
+      authErrors[errorCode] ??
+      'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
+
+    if (message === 'ignore') {
+      return;
     }
 
     const alert = await this.alertController.create({
       header: 'Ha ocurrido un error',
-      message: `${errorMessage}`,
+      message: `${message}`,
       buttons: ['OK'],
       cssClass: 'alert-error'
     });

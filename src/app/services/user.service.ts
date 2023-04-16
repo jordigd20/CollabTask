@@ -1,38 +1,25 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Observable, debounceTime, map, shareReplay } from 'rxjs';
-import { User } from '../interfaces';
+import { Observable, debounceTime, firstValueFrom, map, shareReplay } from 'rxjs';
+import { Team, Trade, User, UserData } from '../interfaces';
+import { ToastService } from './toast.service';
+import { authErrors, collabTaskErrors } from '../helpers/common-functions';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private userLoggedIn$: Observable<User> | undefined;
   private lastUser$: Observable<User> | undefined;
   private usersByTeam$: Observable<User[]> | undefined;
   private lastIdUser: string = '';
   private lastIdTeam: string = '';
 
-  constructor(private afs: AngularFirestore) {}
-
-  init(id: string) {
-    if (!this.userLoggedIn$) {
-      console.log('this.user$ is undefined');
-      const result = this.afs.doc<User>(`users/${id}`).valueChanges() as Observable<User>;
-
-      this.userLoggedIn$ = result.pipe(
-        debounceTime(350),
-        shareReplay({ bufferSize: 1, refCount: true })
-      );
-      this.lastUser$ = result.pipe(
-        debounceTime(350),
-        shareReplay({ bufferSize: 1, refCount: true })
-      );
-      this.lastIdUser = id;
-    }
-
-    console.log('this.user$ is defined');
-  }
+  constructor(
+    private auth: AngularFireAuth,
+    private afs: AngularFirestore,
+    private toastService: ToastService
+  ) {}
 
   getUser(id: string) {
     if (!this.lastUser$ || this.lastIdUser !== id) {
@@ -70,5 +57,117 @@ export class UserService {
     }
 
     return this.usersByTeam$;
+  }
+
+  async updateUser(user: User, { username, email, password }: UserData) {
+    try {
+      const userDoc = this.afs.doc<User>(`users/${user.id}`);
+      const data: { [key: string]: string } = {};
+
+      if (username !== user.username) {
+        data['username'] = username;
+      }
+
+      if (email && password) {
+        try {
+          const userCredential = await this.auth.signInWithEmailAndPassword(user.email, password);
+
+          if (email !== user.email) {
+            await userCredential.user?.updateEmail(email);
+            data['email'] = email;
+          }
+        } catch (error: any) {
+          console.error(error);
+          this.handleAuthError(error.code);
+          return;
+        }
+      }
+
+      const batch = this.afs.firestore.batch();
+      batch.update(userDoc.ref, data);
+
+      if (data['username']) {
+        const [trades, teams] = await Promise.all([
+          firstValueFrom(
+            this.afs
+              .collection<Trade>('trades', (ref) =>
+                ref.where('idUsersInvolved', 'array-contains', user.id)
+              )
+              .valueChanges()
+          ),
+          firstValueFrom(
+            this.afs
+              .collection<Team>('teams', (ref) =>
+                ref.where('idUserMembers', 'array-contains', user.id)
+              )
+              .valueChanges()
+          )
+        ]);
+
+        for (const team of teams) {
+          const teamDoc = this.afs.doc<Team>(`teams/${team.id}`);
+
+          batch.update(teamDoc.ref, {
+            [`userMembers.${user.id}.name`]: username
+          });
+        }
+
+        for (const trade of trades) {
+          const tradeDoc = this.afs.doc(`trades/${trade.id}`);
+
+          if (trade.userSender.id === user.id) {
+            batch.update(tradeDoc.ref, {
+              [`userSender.name`]: username
+            });
+          }
+
+          if (trade.userReceiver.id === user.id) {
+            batch.update(tradeDoc.ref, {
+              [`userReceiver.name`]: username
+            });
+          }
+        }
+      }
+
+      await batch.commit();
+
+      this.toastService.showToast({
+        message: 'Datos actualizados',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success'
+      });
+    } catch (error) {
+      console.log(error);
+      this.handleError(error);
+    }
+  }
+
+  handleError(error: any) {
+    const message =
+      collabTaskErrors[error.message] ??
+      'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
+
+    this.toastService.showToast({
+      message,
+      icon: 'close-circle',
+      cssClass: 'toast-error'
+    });
+  }
+
+  handleAuthError(error: any) {
+    console.log(error);
+    const message =
+      authErrors[error] ??
+      'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo más tarde';
+
+    if (message === 'ignore') {
+      return;
+    }
+
+    this.toastService.showToast({
+      message,
+      icon: 'close-circle',
+      cssClass: 'toast-error'
+    });
   }
 }
