@@ -1,3 +1,4 @@
+export { ChangePasswordData } from './data/change-password-data.interface';
 export { UserData } from './data/user-data.interface';
 export { Trade } from './models/trade.interface';
 export { Rating } from './models/rating.interface';

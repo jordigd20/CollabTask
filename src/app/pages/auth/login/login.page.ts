@@ -54,10 +54,15 @@ export class LoginPage implements OnInit {
   async showForgotPassword() {
     const modal = await this.modalController.create({
       component: ForgotPasswordComponent,
-      initialBreakpoint: 0.35,
-      breakpoints: [0, 0.35],
-      cssClass: 'modal-sheet'
-    })
+      componentProps: {
+        title: '¿Olvidaste tu contraseña?',
+        description:
+          'Por favor, introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.'
+      },
+      initialBreakpoint: 1,
+      breakpoints: [0, 1],
+      cssClass: 'auto-sheet-modal'
+    });
 
     modal.present();
   }

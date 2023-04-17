@@ -5,9 +5,9 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController } from '@ionic/angular';
-import { lastValueFrom, of, map, switchMap, throwError, retry, take } from 'rxjs';
+import { lastValueFrom, of, switchMap, throwError, retry, take } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
-import { LoginData, AuthErrorCode } from '../interfaces';
+import { LoginData } from '../interfaces';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { StorageService } from './storage.service';
@@ -67,7 +67,7 @@ export class AuthService {
 
   async logIn({ email, password }: LoginData) {
     try {
-      const result = await this.auth.signInWithEmailAndPassword(email, password);
+      await this.auth.signInWithEmailAndPassword(email, password);
       await this.setAvoidIntroPages(true);
       this.router.navigate(['/tabs/home'], { replaceUrl: true });
     } catch (error) {
@@ -85,6 +85,7 @@ export class AuthService {
         email: email.trim(),
         photoURL: result.user?.photoURL || '',
         googlePhotoURL: '',
+        providerId: 'password',
         username: restData.username.trim(),
         rating: {
           work: {
@@ -148,6 +149,7 @@ export class AuthService {
           photoURL: result.user?.photoURL || '',
           googlePhotoURL: result.user?.photoURL || '',
           username: result.user?.displayName || '',
+          providerId: 'google.com',
           efficiency: 0,
           rating: {
             work: {

@@ -135,7 +135,17 @@ const routes: Routes = [
           },
           {
             path: 'edit-profile/:idUser',
-            loadChildren: () => import('../profile/edit-profile/edit-profile.module').then( m => m.EditProfilePageModule)
+            loadChildren: () =>
+              import('../profile/edit-profile/edit-profile.module').then(
+                (m) => m.EditProfilePageModule
+              )
+          },
+          {
+            path: 'change-password/:idUser',
+            loadChildren: () =>
+              import('../profile/change-password/change-password.module').then(
+                (m) => m.ChangePasswordPageModule
+              )
           }
         ]
       },

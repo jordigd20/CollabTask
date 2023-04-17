@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, from, of, switchMap, takeUntil } from 'rxjs';
-import { StorageService } from 'src/app/services/storage.service';
+import { Subject, takeUntil } from 'rxjs';
 import { UserService } from 'src/app/services/user.service';
 import { User } from '../../../../interfaces';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-settings',
@@ -17,7 +17,7 @@ export class SettingsPage implements OnInit {
   constructor(
     private activeRoute: ActivatedRoute,
     private router: Router,
-    private storageService: StorageService,
+    private authService: AuthService,
     private userService: UserService
   ) {}
 
@@ -50,5 +50,9 @@ export class SettingsPage implements OnInit {
 
   navigateToChangePassword() {
     this.router.navigate(['/tabs/profile/change-password', this.user?.id]);
+  }
+
+  async logOut() {
+    await this.authService.logOut();
   }
 }

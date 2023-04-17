@@ -47,6 +47,7 @@ export interface User {
     };
   };
   googlePhotoURL: string;
+  providerId: 'google.com' | 'password';
   qualityMark: number;
   totalTasksAssigned: number;
   totalTasksCompleted: number;

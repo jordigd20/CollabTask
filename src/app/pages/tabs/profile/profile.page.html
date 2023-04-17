@@ -85,10 +85,9 @@
         ></app-rating-card>
       </div>
     </ng-container>
+
     <ng-template #loading>
-      <ion-skeleton-text
-        style="padding: 10px; background-color: var(--ion-color-white)"
-      ></ion-skeleton-text>
+      <ion-spinner class="loading-content" name="circles" color="primary"></ion-spinner>
     </ng-template>
   </div>
 </ion-content>

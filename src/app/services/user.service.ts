@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Observable, debounceTime, firstValueFrom, lastValueFrom, map, shareReplay } from 'rxjs';
-import { Team, Trade, User, UserData } from '../interfaces';
+import { ChangePasswordData, Team, Trade, User, UserData } from '../interfaces';
 import { ToastService } from './toast.service';
 import { authErrors, collabTaskErrors, dataURItoBlob } from '../helpers/common-functions';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
@@ -142,6 +142,26 @@ export class UserService {
     } catch (error) {
       console.error(error);
       this.handleError(error);
+    }
+  }
+
+  async changePassword(email: string, passwordData: ChangePasswordData) {
+    try {
+      const userCredential = await this.auth.signInWithEmailAndPassword(
+        email,
+        passwordData.oldPassword
+      );
+
+      await userCredential.user?.updatePassword(passwordData.newPassword);
+
+      this.toastService.showToast({
+        message: 'Contraseña actualizada',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success'
+      });
+    } catch (error: any) {
+      console.error(error);
+      this.handleAuthError(error.code);
     }
   }
 

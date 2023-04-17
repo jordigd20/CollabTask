@@ -22,7 +22,7 @@
     </ion-button>
   </div>
 
-  <form (ngSubmit)="updateUser()" [formGroup]="typeForm === 'user' ? userForm : googleForm">
+  <form (ngSubmit)="updateUser()" [formGroup]="typeForm === 'password' ? userForm : googleForm">
     <ion-list class="ion-no-padding ion-padding-bottom">
       <ion-item mode="md" class="item-form">
         <ion-label position="stacked">Nombre</ion-label>
@@ -36,7 +36,7 @@
         </ion-note>
       </ion-item>
 
-      <ng-container *ngIf="typeForm === 'user'">
+      <ng-container *ngIf="typeForm === 'password'">
         <ion-item mode="md" class="item-form">
           <ion-label position="stacked">Correo electrónico</ion-label>
           <ion-input
@@ -66,10 +66,10 @@
 
     <ion-button
       [disabled]="
-        (typeForm === 'google' && !googleForm.valid && !isLoading) ||
-        (typeForm === 'google' && googleForm.valid && isLoading) ||
-        (typeForm === 'user' && !userForm.valid && !isLoading) ||
-        (typeForm === 'user' && userForm.valid && isLoading)"
+        (typeForm === 'google.com' && !googleForm.valid && !isLoading) ||
+        (typeForm === 'google.com' && googleForm.valid && isLoading) ||
+        (typeForm === 'password' && !userForm.valid && !isLoading) ||
+        (typeForm === 'password' && userForm.valid && isLoading)"
       type="submit"
       color="primary"
       expand="block"

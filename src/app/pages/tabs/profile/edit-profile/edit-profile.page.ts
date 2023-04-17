@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, of, switchMap, takeUntil } from 'rxjs';
-import { AuthService } from 'src/app/services/auth.service';
+import { Subject, takeUntil } from 'rxjs';
 import { UserService } from 'src/app/services/user.service';
 import { User } from '../../../../interfaces';
 import { Camera } from '@capacitor/camera';
@@ -22,7 +21,7 @@ export class EditProfilePage implements OnInit {
   googleForm = this.fb.group({
     username: ['', Validators.required]
   });
-  typeForm: 'user' | 'google' = 'user';
+  typeForm: 'google.com' | 'password' = 'google.com';
   user: User | undefined;
   isLoading: boolean = false;
   destroy$ = new Subject<void>();
@@ -30,12 +29,11 @@ export class EditProfilePage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private activeRoute: ActivatedRoute,
-    private authService: AuthService,
     private userService: UserService
   ) {}
 
   get username() {
-    if (this.typeForm === 'google') {
+    if (this.typeForm === 'google.com') {
       return this.googleForm.get('username');
     }
 
@@ -57,27 +55,17 @@ export class EditProfilePage implements OnInit {
       return;
     }
 
-    this.authService
-      .getAuthState()
-      .pipe(
-        switchMap((authState) => {
-          if (authState) {
-            this.typeForm =
-              authState.providerData[0]?.providerId === 'google.com' ? 'google' : 'user';
-            return this.userService.getUser(authState.uid);
-          }
-
-          return of();
-        }),
-        takeUntil(this.destroy$)
-      )
+    this.userService
+      .getUser(idUser)
+      .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
         if (!user) {
           return;
         }
-
+        console.log(user);
         this.user = user;
-        if (this.typeForm === 'google') {
+        this.typeForm = user.providerId;
+        if (this.typeForm === 'google.com') {
           this.googleForm.patchValue({
             username: user.username
           });
@@ -95,11 +83,11 @@ export class EditProfilePage implements OnInit {
   }
 
   async updateUser() {
-    if (this.typeForm === 'google' && this.googleForm.invalid) {
+    if (this.typeForm === 'google.com' && this.googleForm.invalid) {
       return;
     }
 
-    if (this.typeForm === 'user' && this.userForm.invalid) {
+    if (this.typeForm === 'password' && this.userForm.invalid) {
       return;
     }
 
@@ -116,7 +104,7 @@ export class EditProfilePage implements OnInit {
       username: this.username!.value as string
     };
 
-    if (this.typeForm === 'user') {
+    if (this.typeForm === 'password') {
       data.email = this.email!.value as string;
       data.password = this.password!.value as string;
     }
