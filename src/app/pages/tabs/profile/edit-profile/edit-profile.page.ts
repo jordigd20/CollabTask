@@ -5,6 +5,8 @@ import { Subject, of, switchMap, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { User } from '../../../../interfaces';
+import { Camera } from '@capacitor/camera';
+import { CameraResultType } from '@capacitor/camera/dist/esm/definitions';
 
 @Component({
   selector: 'app-edit-profile',
@@ -121,5 +123,35 @@ export class EditProfilePage implements OnInit {
 
     await this.userService.updateUser(this.user, data);
     this.isLoading = false;
+  }
+
+  async selectImage() {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 85,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        promptLabelHeader: 'Seleccionar una imagen',
+        promptLabelPhoto: 'Seleccionar desde la galería',
+        promptLabelPicture: 'Tomar una foto'
+      });
+
+      if (image.dataUrl && this.user) {
+        this.user.photoURL = await this.userService.uploadUserImage(this.user, image.dataUrl);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async deleteImage() {
+    try {
+      if (this.user) {
+        await this.userService.deleteUserImage(this.user);
+        this.user.photoURL = '';
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

@@ -84,6 +84,7 @@ export class AuthService {
         id: result.user?.uid,
         email: email.trim(),
         photoURL: result.user?.photoURL || '',
+        googlePhotoURL: '',
         username: restData.username.trim(),
         rating: {
           work: {
@@ -145,6 +146,7 @@ export class AuthService {
           id: result.user?.uid,
           email: result.user?.email || '',
           photoURL: result.user?.photoURL || '',
+          googlePhotoURL: result.user?.photoURL || '',
           username: result.user?.displayName || '',
           efficiency: 0,
           rating: {

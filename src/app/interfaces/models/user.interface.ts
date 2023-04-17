@@ -46,6 +46,7 @@ export interface User {
       };
     };
   };
+  googlePhotoURL: string;
   qualityMark: number;
   totalTasksAssigned: number;
   totalTasksCompleted: number;
