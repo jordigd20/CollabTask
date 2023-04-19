@@ -1,17 +1,91 @@
-<ion-header mode="md">
-  <ion-toolbar>
-    <ion-title>Home</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content color="tertiary">
+  <header class="home-header">
+    <ion-button
+      (click)="displayDateModal()"
+      class="date-picker-btn"
+      fill="clear"
+      shape="round"
+      color="secondary"
+    >
+      {{ todayWeekDay }}
+      <ion-icon slot="end" name="caret-down-outline" style="font-size: 18px"></ion-icon>
+    </ion-button>
+    <h2 class="date-label">{{ selectedDay | date : 'd MMMM, y'}}</h2>
 
-<ion-content>
+    <div class="buttons-day-container">
+      <div *ngFor="let day of shortenedDays; let i = index" class="col-day">
+        <span class="day-shortened">{{ day }}</span>
+        <ion-button
+          (click)="onSelectedDate(weekDates[i])"
+          class="day-btn"
+          [ngClass]="{ 'day-btn-active': weekDates[i].getDate() === selectedDay.getDate() }"
+        >
+          {{ weekDates[i].getDate() }}
+        </ion-button>
+      </div>
+    </div>
+  </header>
 
-  <ion-button (click)="logOut()" expand="block" shape="round">
-    Cerrar sesión
-  </ion-button>
+  <div class="home-content">
+    <div
+      *ngIf="outdatedTasks && tasksByDate.get(today.getTime()) && outdatedTasks.length !== 0"
+      class="outdated-tasks"
+    >
+      <div class="title-container ion-padding-horizontal">
+        <h3>Vencidas</h3>
+        <ion-text class="small-text">{{outdatedTasks.length}} tareas</ion-text>
+      </div>
 
-  <ion-button [routerLink]="['/first-time']" expand="block" shape="round">
-    Primera vez
-  </ion-button>
+      <ion-list lines="none" class="task-list-container">
+        <app-task
+          *ngFor="let task of outdatedTasks; trackBy: identify"
+          [task]="task"
+          [idUser]="task.idUserAssigned"
+          [showCompleteButton]="true"
+          [showDistributionMode]="false"
+          [showMoreOptions]="false"
+          [distributionMode]="'none'"
+          [withoutUserAssigned]="false"
+        ></app-task>
+      </ion-list>
+    </div>
 
+    <div class="tasks-by-date">
+      <div class="title-container ion-padding-horizontal">
+        <h3>{{ selectedDay | date: 'd MMMM' }}</h3>
+        <ion-text class="small-text"
+          >{{ tasksByDate.get(selectedDay.getTime())?.length || 0 }} tareas</ion-text
+        >
+      </div>
+
+      <ion-list
+        *ngIf="outdatedTasks && tasksByDate.get(selectedDay.getTime()); else loading"
+        lines="none"
+        class="task-list-container"
+      >
+        <app-task
+          *ngFor="let task of tasksByDate.get(selectedDay.getTime()); trackBy: identify"
+          [task]="task"
+          [idUser]="task.idUserAssigned"
+          [showCompleteButton]="true"
+          [showDistributionMode]="false"
+          [showMoreOptions]="false"
+          [distributionMode]="'none'"
+          [withoutUserAssigned]="false"
+        ></app-task>
+
+        <ion-item
+          *ngIf="tasksByDate.get(selectedDay.getTime())?.length === 0"
+          class="root-helper helper sub-item"
+          style="z-index: 0"
+        >
+          <ion-label> No tienes ninguna tarea asignada para este día </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <ng-template #loading>
+        <ion-spinner class="loading-content" name="circles" color="primary"></ion-spinner>
+      </ng-template>
+    </div>
+  </div>
 </ion-content>

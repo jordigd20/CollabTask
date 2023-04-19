@@ -31,6 +31,8 @@ import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
 export class TaskService {
   private tasks$: Observable<Task[]> | undefined;
   private task$: Observable<Task | undefined> | undefined;
+  private outdatedTasks$: Observable<Task[]> | undefined;
+  private tasksByDate$: Observable<Task[]> | undefined;
   private currentIdTaskList: string = '';
   private currentIdTask: string = '';
 
@@ -79,6 +81,151 @@ export class TaskService {
     return this.getAllTasksByTaskList(idTaskList).pipe(
       map((tasks) => tasks.filter((task) => idTasksResult.includes(task.id)))
     );
+  }
+
+  getHomeOutdatedTasks(idUser: string) {
+    if (!this.outdatedTasks$) {
+      this.outdatedTasks$ = this.afs
+        .collection<Task>('tasks', (ref) =>
+          ref
+            .where('idUserAssigned', '==', idUser)
+            .where('completed', '==', false)
+            .where('availableToAssign', '==', false)
+            .where('selectedDate', '!=', 'withoutDate')
+        )
+        .valueChanges()
+        .pipe(
+          debounceTime(350),
+          map((tasks) => {
+            return tasks
+              .filter((task) => {
+                const selectedDate = task.selectedDate;
+
+                if (selectedDate === 'date') {
+                  const date = task.date as firebase.firestore.Timestamp;
+                  const dateString = convertTimestampToString(date).split('T')[0];
+                  const todayString = new Date().toISOString().split('T')[0];
+
+                  return new Date(todayString).getTime() > new Date(dateString).getTime();
+                }
+
+                if (selectedDate === 'dateLimit') {
+                  const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+                  const dateLimitString = convertTimestampToString(dateLimit).split('T')[0];
+                  const todayString = new Date().toISOString().split('T')[0];
+
+                  return new Date(todayString).getTime() > new Date(dateLimitString).getTime();
+                }
+
+                if (selectedDate === 'datePeriodic') {
+                  const weekDays = [
+                    'domingo',
+                    'lunes',
+                    'martes',
+                    'miercoles',
+                    'jueves',
+                    'viernes',
+                    'sabado'
+                  ];
+                  const today = weekDays[new Date().getDay()];
+
+                  return !task.datePeriodic.includes(today);
+                }
+
+                return false;
+              })
+              .map((task) => {
+                const date = task.date as firebase.firestore.Timestamp;
+                const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+
+                task.date = convertTimestampToString(date);
+                task.dateLimit = convertTimestampToString(dateLimit);
+
+                return task;
+              });
+          }),
+          shareReplay({ bufferSize: 1, refCount: true })
+        );
+    }
+
+    return this.outdatedTasks$;
+  }
+
+  getTasksByDate(idUser: string, date: Date) {
+    const dateString = date.toISOString().split('T')[0];
+    const weekDays = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+    const dayOfTheWeek = weekDays[date.getDay()];
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+
+    if (!this.tasksByDate$ || today.getTime() !== date.getTime()) {
+      this.tasksByDate$ = this.afs
+        .collection<Task>('tasks', (ref) =>
+          ref
+            .where('idUserAssigned', '==', idUser)
+            .where('completed', '==', false)
+            .where('availableToAssign', '==', false)
+            .where('selectedDate', '!=', 'withoutDate')
+            .where('possibleDates', 'array-contains-any', [dateString, dayOfTheWeek])
+        )
+        .valueChanges()
+        .pipe(
+          debounceTime(350),
+          map((tasks) => {
+            return tasks
+              .filter((task) => {
+                const selectedDate = task.selectedDate;
+
+                if (selectedDate === 'date') {
+                  const timestamp = task.date as firebase.firestore.Timestamp;
+                  const dateString = convertTimestampToString(timestamp).split('T')[0];
+                  const todayString = date.toISOString().split('T')[0];
+
+                  return todayString === dateString;
+                }
+
+                if (selectedDate === 'dateLimit') {
+                  const limitTimestamp = task.dateLimit as firebase.firestore.Timestamp;
+                  const dateLimitString = convertTimestampToString(limitTimestamp).split('T')[0];
+                  const todayString = date.toISOString().split('T')[0];
+
+                  return todayString === dateLimitString;
+                }
+
+                if (selectedDate === 'datePeriodic') {
+                  const weekDays = [
+                    'domingo',
+                    'lunes',
+                    'martes',
+                    'miercoles',
+                    'jueves',
+                    'viernes',
+                    'sabado'
+                  ];
+                  const today = weekDays[date.getDay()];
+
+                  return task.datePeriodic.includes(today);
+                }
+
+                return false;
+              })
+              .map((task) => {
+                const date = task.date as firebase.firestore.Timestamp;
+                const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+
+                task.date = convertTimestampToString(date);
+                task.dateLimit = convertTimestampToString(dateLimit);
+
+                return task;
+              });
+          }),
+          shareReplay({ bufferSize: 1, refCount: true })
+        );
+      console.log('tasksByDate$ is undefined');
+    }
+
+    console.log('tasksByDate$ is defined');
+    return this.tasksByDate$;
   }
 
   getAllUncompletedTasksByUser(idTasklist: string, idUser: string) {
@@ -187,6 +334,11 @@ export class TaskService {
       const dateTimestamp = convertStringToTimestamp(date as string);
       const dateLimitTimestamp = convertStringToTimestamp(dateLimit as string);
       const id = this.afs.createId();
+
+      const dateString = (date as string).split('T')[0];
+      const dateLimitString = (dateLimit as string).split('T')[0];
+      const possibleDates = [dateString, dateLimitString].concat(datePeriodic);
+
       const task: Task = {
         id,
         idTeam: idTeam!,
@@ -201,6 +353,7 @@ export class TaskService {
         date: dateTimestamp,
         dateLimit: dateLimitTimestamp,
         datePeriodic,
+        possibleDates,
         imageURL: '',
         completed: false,
         isInvolvedInTrade: false,
@@ -235,10 +388,14 @@ export class TaskService {
 
         const dateTimestamp = convertStringToTimestamp(date as string);
         const dateLimitTimestamp = convertStringToTimestamp(dateLimit as string);
+        const dateString = (date as string).split('T')[0];
+        const dateLimitString = (dateLimit as string).split('T')[0];
+        const possibleDates = [dateString, dateLimitString].concat(taskData.datePeriodic);
 
         await this.afs.doc<Task>(`tasks/${idTask}`).update({
           date: dateTimestamp,
           dateLimit: dateLimitTimestamp,
+          possibleDates,
           ...taskData
         });
 

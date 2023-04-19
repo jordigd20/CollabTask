@@ -1,31 +1,68 @@
 <div class="inner-content">
-  <ion-datetime
-    #datetime
-    locale="es-ES"
-    [min]="minDate"
-    (ionChange)="onChangeDate($event)"
-    [value]="previousDate"
-  >
-    <span slot="time-label">Tiempo</span>
-    <ion-buttons slot="buttons">
-      <ion-button
-        (click)="cancel()"
-        class="datetime-buttons secondary-button fw-regular"
-        fill="solid"
-        color="light"
-        shape="round"
-      >
-        Cancelar
-      </ion-button>
-      <ion-button
-        (click)="accept()"
-        class="datetime-buttons"
-        color="primary"
-        fill="solid"
-        shape="round"
-      >
-        Aceptar
-      </ion-button>
-    </ion-buttons>
-  </ion-datetime>
+  <ng-container *ngIf="minDate; else dateWithoutMinimum">
+    <ion-datetime
+      #datetime
+      locale="es-ES"
+      [min]="minDate"
+      presentation="date"
+      (ionChange)="onChangeDate($event)"
+      [value]="previousDate"
+      [firstDayOfWeek]="1"
+    >
+      <span slot="time-label">Tiempo</span>
+      <ion-buttons slot="buttons">
+        <ion-button
+          (click)="cancel()"
+          class="datetime-buttons secondary-button fw-regular"
+          fill="solid"
+          color="light"
+          shape="round"
+        >
+          Cancelar
+        </ion-button>
+        <ion-button
+          (click)="accept()"
+          class="datetime-buttons"
+          color="primary"
+          fill="solid"
+          shape="round"
+        >
+          Aceptar
+        </ion-button>
+      </ion-buttons>
+    </ion-datetime>
+  </ng-container>
+
+  <ng-template #dateWithoutMinimum>
+    <ion-datetime
+      #datetime
+      locale="es-ES"
+      presentation="date"
+      (ionChange)="onChangeDate($event)"
+      [value]="previousDate"
+      [firstDayOfWeek]="1"
+    >
+      <span slot="time-label">Tiempo</span>
+      <ion-buttons slot="buttons">
+        <ion-button
+          (click)="cancel()"
+          class="datetime-buttons secondary-button fw-regular"
+          fill="solid"
+          color="light"
+          shape="round"
+        >
+          Cancelar
+        </ion-button>
+        <ion-button
+          (click)="accept()"
+          class="datetime-buttons"
+          color="primary"
+          fill="solid"
+          shape="round"
+        >
+          Aceptar
+        </ion-button>
+      </ion-buttons>
+    </ion-datetime>
+  </ng-template>
 </div>

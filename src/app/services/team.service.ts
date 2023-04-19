@@ -753,7 +753,9 @@ export class TeamService {
       await batch.commit();
 
       this.toastService.showToast({
-        message: executedByAdmin ? 'El usuario ha sido expulsado del equipo' : 'Has abandonado el equipo correctamente',
+        message: executedByAdmin
+          ? 'El usuario ha sido expulsado del equipo'
+          : 'Has abandonado el equipo correctamente',
         icon: 'checkmark-circle',
         cssClass: 'toast-success'
       });
@@ -1039,7 +1041,9 @@ export class TeamService {
 
       for (let [userId, tasksCount] of tasksCountByUser) {
         const userRef = this.afs.firestore.doc(`users/${userId}`);
-        batch.update(userRef, { totalTasksAssigned: firebase.firestore.FieldValue.increment(tasksCount) });
+        batch.update(userRef, {
+          totalTasksAssigned: firebase.firestore.FieldValue.increment(tasksCount)
+        });
       }
 
       // Clear the preferences

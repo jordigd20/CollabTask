@@ -305,15 +305,15 @@ exports.updatePeriodicTasks = functions
     .onRun(async (context) => {
       try {
         const dayOfTheWeek = new Date().getDay();
-        const weekDays = {
-          0: "domingo",
-          1: "lunes",
-          2: "martes",
-          3: "miercoles",
-          4: "jueves",
-          5: "viernes",
-          6: "sabado",
-        };
+        const weekDays = [
+          "domingo",
+          "lunes",
+          "martes",
+          "miercoles",
+          "jueves",
+          "viernes",
+          "sabado",
+        ];
         const today = weekDays[dayOfTheWeek];
         let counter = 0;
         let commitCounter = 0;

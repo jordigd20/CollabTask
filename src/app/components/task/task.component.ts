@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActionSheetController, ModalController } from '@ionic/angular';
 import { TeamService } from '../../services/team.service';
-import { Task, UserMember } from '../../interfaces';
+import { Task, Team, UserMember } from '../../interfaces';
 import { TaskService } from '../../services/task.service';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -28,7 +28,7 @@ export class TaskComponent implements OnInit {
 
   @Output() idSelectedTaskToSlide: EventEmitter<string> = new EventEmitter();
 
-  teamMembers: { [key: string]: UserMember } = {};
+  team: Team | undefined;
   userTeamMembersList: UserMember[] = [];
   isTaskPreferred: boolean = false;
   isLoading: boolean = false;
@@ -63,7 +63,7 @@ export class TaskComponent implements OnInit {
           return;
         }
 
-        this.teamMembers = team.userMembers;
+        this.team = team;
         this.userTeamMembersList = Object.values(team.userMembers);
 
         if (this.distributionMode === 'preferences') {
@@ -188,7 +188,7 @@ export class TaskComponent implements OnInit {
       }
     };
 
-    const userRole = this.teamMembers[this.currentUserId]?.role;
+    const userRole = this.team?.userMembers[this.currentUserId].role;
     let buttons = [
       editTaskButton,
       this.distributionMode === 'preferences' ? markAsPreferredButton : assignUserButton,

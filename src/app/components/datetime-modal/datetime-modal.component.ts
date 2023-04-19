@@ -9,8 +9,8 @@ import { ModalController, IonDatetime } from '@ionic/angular';
 export class DatetimeModalComponent implements OnInit {
   @ViewChild('datetime') datetime: IonDatetime = {} as IonDatetime;
   @Input() previousDate: string = '';
+  @Input() minDate: string | undefined;
 
-  minDate: string = new Date().toISOString();
   dateValue: string = '';
 
   constructor(private modalController: ModalController) {}

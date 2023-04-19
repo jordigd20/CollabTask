@@ -14,6 +14,7 @@ export interface Task {
   date: firebase.firestore.Timestamp | string;
   dateLimit: firebase.firestore.Timestamp | string;
   datePeriodic: string[];
+  possibleDates: string[];
   imageURL: string;
   completed: boolean;
   isInvolvedInTrade: boolean;

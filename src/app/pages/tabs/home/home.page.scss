@@ -1,0 +1,94 @@
+.home-header {
+  padding: 16px 16px;
+  padding-bottom: 5px;
+  background: linear-gradient(0deg, #3dc795 0%, #50cc9f 50%, #64d2aa 100%);
+  border-radius: 0 0 25px 25px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ion-color-white);
+    z-index: -1;
+  }
+}
+
+.date-picker-btn {
+  margin: 0 auto;
+  display: block;
+  --padding-start: 25px;
+  --padding-end: 25px;
+  width: fit-content;
+
+  &::part(native) {
+    font-size: 20px;
+  }
+}
+
+.date-label {
+  font-size: 14px;
+  font-weight: bold;
+  display: block;
+  text-align: center;
+  margin-top: 2px;
+  color: var(--ion-color-white);
+}
+
+.day-shortened {
+  font-weight: bold;
+  color: var(--ion-color-white);
+}
+
+.buttons-day-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.col-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.day-btn {
+  --padding-start: 5px;
+  --padding-end: 5px;
+
+  &::part(native) {
+    background-color: #48ca9b;
+    height: 25px;
+    color: var(--ion-color-secondary);
+  }
+}
+
+.day-btn-active::part(native) {
+  background-color: var(--ion-color-white);
+  color: var(--ion-color-primary);
+}
+
+.tasks-container {
+  background-color: var(--ion-color-tertiary);
+}
+
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--ion-color-white);
+}
+
+.task-list-container {
+  padding: 16px;
+  padding-bottom: 6px;
+  background-color: var(--ion-color-tertiary);
+}
+
+.loading-content {
+  margin-top: 25px!important;
+}

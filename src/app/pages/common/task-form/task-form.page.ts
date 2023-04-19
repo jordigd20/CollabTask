@@ -149,7 +149,8 @@ export class TaskFormPage implements OnInit {
     const modal = await this.modalController.create({
       component: DatetimeModalComponent,
       componentProps: {
-        previousDate
+        previousDate,
+        minDate: new Date().toISOString()
       },
       backdropDismiss: false,
       cssClass: 'responsive-modal datetime-modal'

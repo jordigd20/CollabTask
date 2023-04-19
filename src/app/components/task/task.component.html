@@ -1,4 +1,5 @@
 <ion-item
+  *ngIf="team"
   (click)="navigateToDetail()"
   class="task-item"
   [ngClass]="{
@@ -134,13 +135,13 @@
     <div *ngIf="!withoutUserAssigned" class="bottom-container">
       <ion-avatar class="user-task-avatar">
         <img
-          [src]="teamMembers[idUser].photoURL || '../../../assets/no-photo.jpg'"
-          [alt]="'Avatar de ' + teamMembers[idUser].name"
+          [src]="team.userMembers[idUser].photoURL || '../../../assets/no-photo.jpg'"
+          [alt]="'Avatar de ' + team.userMembers[idUser].name"
           referrerpolicy="no-referrer"
         />
       </ion-avatar>
       <p class="username-container username">
-        {{ teamMembers[idUser].name }}
+        {{ team.userMembers[idUser].name }}
       </p>
       <div class="score-task">
         <ion-icon src="../../../../assets/icons/score.svg" style="margin-bottom: 1px"></ion-icon>
