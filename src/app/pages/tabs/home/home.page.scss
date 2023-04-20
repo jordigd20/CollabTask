@@ -1,5 +1,6 @@
 .home-header {
   padding: 16px 16px;
+  padding-top: calc(var(--ion-safe-area-top) + 16px);
   padding-bottom: 5px;
   background: linear-gradient(0deg, #3dc795 0%, #50cc9f 50%, #64d2aa 100%);
   border-radius: 0 0 25px 25px;

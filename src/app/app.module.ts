@@ -34,7 +34,7 @@ registerLocaleData(localeEs, 'es');
   declarations: [AppComponent],
   imports: [
     BrowserModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({ _forceStatusbarPadding: true }),
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,

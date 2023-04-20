@@ -6,9 +6,10 @@ import { Task, Team } from '../../../interfaces';
 import { TeamService } from '../../../services/team.service';
 import { StorageService } from '../../../services/storage.service';
 import { presentConfirmationModal } from '../../../helpers/common-functions';
-import { ModalController, ActionSheetController } from '@ionic/angular';
+import { ModalController, ActionSheetController, Platform } from '@ionic/angular';
 import { Camera } from '@capacitor/camera';
 import { CameraResultType } from '@capacitor/camera/dist/esm/definitions';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 @Component({
   selector: 'app-task-detail',
@@ -34,7 +35,8 @@ export class TaskDetailPage implements OnInit {
     private teamService: TeamService,
     private modalController: ModalController,
     private actionSheetController: ActionSheetController,
-    private router: Router
+    private router: Router,
+    private platform: Platform
   ) {}
 
   ngOnInit() {
@@ -88,6 +90,18 @@ export class TaskDetailPage implements OnInit {
           this.username = team.userMembers[this.task.idTemporalUserAssigned].name;
         }
       });
+  }
+
+  ionViewWillEnter() {
+    if (this.platform.is('capacitor')) {
+      StatusBar.setStyle({ style: Style.Dark });
+    }
+  }
+
+  ionViewWillLeave() {
+    if (this.platform.is('capacitor')) {
+      StatusBar.setStyle({ style: Style.Light });
+    }
   }
 
   ngOnDestroy() {

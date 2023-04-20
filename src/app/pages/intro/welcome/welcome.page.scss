@@ -8,6 +8,7 @@ ion-content::part(background) {
   height: auto;
   display: block;
   margin: auto;
+  padding-top: calc(var(--ion-safe-area-top) + 16px);
 }
 
 h1 {

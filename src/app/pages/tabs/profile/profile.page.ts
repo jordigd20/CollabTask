@@ -5,6 +5,8 @@ import { UserService } from 'src/app/services/user.service';
 import { Subject, from, of, switchMap, takeUntil } from 'rxjs';
 import { User } from '../../../interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-profile',
@@ -22,7 +24,8 @@ export class ProfilePage implements OnInit {
     private storageService: StorageService,
     private authService: AuthService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private platform: Platform
   ) {}
 
   ngOnInit() {
@@ -57,6 +60,18 @@ export class ProfilePage implements OnInit {
       .subscribe((user) => {
         this.user = user;
       });
+  }
+
+  ionViewWillEnter() {
+    if (this.platform.is('capacitor')) {
+      StatusBar.setStyle({ style: Style.Dark });
+    }
+  }
+
+  ionViewWillLeave() {
+    if (this.platform.is('capacitor')) {
+      StatusBar.setStyle({ style: Style.Light });
+    }
   }
 
   ngOnDestroy() {
