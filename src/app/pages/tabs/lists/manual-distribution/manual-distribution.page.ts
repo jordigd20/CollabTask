@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Task, Team } from '../../../../interfaces';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { switchMap, Observable, map, from, combineLatest, Subject, takeUntil, of } from 'rxjs';
+import { switchMap, Observable, map, combineLatest, Subject, takeUntil, of } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { PopoverController } from '@ionic/angular';
 import { InfoManualDistributionComponent } from '../../../../components/info-manual-distribution/info-manual-distribution.component';
@@ -16,13 +16,11 @@ import { InfoManualDistributionComponent } from '../../../../components/info-man
 export class ManualDistributionPage implements OnInit {
   idTeam: string | undefined;
   idTaskList: string | undefined;
-  idUser: string = '';
-  teamVm:
-    | {
-        [key: string]: any;
-        team: Team | undefined;
-      }
-    | undefined;
+  idUser: string | undefined;
+  team: Team | undefined;
+  temporalUserTasks: {
+    [key: string]: Task[];
+  } = {};
   tasksUnassigned: Task[] = [];
   isLoading: boolean = false;
   destroy$ = new Subject<void>();
@@ -36,64 +34,60 @@ export class ManualDistributionPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
+    const user = await this.storageService.get('user');
+
+    if (!this.idTeam || !this.idTaskList || !user) {
+      return;
+    }
+
+    this.idUser = user.id;
+
     combineLatest([
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTeam = params.get('idTeam')!;
-            this.idTaskList = params.get('idTaskList')!;
-            return from(this.storageService.get('user'));
+      this.teamService.getTeamObservable(this.idTeam!).pipe(
+        switchMap((team) => {
+          if (!team || !team.taskLists[this.idTaskList!] || !team.userMembers[this.idUser!]) {
+            this.router.navigate(['/tabs/lists']);
+            return of();
           }
 
-          return of();
-        }),
-        switchMap((user) => {
-          this.idUser = user.id;
-          return this.teamService.getTeamObservable(this.idTeam!);
-        }),
-        map((team) => {
-          const result: {
-            team: Team | undefined;
-            [key: string]: Team | undefined | Observable<Task[]>;
-          } = { team };
+          this.team = team;
+          const allTempTasksByUser$: Observable<{
+            idUser: string;
+            tasks: Task[];
+          }>[] = [];
 
-          for (let user of Object.values(team!.userMembers)) {
-            result[user.id] = this.taskService.getTemporalUserTasks(this.idTaskList!, user.id);
+          for (let member of Object.values(team.userMembers)) {
+            allTempTasksByUser$.push(
+              this.taskService.getTemporalUserTasks(this.idTaskList!, member.id)
+            );
           }
 
-          return result;
+          return combineLatest(allTempTasksByUser$);
         })
       ),
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTeam = params.get('idTeam')!;
-            this.idTaskList = params.get('idTaskList')!;
-            return this.taskService.getAllUnassignedTasks(this.idTaskList);
-          }
-
-          return of();
-        })
-      )
+      this.taskService.getAllUnassignedTasks(this.idTaskList!)
     ])
       .pipe(
         takeUntil(this.destroy$),
-        map(([teamVm, tasksUnassigned]) => ({ teamVm, tasksUnassigned }))
+        map(([allTempTasksByUser, tasksUnassigned]) => ({
+          allTempTasksByUser,
+          tasksUnassigned
+        }))
       )
-      .subscribe(({ teamVm, tasksUnassigned }) => {
-        if (
-          !teamVm.team ||
-          !teamVm.team.taskLists[this.idTaskList!] ||
-          !teamVm.team.userMembers[this.idUser] ||
-          !tasksUnassigned
-        ) {
+      .subscribe(({ allTempTasksByUser, tasksUnassigned }) => {
+        if (!allTempTasksByUser || !tasksUnassigned) {
           this.router.navigate(['/tabs/lists']);
           return;
         }
 
-        this.teamVm = teamVm;
         this.tasksUnassigned = tasksUnassigned;
+
+        for (let user of allTempTasksByUser) {
+          this.temporalUserTasks[user.idUser] = user.tasks;
+        }
       });
   }
 

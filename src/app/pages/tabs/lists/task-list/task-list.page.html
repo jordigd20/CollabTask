@@ -28,7 +28,6 @@
         <app-task
           *ngFor="let task of tasks; trackBy: identify"
           [task]="task"
-          [teamName]="team!.name"
           [idUser]="task.idUserAssigned"
           [currentUserId]="idUser"
           [withoutUserAssigned]="false"

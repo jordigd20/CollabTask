@@ -53,7 +53,13 @@ export class TaskService {
 
   getTemporalUserTasks(idTaskList: string, idUser: string) {
     return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) => tasks.filter((task) => task.idTemporalUserAssigned === idUser))
+      map((tasks) => {
+        const tasksFiltered = tasks.filter((task) => task.idTemporalUserAssigned === idUser);
+        return {
+          idUser,
+          tasks: tasksFiltered
+        };
+      })
     );
   }
 

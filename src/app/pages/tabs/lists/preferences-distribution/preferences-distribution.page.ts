@@ -4,7 +4,7 @@ import { PopoverController, ModalController } from '@ionic/angular';
 import { InfoPreferencesDistributionComponent } from '../../../../components/info-preferences-distribution/info-preferences-distribution.component';
 import { TaskService } from '../../../../services/task.service';
 import { TeamService } from '../../../../services/team.service';
-import { switchMap, from, combineLatest, map, Subject, takeUntil, of } from 'rxjs';
+import { combineLatest, map, Subject, takeUntil } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { Task, Team } from '../../../../interfaces';
 import { presentConfirmationModal } from '../../../../helpers/common-functions';
@@ -37,43 +37,24 @@ export class PreferencesDistributionPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
+    const user = await this.storageService.get('user');
+
+    if (!this.idTeam || !this.idTaskList || !user) {
+      return;
+    }
+
+    this.idUser = user.id;
+
     combineLatest([
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTeam = params.get('idTeam')!;
-            this.idTaskList = params.get('idTaskList')!;
-            return this.teamService.getTeamObservable(this.idTeam);
-          }
-
-          return of();
-        })
-      ),
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTeam = params.get('idTeam')!;
-            this.idTaskList = params.get('idTaskList')!;
-            return this.taskService.getAllUnassignedTasks(this.idTaskList);
-          }
-
-          return of();
-        })
-      ),
-      this.activeRoute.paramMap.pipe(
-        switchMap(() => {
-          return from(this.storageService.get('user'));
-        }),
-        switchMap((user) => {
-          this.idUser = user.id;
-
-          return this.teamService.getUserTasksPreferredFromTaskList(
-            this.idTeam!,
-            this.idTaskList!,
-            this.idUser
-          );
-        })
+      this.teamService.getTeamObservable(this.idTeam),
+      this.taskService.getAllUnassignedTasks(this.idTaskList),
+      this.teamService.getUserTasksPreferredFromTaskList(
+        this.idTeam!,
+        this.idTaskList!,
+        this.idUser
       )
     ])
       .pipe(

@@ -14,7 +14,6 @@ import { presentConfirmationModal } from '../../helpers/common-functions';
 })
 export class TaskComponent implements OnInit {
   @Input() task: Task = {} as Task;
-  @Input() teamName: string = '';
   @Input() idUser: string = '';
   @Input() currentUserId: string = '';
   @Input() withoutUserAssigned: boolean = false;
@@ -112,6 +111,10 @@ export class TaskComponent implements OnInit {
   }
 
   async moreOptions() {
+    if (!this.team || !this.currentUserId) {
+      return;
+    }
+
     const editTaskButton = {
       text: 'Editar',
       icon: 'create-outline',
@@ -188,7 +191,7 @@ export class TaskComponent implements OnInit {
       }
     };
 
-    const userRole = this.team?.userMembers[this.currentUserId].role;
+    const userRole = this.team.userMembers[this.currentUserId].role;
     let buttons = [
       editTaskButton,
       this.distributionMode === 'preferences' ? markAsPreferredButton : assignUserButton,

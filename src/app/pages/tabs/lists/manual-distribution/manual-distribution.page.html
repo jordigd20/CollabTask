@@ -5,7 +5,7 @@
 ></app-back-header>
 
 <ion-content>
-  <ng-container *ngIf="teamVm && tasksUnassigned; else loading">
+  <ng-container *ngIf="team && tasksUnassigned && idUser; else loading">
     <ion-list lines="none">
       <ion-list-header class="ion-padding-horizontal">
         <ion-label><h3 class="list-title">Lista de tareas</h3></ion-label>
@@ -22,13 +22,14 @@
       <app-task-slide
         [tasks]="tasksUnassigned"
         [withoutUsers]="true"
+        [currentUserId]="idUser"
         distributionMode="manual"
       ></app-task-slide>
     </ion-list>
 
     <ion-list
       lines="none"
-      *ngFor="let user of teamVm.team?.userMembers | objSortedValues; trackBy: identify"
+      *ngFor="let user of team.userMembers | objSortedValues; trackBy: identify"
     >
       <ion-list-header class="ion-padding-horizontal">
         <ion-label>
@@ -36,18 +37,21 @@
         </ion-label>
       </ion-list-header>
 
-      <app-task-slide
-        [tasks]="(teamVm[user.id] | async)!"
-        [idUser]="user.id"
-        [withoutUsers]="false"
-        distributionMode="manual"
-        [noTasksMessage]="user.name + ' no tiene ninguna tarea asignada'"
-      ></app-task-slide>
+      <ng-container *ngIf="temporalUserTasks[user.id]">
+        <app-task-slide
+          [tasks]="temporalUserTasks[user.id]"
+          [idUser]="user.id"
+          [currentUserId]="idUser"
+          [withoutUsers]="false"
+          distributionMode="manual"
+          [noTasksMessage]="user.name + ' no tiene ninguna tarea asignada'"
+        ></app-task-slide>
+      </ng-container>
     </ion-list>
 
     <ion-button
       (click)="completeDistribution()"
-      [disabled]="teamVm.team!.userMembers[idUser].role === 'member' || isLoading"
+      [disabled]="team.userMembers[idUser].role === 'member' || isLoading"
       class="ion-margin"
       expand="block"
       fill="solid"

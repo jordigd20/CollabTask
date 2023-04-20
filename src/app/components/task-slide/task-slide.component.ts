@@ -13,6 +13,7 @@ SwiperCore.use([FreeMode]);
 export class TaskSlideComponent implements OnInit {
   @Input() tasks: Task[] = [];
   @Input() idUser: string = '';
+  @Input() currentUserId: string = '';
   @Input() withoutUsers: boolean = false;
   @Input() distributionMode: 'preferences' | 'manual' | 'none' = 'none';
   @Input() tradeMode: boolean = false;
