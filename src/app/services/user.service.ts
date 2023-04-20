@@ -244,7 +244,52 @@ export class UserService {
         photoURL = user.googlePhotoURL;
       }
 
-      await this.afs.doc<User>(`users/${user.id}`).update({ photoURL });
+      const batch = this.afs.firestore.batch();
+      const userRef = this.afs.doc<User>(`users/${user.id}`).ref;
+      batch.update(userRef, { photoURL });
+
+      const [trades, teams] = await Promise.all([
+        firstValueFrom(
+          this.afs
+            .collection<Trade>('trades', (ref) =>
+              ref.where('idUsersInvolved', 'array-contains', user.id)
+            )
+            .valueChanges()
+        ),
+        firstValueFrom(
+          this.afs
+            .collection<Team>('teams', (ref) =>
+              ref.where('idUserMembers', 'array-contains', user.id)
+            )
+            .valueChanges()
+        )
+      ]);
+
+      for (const team of teams) {
+        const teamDoc = this.afs.doc<Team>(`teams/${team.id}`);
+
+        batch.update(teamDoc.ref, {
+          [`userMembers.${user.id}.photoURL`]: photoURL
+        });
+      }
+
+      for (const trade of trades) {
+        const tradeDoc = this.afs.doc(`trades/${trade.id}`);
+
+        if (trade.userSender.id === user.id) {
+          batch.update(tradeDoc.ref, {
+            [`userSender.photoURL`]: photoURL
+          });
+        }
+
+        if (trade.userReceiver.id === user.id) {
+          batch.update(tradeDoc.ref, {
+            [`userReceiver.photoURL`]: photoURL
+          });
+        }
+      }
+
+      await batch.commit();
     } catch (error) {
       console.error(error);
       this.handleError(error);
