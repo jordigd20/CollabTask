@@ -80,11 +80,11 @@ const routes: Routes = [
                 (m) => m.DistributionResultPageModule
               )
           },
-          {
-            path: 'task-detail/:idTaskList/:idTask',
-            loadChildren: () =>
-              import('../lists/task-detail/task-detail.module').then((m) => m.TaskDetailPageModule)
-          },
+          // {
+          //   path: 'task-detail/:idTaskList/:idTask',
+          //   loadChildren: () =>
+          //     import('../../common/task-detail/task-detail.module').then((m) => m.TaskDetailPageModule)
+          // },
           {
             path: 'team-members/:idTeam',
             loadChildren: () =>

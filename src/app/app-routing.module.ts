@@ -41,11 +41,18 @@ const routes: Routes = [
   },
   {
     path: 'create-task/:idTeam/:idTaskList',
-    loadChildren: () => import('./pages/common/task-form/task-form.module').then( m => m.TaskFormPageModule)
+    loadChildren: () =>
+      import('./pages/common/task-form/task-form.module').then((m) => m.TaskFormPageModule)
   },
   {
     path: 'edit-task/:idTaskList/:idTask',
-    loadChildren: () => import('./pages/common/task-form/task-form.module').then( m => m.TaskFormPageModule)
+    loadChildren: () =>
+      import('./pages/common/task-form/task-form.module').then((m) => m.TaskFormPageModule)
+  },
+  {
+    path: 'task-detail/:idTaskList/:idTask',
+    loadChildren: () =>
+      import('./pages/common/task-detail/task-detail.module').then((m) => m.TaskDetailPageModule)
   },
   {
     path: '**',

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { TaskDetailPageRoutingModule } from './task-deatil-routing.module';
 import { TaskDetailPage } from './task-detail.page';
-import { ComponentsModule } from '../../../../components/components.module';
+import { ComponentsModule } from '../../../components/components.module';
 
 @NgModule({
   imports: [

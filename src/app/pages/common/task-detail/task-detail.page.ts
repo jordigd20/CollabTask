@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { TaskService } from '../../../../services/task.service';
+import { TaskService } from '../../../services/task.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap, of, Subject, takeUntil, from } from 'rxjs';
-import { Task, Team } from '../../../../interfaces';
-import { TeamService } from '../../../../services/team.service';
-import { StorageService } from '../../../../services/storage.service';
-import { presentConfirmationModal } from '../../../../helpers/common-functions';
+import { Task, Team } from '../../../interfaces';
+import { TeamService } from '../../../services/team.service';
+import { StorageService } from '../../../services/storage.service';
+import { presentConfirmationModal } from '../../../helpers/common-functions';
 import { ModalController, ActionSheetController } from '@ionic/angular';
 import { Camera } from '@capacitor/camera';
 import { CameraResultType } from '@capacitor/camera/dist/esm/definitions';

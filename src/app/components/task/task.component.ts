@@ -92,7 +92,7 @@ export class TaskComponent implements OnInit {
     };
 
     this.router.navigate([
-      'tabs/lists/task-detail/',
+      'task-detail/',
       this.task.idTaskList,
       this.task.id,
       optParams
