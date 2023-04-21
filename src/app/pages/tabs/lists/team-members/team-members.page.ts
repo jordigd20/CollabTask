@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, combineLatest, from, map, of, switchMap, takeUntil } from 'rxjs';
+import { Subject, combineLatest, map, takeUntil } from 'rxjs';
 import { TeamService } from 'src/app/services/team.service';
 import { UserService } from 'src/app/services/user.service';
 import { Team, User } from '../../../../interfaces';
@@ -31,40 +31,25 @@ export class TeamMembersPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idUser = await this.storageService.get('idUser');
+
+    if (!this.idTeam || !this.idUser) {
+      return;
+    }
+
     combineLatest([
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam')) {
-            this.idTeam = params.get('idTeam')!;
-            return this.teamService.getTeamObservable(this.idTeam);
-          }
-
-          return of();
-        })
-      ),
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam')) {
-            this.idTeam = params.get('idTeam')!;
-            return from(this.storageService.get('user'));
-          }
-
-          return of();
-        }),
-        switchMap((user) => {
-          this.idUser = user.id;
-          return this.userService.getUsersByTeam(this.idTeam!);
-        })
-      )
+      this.teamService.getTeamObservable(this.idTeam),
+      this.userService.getUsersByTeam(this.idTeam)
     ])
       .pipe(
+        map(([team, users]) => ({ team, users })),
         takeUntil(this.destroy$),
-        map(([team, users]) => ({ team, users }))
       )
       .subscribe(({ team, users }) => {
         if (!team || !team.userMembers[this.idUser!] || !users) {
-          this.router.navigate(['/tabs/lists']);
+          this.router.navigate(['tabs/lists']);
           return;
         }
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject, map, of, switchMap, takeUntil, tap } from 'rxjs';
+import { Subject, of, switchMap, takeUntil } from 'rxjs';
 import { User } from '../../../../interfaces';
 import { UserService } from 'src/app/services/user.service';
 import { RatingService } from 'src/app/services/rating.service';
@@ -33,52 +33,42 @@ export class RatingFormPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.activeRoute.paramMap
-      .pipe(
-        switchMap((params) => {
-          if (
-            params.get('idTeam') &&
-            params.get('idTaskList') &&
-            this.activeRoute.snapshot.queryParams['idUser']
-          ) {
-            this.idTaskList = params.get('idTaskList')!;
-            this.idTeam = params.get('idTeam')!;
-            this.idUserReceiver = this.activeRoute.snapshot.queryParams['idUser'];
-          }
+  async ngOnInit() {
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
+    this.idUserReceiver = this.activeRoute.snapshot.queryParams['idUser'];
 
-          if (params.get('idRating')) {
-            this.idRating = params.get('idRating')!;
-          }
+    if (!this.idTeam || !this.idTaskList || !this.idUserReceiver) {
+      return;
+    }
 
-          return this.userService.getUserByTeam(this.idTeam!, this.idUserReceiver);
-        }),
-        switchMap((user) => {
-          if (!user) {
-            return of();
-          }
+    this.idRating = this.activeRoute.snapshot.params['idRating'];
 
-          this.user = user;
-
-          if (this.idRating) {
-            return this.ratingService.getRating(this.idRating);
-          }
-
+    this.userService.getUserByTeam(this.idTeam!, this.idUserReceiver).pipe(
+      switchMap((user) => {
+        if (!user) {
           return of();
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((rating) => {
-        if (rating) {
-          this.isButtonDisabled = false;
-          this.ratingAspects = {
-            work: rating.work,
-            communication: rating.communication,
-            attitude: rating.attitude,
-            overall: rating.overall
-          };
         }
-      });
+
+        this.user = user;
+        if (this.idRating) {
+          return this.ratingService.getRating(this.idRating);
+        }
+
+        return of();
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe((rating) => {
+      if (rating) {
+        this.isButtonDisabled = false;
+        this.ratingAspects = {
+          work: rating.work,
+          communication: rating.communication,
+          attitude: rating.attitude,
+          overall: rating.overall
+        };
+      }
+    });
   }
 
   ngOnDestroy() {

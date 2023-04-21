@@ -40,13 +40,11 @@ export class PreferencesDistributionPage implements OnInit {
   async ngOnInit() {
     this.idTeam = this.activeRoute.snapshot.params['idTeam'];
     this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
-    const user = await this.storageService.get('user');
+    this.idUser = await this.storageService.get('idUser');
 
-    if (!this.idTeam || !this.idTaskList || !user) {
+    if (!this.idTeam || !this.idTaskList || !this.idUser) {
       return;
     }
-
-    this.idUser = user.id;
 
     combineLatest([
       this.teamService.getTeamObservable(this.idTeam),
@@ -73,12 +71,12 @@ export class PreferencesDistributionPage implements OnInit {
           !tasksUnassigned ||
           !userTasksPreferred
         ) {
-          this.router.navigate(['/tabs/lists']);
+          this.router.navigate(['tabs/lists']);
           return;
         }
 
         if (team.taskLists[this.idTaskList!].distributionCompleted) {
-          this.router.navigate(['/tabs/lists/distribution-result', this.idTeam, this.idTaskList]);
+          this.router.navigate(['tabs/lists/distribution-result', this.idTeam, this.idTaskList]);
           return;
         }
 

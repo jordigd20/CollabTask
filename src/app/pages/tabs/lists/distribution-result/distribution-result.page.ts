@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TeamService } from '../../../../services/team.service';
 import { ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../../services/task.service';
-import { switchMap, of, Subject, takeUntil, from, firstValueFrom } from 'rxjs';
+import { switchMap, of, Subject, takeUntil, firstValueFrom } from 'rxjs';
 import { Team, Task } from '../../../../interfaces';
 import { StorageService } from '../../../../services/storage.service';
 
@@ -29,21 +29,16 @@ export class DistributionResultPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    const tasks = await firstValueFrom(
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTeam = params.get('idTeam')!;
-            this.idTaskList = params.get('idTaskList')!;
-            return from(this.storageService.get('user'));
-          }
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
+    this.idUser = await this.storageService.get('idUser');
 
-          return of();
-        }),
-        switchMap((user) => {
-          this.idUser = user.id;
-          return this.teamService.getTeamObservable(this.idTeam!);
-        }),
+    if (!this.idTeam || !this.idTaskList || !this.idUser) {
+      return;
+    }
+
+    const tasks = await firstValueFrom(
+      this.teamService.getTeamObservable(this.idTeam).pipe(
         switchMap((team) => {
           if (!team || !team.taskLists[this.idTaskList!] || !team.userMembers[this.idUser]) {
             return of();

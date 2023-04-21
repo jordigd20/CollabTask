@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
-import { switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-team-form',
@@ -33,26 +32,22 @@ export class TeamFormPage implements OnInit {
   }
 
   ngOnInit() {
-    this.activeRoute.paramMap
-      .pipe(
-        switchMap((params) => {
-          if (params.get('id')) {
-            this.idTeam = params.get('id')!;
-            this.headerTitle = 'Editar equipo';
-            this.buttonText = 'Guardar cambios';
-            return this.teamService.getTeam(this.idTeam);
-          }
+    this.idTeam = this.activeRoute.snapshot.params['id'];
 
-          return of();
-        }),
-      )
-      .subscribe((team) => {
-        if (team) {
-          this.fillComponentData(team);
-        } else {
-          this.router.navigate(['/tabs/lists']);
-        }
-      });
+    if (!this.idTeam) {
+      return;
+    }
+
+    this.headerTitle = 'Editar equipo';
+    this.buttonText = 'Guardar cambios';
+
+    this.teamService.getTeam(this.idTeam).subscribe((team) => {
+      if (team) {
+        this.fillComponentData(team);
+      } else {
+        this.router.navigate(['tabs/lists']);
+      }
+    });
   }
 
   fillComponentData(team: Team) {

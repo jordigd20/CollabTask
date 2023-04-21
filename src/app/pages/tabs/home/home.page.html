@@ -53,9 +53,9 @@
     <div class="tasks-by-date">
       <div class="title-container ion-padding-horizontal">
         <h3>{{ selectedDay | date: 'd MMMM' }}</h3>
-        <ion-text class="small-text"
-          >{{ tasksByDate.get(selectedDay.getTime())?.length || 0 }} tareas</ion-text
-        >
+        <ion-text class="small-text">
+          {{ tasksByDate.get(selectedDay.getTime())?.length || 0 }} tareas
+        </ion-text>
       </div>
 
       <ion-list

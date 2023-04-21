@@ -112,8 +112,10 @@ export class TradeFormComponent implements OnInit {
     return this.tradeForm.get('taskOffered')?.value;
   }
 
-  ngOnInit() {
-    if (!this.idTeam || !this.idTaskList) {
+  async ngOnInit() {
+    this.idCurrentUser = await this.storageService.get('idUser');
+
+    if (!this.idTeam || !this.idTaskList || !this.idCurrentUser) {
       return;
     }
 
@@ -146,19 +148,9 @@ export class TradeFormComponent implements OnInit {
         console.log(this.tasksByUser);
       });
 
-    from(this.storageService.get('user'))
+    return this.taskService
+      .getAllUncompletedTasksByUser(this.idTaskList!, this.idCurrentUser!)
       .pipe(
-        switchMap((user) => {
-          if (user) {
-            this.idCurrentUser = user.id;
-            return this.taskService.getAllUncompletedTasksByUser(
-              this.idTaskList!,
-              this.idCurrentUser!
-            );
-          }
-
-          return of();
-        }),
         switchMap((tasks) => {
           if (tasks) {
             this.tasks = tasks;

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Rating, RatingData, TeamErrorCodes } from '../interfaces';
 import { StorageService } from './storage.service';
-import { Observable, debounceTime, firstValueFrom, map, shareReplay } from 'rxjs';
+import { Observable, debounceTime, firstValueFrom, shareReplay } from 'rxjs';
 import { ToastService } from './toast.service';
 import { collabTaskErrors } from '../helpers/common-functions';
 import { TeamService } from './team.service';
@@ -52,7 +52,7 @@ export class RatingService {
   async createRating({ idTeam, idTaskList, idUserReceiver, ...ratingAspects }: RatingData) {
     try {
       const [currentUser, team] = await Promise.all([
-        this.storageService.get('user'),
+        this.storageService.get('idUser'),
         firstValueFrom(this.teamService.getTeamObservable(idTeam))
       ]);
 
@@ -64,7 +64,7 @@ export class RatingService {
         throw new Error(TeamErrorCodes.TaskListNotFound);
       }
 
-      if (!team.userMembers[idUserReceiver] || !team.userMembers[currentUser.id]) {
+      if (!team.userMembers[idUserReceiver] || !team.userMembers[currentUser]) {
         throw new Error(TeamErrorCodes.UserDoesNotBelongToTeam);
       }
 
@@ -72,7 +72,7 @@ export class RatingService {
       const data = {
         id,
         idTaskList,
-        idUserSender: currentUser.id,
+        idUserSender: currentUser,
         idUserReceiver,
         ...ratingAspects
       };
@@ -97,7 +97,7 @@ export class RatingService {
       }
 
       const [currentUser, team] = await Promise.all([
-        this.storageService.get('user'),
+        this.storageService.get('idUser'),
         firstValueFrom(this.teamService.getTeamObservable(idTeam))
       ]);
 
@@ -109,7 +109,7 @@ export class RatingService {
         throw new Error(TeamErrorCodes.TaskListNotFound);
       }
 
-      if (!team.userMembers[idUserReceiver] || !team.userMembers[currentUser.id]) {
+      if (!team.userMembers[idUserReceiver] || !team.userMembers[currentUser]) {
         throw new Error(TeamErrorCodes.UserDoesNotBelongToTeam);
       }
 

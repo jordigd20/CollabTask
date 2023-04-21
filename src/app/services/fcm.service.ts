@@ -39,11 +39,11 @@ export class FcmService {
 
     // On success, we should be able to receive notifications
     PushNotifications.addListener('registration', async (token: Token) => {
-      const user = await this.storageService.get('user');
+      const idUser = await this.storageService.get('idUser');
       await this.afs
         .collection('fcmTokens')
-        .doc(user.id)
-        .set({ idUser: user.id, token: token.value });
+        .doc(idUser)
+        .set({ idUser, token: token.value });
       console.log('Push registration success, token: ' + token.value);
     });
 
@@ -68,7 +68,7 @@ export class FcmService {
         const { data } = notification.notification;
         if (data.isTradeNotification === 'true') {
           const queryParams = data.isTradeSent === 'true' ? { activateSentTrades: true } : {};
-          this.router.navigate(['/tabs/trades'], { queryParams });
+          this.router.navigate(['tabs/trades'], { queryParams });
           return;
         }
       }

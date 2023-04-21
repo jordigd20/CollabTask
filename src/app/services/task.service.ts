@@ -33,6 +33,8 @@ export class TaskService {
   private task$: Observable<Task | undefined> | undefined;
   private outdatedTasks$: Observable<Task[]> | undefined;
   private tasksByDate$: Observable<Task[]> | undefined;
+  private outdatedTasksIdUser: string = '';
+  private tasksByDateIdUser: string = '';
   private currentIdTaskList: string = '';
   private currentIdTask: string = '';
 
@@ -89,8 +91,8 @@ export class TaskService {
     );
   }
 
-  getHomeOutdatedTasks(idUser: string) {
-    if (!this.outdatedTasks$) {
+  getOutdatedTasks(idUser: string) {
+    if (!this.outdatedTasks$ || this.outdatedTasksIdUser !== idUser) {
       this.outdatedTasks$ = this.afs
         .collection<Task>('tasks', (ref) =>
           ref
@@ -152,6 +154,8 @@ export class TaskService {
           }),
           shareReplay({ bufferSize: 1, refCount: true })
         );
+
+      this.outdatedTasksIdUser = idUser;
     }
 
     return this.outdatedTasks$;
@@ -164,7 +168,11 @@ export class TaskService {
     const today = new Date();
     today.setHours(12, 0, 0, 0);
 
-    if (!this.tasksByDate$ || today.getTime() !== date.getTime()) {
+    if (
+      !this.tasksByDate$ ||
+      today.getTime() !== date.getTime() ||
+      this.tasksByDateIdUser !== idUser
+    ) {
       this.tasksByDate$ = this.afs
         .collection<Task>('tasks', (ref) =>
           ref
@@ -227,6 +235,8 @@ export class TaskService {
           }),
           shareReplay({ bufferSize: 1, refCount: true })
         );
+
+      this.tasksByDateIdUser = idUser;
       console.log('tasksByDate$ is undefined');
     }
 
@@ -336,7 +346,7 @@ export class TaskService {
     date
   }: TaskData) {
     try {
-      const { id: userId } = await this.storageService.get('user');
+      const idUser = await this.storageService.get('idUser');
       const dateTimestamp = convertStringToTimestamp(date as string);
       const dateLimitTimestamp = convertStringToTimestamp(dateLimit as string);
       const id = this.afs.createId();
@@ -365,7 +375,7 @@ export class TaskService {
         isInvolvedInTrade: false,
         idTrade: '',
         createdByUser: {
-          id: userId,
+          id: idUser,
           date: firebase.firestore.Timestamp.now()
         }
       };
@@ -459,14 +469,10 @@ export class TaskService {
         totalTasksCompleted: firebase.firestore.FieldValue.increment(1)
       });
 
-      // if (task.selectedDate === 'datePeriodic') {
-      // TODO: Task with periodic date
-      // } else {
       batch.update(taskRef, {
         completed: true,
         availableToAssign: true
       });
-      // }
 
       batch.update(teamRef, {
         [`taskLists.${idTaskList}.userScore.${idUser}`]: firebase.firestore.FieldValue.increment(

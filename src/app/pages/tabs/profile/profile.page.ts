@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
-import { Subject, from, of, switchMap, takeUntil } from 'rxjs';
+import { Subject, from, of, switchMap, take, takeUntil } from 'rxjs';
 import { User } from '../../../interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -14,6 +14,7 @@ import { Platform } from '@ionic/angular';
   styleUrls: ['./profile.page.scss']
 })
 export class ProfilePage implements OnInit {
+  idCurrentUser: string | undefined;
   user: User | undefined;
   showBackButton: boolean = false;
   showSettings: boolean = true;
@@ -28,8 +29,14 @@ export class ProfilePage implements OnInit {
     private platform: Platform
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     const { idUser, idTeam } = this.activeRoute.snapshot.params;
+    this.idCurrentUser = await this.storageService.get('idUser');
+
+    if (!this.idCurrentUser) {
+      return;
+    }
+
     if (idUser && idTeam) {
       this.userService
         .getUserByTeam(idTeam, idUser)
@@ -46,18 +53,22 @@ export class ProfilePage implements OnInit {
       return;
     }
 
-    from(this.storageService.get('user'))
+    this.authService.isUserLoggedIn$
       .pipe(
-        switchMap((user) => {
-          if (user) {
-            return this.userService.getUser(user.id);
+        switchMap((isLoggedIn) => {
+          if (!isLoggedIn) {
+            return of();
           }
 
-          return of();
+          return this.userService.getUser(this.idCurrentUser!);
         }),
         takeUntil(this.destroy$)
       )
       .subscribe((user) => {
+        if (!user) {
+          return;
+        }
+
         this.user = user;
       });
   }

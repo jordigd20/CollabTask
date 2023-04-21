@@ -7,7 +7,6 @@ import { PeriodicDateModalComponent } from '../../../components/periodic-date-mo
 import { TaskService } from '../../../services/task.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Task } from '../../../interfaces';
-import { switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-task-form',
@@ -71,29 +70,23 @@ export class TaskFormPage implements OnInit {
   }
 
   ngOnInit() {
-    this.activeRoute.paramMap
-      .pipe(
-        switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
-          this.idTask = params.get('idTask') as string;
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
+    this.idTask = this.activeRoute.snapshot.params['idTask'];
 
-          if (this.idTask && this.idTaskList) {
-            this.headerTitle = 'Editar tarea';
-            this.buttonText = 'Guardar cambios';
-            return this.taskService.getTask(this.idTask, this.idTaskList);
-          }
+    if (!this.idTask || !this.idTaskList) {
+      return;
+    }
 
-          return of();
-        })
-      )
-      .subscribe((task) => {
-        if (task) {
-          this.fillComponentData(task);
-        } else {
-          this.router.navigate(['/tabs/lists']);
-        }
-      });
+    this.headerTitle = 'Editar tarea';
+    this.buttonText = 'Guardar cambios';
+    this.taskService.getTask(this.idTask, this.idTaskList).subscribe((task) => {
+      if (task) {
+        this.fillComponentData(task);
+      } else {
+        this.router.navigate(['tabs/lists']);
+      }
+    });
   }
 
   fillComponentData(task: Task) {

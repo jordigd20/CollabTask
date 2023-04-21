@@ -37,19 +37,17 @@ export class ManualDistributionPage implements OnInit {
   async ngOnInit() {
     this.idTeam = this.activeRoute.snapshot.params['idTeam'];
     this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
-    const user = await this.storageService.get('user');
+    this.idUser = await this.storageService.get('idUser');
 
-    if (!this.idTeam || !this.idTaskList || !user) {
+    if (!this.idTeam || !this.idTaskList || !this.idUser) {
       return;
     }
-
-    this.idUser = user.id;
 
     combineLatest([
       this.teamService.getTeamObservable(this.idTeam!).pipe(
         switchMap((team) => {
           if (!team || !team.taskLists[this.idTaskList!] || !team.userMembers[this.idUser!]) {
-            this.router.navigate(['/tabs/lists']);
+            this.router.navigate(['tabs/lists']);
             return of();
           }
 
@@ -79,7 +77,7 @@ export class ManualDistributionPage implements OnInit {
       )
       .subscribe(({ allTempTasksByUser, tasksUnassigned }) => {
         if (!allTempTasksByUser || !tasksUnassigned) {
-          this.router.navigate(['/tabs/lists']);
+          this.router.navigate(['tabs/lists']);
           return;
         }
 

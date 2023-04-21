@@ -58,9 +58,9 @@ export class TeamService {
 
   getTeam(id: string, idUser?: string) {
     if (!idUser) {
-      return from(this.storageService.get('user')).pipe(
+      return from(this.storageService.get('idUser')).pipe(
         switchMap((user) => {
-          return this.getAllUserTeams(user.id).pipe(
+          return this.getAllUserTeams(user).pipe(
             take(1),
             map((teams) => teams.find((team) => team.id === id))
           );
@@ -136,7 +136,7 @@ export class TeamService {
       const id = this.afs.createId();
       const invitationCode = nanoid(12);
 
-      const { id: idUser } = await this.storageService.get('user');
+      const idUser = await this.storageService.get('idUser');
       const user = await firstValueFrom(this.userService.getUser(idUser));
 
       const userMembers: { [key: string]: UserMember } = {
@@ -182,7 +182,7 @@ export class TeamService {
     userMembers: { [key: string]: UserMember }
   ) {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const team = await firstValueFrom(this.getTeam(id, idCurrentUser));
 
       if (!team) {
@@ -212,7 +212,7 @@ export class TeamService {
 
   async createTaskList(idTeam: string, { name, distributionType }: TaskListData) {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const team = await firstValueFrom(this.getTeam(idTeam, idCurrentUser));
 
       if (!team || !name || !distributionType) {
@@ -266,7 +266,7 @@ export class TeamService {
     { name, distributionType, distributionCompleted, idAssignedTasks }: TaskListData
   ) {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const team = await firstValueFrom(this.getTeam(idTeam, idCurrentUser));
 
       if (!team) {
@@ -348,7 +348,7 @@ export class TeamService {
 
   async markTaskAsPreferred({ idTeam, idTaskList, idTask, idUser, isPreferred }: MarkTaskData) {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const [team, tasksUnassigned] = await Promise.all([
         firstValueFrom(this.getTeam(idTeam)),
         firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))
@@ -433,7 +433,7 @@ export class TeamService {
         return;
       }
 
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const team = await firstValueFrom(this.getTeam(idTeam));
 
       if (!team) {
@@ -479,7 +479,7 @@ export class TeamService {
 
   async deleteTaskList(idTeam: string, idTaskList: string, idUser: string) {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const team = await firstValueFrom(this.getTeam(idTeam));
 
       if (!team) {
@@ -524,7 +524,7 @@ export class TeamService {
 
   async deleteTask(idTeam: string, idTaskList: string, idTask: string) {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const [team, task] = await Promise.all([
         firstValueFrom(this.getTeam(idTeam, idCurrentUser)),
         firstValueFrom(this.taskService.getTaskObservable(idTask))
@@ -593,7 +593,7 @@ export class TeamService {
     if (Object.keys(team.userMembers).length === 1) {
       this.deleteTeam(idTeam);
     } else {
-      const { id: idUser } = await this.storageService.get('user');
+      const idUser = await this.storageService.get('idUser');
       this.removeUserFromTeam({ idTeam, team, idUser, executedByAdmin: false });
     }
   }
@@ -625,7 +625,7 @@ export class TeamService {
         batch.delete(tradeRef);
       }
 
-      const { id: idUser } = await this.storageService.get('user');
+      const idUser = await this.storageService.get('idUser');
       const userRef = this.afs.firestore.doc(`users/${idUser}`);
       const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
       batch.update(userRef, 'idTeams', firebase.firestore.FieldValue.arrayRemove(idTeam));
@@ -656,7 +656,7 @@ export class TeamService {
     team?: Team;
   }) {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
 
       if (!team) {
         team = await firstValueFrom(this.getTeam(idTeam));
@@ -767,7 +767,7 @@ export class TeamService {
 
   async changeUserRole(idTeam: string, idUser: string, role: 'admin' | 'member') {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const team = await firstValueFrom(this.getTeamObservable(idTeam));
 
       if (!team) {
@@ -803,7 +803,7 @@ export class TeamService {
       ref.where('invitationCode', '==', invitationCode)
     );
 
-    const { id: idUser } = await this.storageService.get('user');
+    const idUser = await this.storageService.get('idUser');
     const { username, photoURL } = await firstValueFrom(this.userService.getUser(idUser));
 
     return teamsCollection.get().pipe(
@@ -878,7 +878,7 @@ export class TeamService {
 
   async completePreferencesDistribution(idTeam: string, idTaskList: string) {
     try {
-      const { id: idCurrentUser } = await this.storageService.get('user');
+      const idCurrentUser = await this.storageService.get('idUser');
       const [team, tasksUnassigned] = await Promise.all([
         firstValueFrom(this.getTeam(idTeam, idCurrentUser)),
         firstValueFrom(this.taskService.getAllUnassignedTasks(idTaskList))

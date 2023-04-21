@@ -45,14 +45,15 @@ export class SettingsPage implements OnInit {
   }
 
   navigateToEditProfile() {
-    this.router.navigate(['/tabs/profile/edit-profile', this.user?.id]);
+    this.router.navigate(['tabs/profile/edit-profile', this.user?.id]);
   }
 
   navigateToChangePassword() {
-    this.router.navigate(['/tabs/profile/change-password', this.user?.id]);
+    this.router.navigate(['tabs/profile/change-password', this.user?.id]);
   }
 
   async logOut() {
+    this.destroy$.next();
     await this.authService.logOut();
   }
 }

@@ -31,7 +31,7 @@ export class TeamSettingsPage implements OnInit {
           const result = this.teamService.getTeam(this.idTeam);
 
           if (!result) {
-            this.router.navigate(['/tabs/lists']);
+            this.router.navigate(['tabs/lists']);
           }
 
           return result;
@@ -55,7 +55,7 @@ export class TeamSettingsPage implements OnInit {
 
   async leaveTeam() {
     await this.teamService.leaveTeam(this.idTeam!);
-    this.router.navigate(['/tabs/lists']);
+    this.router.navigate(['tabs/lists']);
   }
 
   async copyCodeToClipboard(invitationCode: string) {
@@ -65,6 +65,6 @@ export class TeamSettingsPage implements OnInit {
   }
 
   navigateToEditTeam() {
-    this.router.navigate(['/tabs/lists/edit-team', this.idTeam]);
+    this.router.navigate(['tabs/lists/edit-team', this.idTeam]);
   }
 }

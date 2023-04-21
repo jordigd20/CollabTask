@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { TradeService } from '../../../services/trade.service';
-import { Observable, Subject, forkJoin, from, of, switchMap, take, takeUntil } from 'rxjs';
+import { Observable, Subject, forkJoin, of, switchMap, take, takeUntil } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
 import { Task, Trade } from '../../../interfaces';
 import { TaskService } from '../../../services/task.service';
@@ -43,7 +43,7 @@ export class TradesPage implements OnInit {
     private modalController: ModalController
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     if (this.activeRoute.snapshot.queryParams['activateSentTrades']) {
       this.ionSegment.value = 'tradesSent';
       this.segmentActive = 'tradesSent';
@@ -53,19 +53,23 @@ export class TradesPage implements OnInit {
       this.getTradesSent();
     }
 
-    from(this.storageService.get('user'))
+    this.idUser = await this.storageService.get('idUser');
+
+    if (!this.idUser) {
+      return;
+    }
+
+    this.authService.isUserLoggedIn$
       .pipe(
-        switchMap((user) => {
-          if (user) {
-            this.idUser = user.id;
-            return this.tradeService.getTradesReceived(user.id);
+        switchMap((isLoggedIn) => {
+          if (!isLoggedIn) {
+            return of();
           }
 
-          return of();
+          return this.tradeService.getTradesReceived(this.idUser!);
         }),
         switchMap((trades) => {
           if (trades) {
-            console.log('tradesReceived: ', trades);
             this.tradesReceived = trades;
 
             const tasks$: Observable<Task | undefined>[] = [];
@@ -74,6 +78,7 @@ export class TradesPage implements OnInit {
                 rejecting: false,
                 accepting: false
               };
+
               tasks$.push(this.taskService.getTaskObservable(trade.taskOffered).pipe(take(1)));
               if (trade.tradeType === 'task' && trade.idTaskRequested) {
                 tasks$.push(
@@ -98,9 +103,7 @@ export class TradesPage implements OnInit {
           return;
         }
 
-        console.log('tasksReceived: ', tasks);
         this.tasksReceived = tasks;
-
         for (const trade of this.tradesReceived) {
           const task = tasks.find((task) => task?.id === trade.taskOffered);
 
@@ -116,32 +119,33 @@ export class TradesPage implements OnInit {
             }
           }
         }
-
-        console.log(this.taskNameByTrade);
       });
   }
 
   ngOnDestroy() {
-    console.log('ngOnDestroy');
     this.destroy$.next();
     this.tradesSent = undefined;
   }
 
-  getTradesSent() {
+  async getTradesSent() {
     if (this.tradesSent === undefined) {
-      from(this.storageService.get('user'))
+      this.idUser = await this.storageService.get('idUser');
+
+      if (!this.idUser) {
+        return;
+      }
+
+      this.authService.isUserLoggedIn$
         .pipe(
-          switchMap((user) => {
-            if (user) {
-              this.idUser = user.id;
-              return this.tradeService.getTradesSent(this.idUser!);
+          switchMap((isLoggedIn) => {
+            if (!isLoggedIn) {
+              return of();
             }
 
-            return of();
+            return this.tradeService.getTradesSent(this.idUser!);
           }),
           switchMap((trades) => {
             if (trades) {
-              console.log('tradesSent: ', trades);
               this.tradesSent = trades;
 
               const tasks$: Observable<Task | undefined>[] = [];
@@ -170,7 +174,6 @@ export class TradesPage implements OnInit {
             return;
           }
 
-          console.log('tasksSent: ', tasks);
           this.tasksSent = tasks;
 
           for (const trade of this.tradesSent) {

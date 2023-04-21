@@ -8,6 +8,7 @@ import {
   Subject,
   combineLatest,
   map,
+  of,
   switchMap,
   takeUntil
 } from 'rxjs';
@@ -61,30 +62,48 @@ export class HomePage implements OnInit {
       this.weekDates.push(newDate);
     }
 
-    const idUser = await this.storageService.get('user');
-    this.idCurrentUser = idUser?.id;
+    this.idCurrentUser = await this.storageService.get('idUser');
+
+    if (!this.idCurrentUser) {
+      return
+    }
 
     this.allDatesSelected.push({
       date: this.today.getTime(),
       tasks$: this.taskService.getTasksByDate(this.idCurrentUser!, this.today)
     });
-
     this.tasksByDate$ = new BehaviorSubject(this.allDatesSelected);
-    this.tasksByDate$
+
+    this.authService.isUserLoggedIn$
       .pipe(
-        map((tasks) => {
-          return tasks.map((task) => {
-            this.tasksByDate.set(task.date, this.tasksByDate.get(task.date) || []);
-            return task.tasks$;
-          });
+        switchMap((isUserLoggedIn) => {
+          if (!isUserLoggedIn) {
+            this.ngOnDestroy();
+            return of();
+          }
+
+          return this.tasksByDate$.pipe(
+            map((tasks) => {
+              return tasks.map((task) => {
+                this.tasksByDate.set(task.date, this.tasksByDate.get(task.date) || []);
+                return task.tasks$;
+              });
+            })
+          );
         }),
-        switchMap((tasks) =>
-          combineLatest([this.taskService.getHomeOutdatedTasks(this.idCurrentUser!), ...tasks])
-        ),
+        switchMap((tasks) => {
+          if (!tasks) {
+            return of();
+          }
+
+          return combineLatest([
+            this.taskService.getOutdatedTasks(this.idCurrentUser!),
+            ...tasks
+          ]);
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe((tasksByDate) => {
-        console.log(tasksByDate);
         this.outdatedTasks = tasksByDate[0];
         this.tasksByDate.set(this.today.getTime(), tasksByDate[1]);
 
@@ -95,6 +114,9 @@ export class HomePage implements OnInit {
   }
 
   ngOnDestroy() {
+    this.allDatesSelected = [];
+    this.tasksByDate.clear();
+    this.tasksByDate$.next([]);
     this.destroy$.next();
   }
 
@@ -109,10 +131,6 @@ export class HomePage implements OnInit {
 
   identify(index: number, item: any) {
     return item.id;
-  }
-
-  async logOut() {
-    await this.authService.logOut();
   }
 
   async displayDateModal() {

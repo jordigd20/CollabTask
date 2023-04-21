@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TaskService } from '../../../services/task.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { switchMap, of, Subject, takeUntil, from } from 'rxjs';
+import { switchMap, of, Subject, takeUntil } from 'rxjs';
 import { Task, Team } from '../../../interfaces';
 import { TeamService } from '../../../services/team.service';
 import { StorageService } from '../../../services/storage.service';
@@ -39,26 +39,22 @@ export class TaskDetailPage implements OnInit {
     private platform: Platform
   ) {}
 
-  ngOnInit() {
-    this.activeRoute.paramMap
-      .pipe(
-        switchMap((params) => {
-          if (params.get('idTask') && params.get('idTaskList')) {
-            this.idTask = params.get('idTask')!;
-            this.idTaskList = params.get('idTaskList')!;
-            this.fromDistribution = params.get('fromDistribution') === 'true';
-            return from(this.storageService.get('user'));
-          }
+  async ngOnInit() {
+    this.idTask = this.activeRoute.snapshot.params['idTask'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
+    this.fromDistribution = this.activeRoute.snapshot.params['fromDistribution'] === 'false';
+    this.idUser = await this.storageService.get('idUser');
 
-          return of();
-        }),
-        switchMap((user) => {
-          this.idUser = user.id;
-          return this.taskService.getTaskObservable(this.idTask!);
-        }),
+    if (!this.idTask || !this.idTaskList || !this.idUser) {
+      return;
+    }
+
+    this.taskService
+      .getTaskObservable(this.idTask)
+      .pipe(
         switchMap((task) => {
           if (!task) {
-            this.router.navigate(['/tabs/lists']);
+            this.router.navigate(['tabs/lists']);
             return of();
           }
 
@@ -74,7 +70,7 @@ export class TaskDetailPage implements OnInit {
           !team.userMembers[this.idUser!] ||
           !this.task
         ) {
-          this.router.navigate(['/tabs/lists']);
+          this.router.navigate(['tabs/lists']);
           return;
         }
 

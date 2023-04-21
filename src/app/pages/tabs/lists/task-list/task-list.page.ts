@@ -3,7 +3,7 @@ import { ActionSheetController, ModalController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../../services/task.service';
 import { Task } from '../../../../interfaces';
-import { from, switchMap, combineLatest, map, Subject, takeUntil, of } from 'rxjs';
+import { combineLatest, map, Subject, takeUntil } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { TeamService } from '../../../../services/team.service';
 import { Team } from '../../../../interfaces/models/team.interface';
@@ -35,37 +35,21 @@ export class TaskListPage implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
+    this.idUser = await this.storageService.get('idUser');
+
+    if (!this.idTeam || !this.idTaskList || !this.idUser) {
+      return;
+    }
+
     combineLatest([
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTeam = params.get('idTeam')!;
-            this.idTaskList = params.get('idTaskList')!;
-            return from(this.storageService.get('user'));
-          }
-
-          return of();
-        }),
-        switchMap((user) => {
-          this.idUser = user.id;
-          return this.teamService.getTeamObservable(this.idTeam!);
-        })
-      ),
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTeam = params.get('idTeam')!;
-            this.idTaskList = params.get('idTaskList')!;
-            return this.taskService.getAllAssignedTasks(this.idTaskList);
-          }
-
-          return of();
-        })
-      )
+      this.teamService.getTeamObservable(this.idTeam),
+      this.taskService.getAllAssignedTasks(this.idTaskList)
     ])
       .pipe(
-        takeUntil(this.destroy$),
-        map(([team, tasks]) => ({ team, tasks }))
+        map(([team, tasks]) => ({ team, tasks })),
+        takeUntil(this.destroy$)
       )
       .subscribe(({ team, tasks }) => {
         if (
@@ -74,7 +58,7 @@ export class TaskListPage implements OnInit {
           !team.userMembers[this.idUser] ||
           !tasks
         ) {
-          this.router.navigate(['/tabs/lists']);
+          this.router.navigate(['tabs/lists']);
           return;
         }
 

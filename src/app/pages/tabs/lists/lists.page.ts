@@ -4,7 +4,7 @@ import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
 import { Router } from '@angular/router';
-import { from, Subject, takeUntil, switchMap } from 'rxjs';
+import { Subject, takeUntil, switchMap, of } from 'rxjs';
 import { presentConfirmationModal } from '../../../helpers/common-functions';
 import { AnimationsService } from '../../../services/animations.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -20,7 +20,7 @@ export class ListsPage implements OnInit {
   teamsList: Team[] = [];
   isLoading: boolean = true;
   isSearching: boolean = false;
-  userId: string = '';
+  idCurrentUser: string = '';
   showTaskLists: { [key: string]: boolean } = {};
   colors: string[] = ['yellow', 'blue', 'purple', 'green', 'red'];
   assignedColors: { [key: string]: string } = {};
@@ -39,11 +39,16 @@ export class ListsPage implements OnInit {
 
   async ngOnInit() {
     this.isLoading = true;
-    from(this.storageService.get('user'))
+    this.idCurrentUser = await this.storageService.get('idUser');
+
+    this.authService.isUserLoggedIn$
       .pipe(
-        switchMap((user) => {
-          this.userId = user.id;
-          return this.teamService.getAllUserTeams(this.userId);
+        switchMap((isLoggedIn) => {
+          if (!isLoggedIn) {
+            return of();
+          }
+
+          return this.teamService.getAllUserTeams(this.idCurrentUser);
         }),
         takeUntil(this.destroy$)
       )
@@ -177,7 +182,7 @@ export class ListsPage implements OnInit {
   }
 
   async deleteTaskList(idTeam: string, idTaskList: string) {
-    await this.teamService.deleteTaskList(idTeam, idTaskList, this.userId);
+    await this.teamService.deleteTaskList(idTeam, idTaskList, this.idCurrentUser);
   }
 
   handleItemClick(idTeam: string, idTaskList: string) {

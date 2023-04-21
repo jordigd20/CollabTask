@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, combineLatest, from, map, of, switchMap, takeUntil } from 'rxjs';
+import { Subject, combineLatest, map, takeUntil } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
 import { Rating, Team, User } from '../../../../interfaces';
 import { UserService } from 'src/app/services/user.service';
@@ -30,56 +30,23 @@ export class RatingsPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
+    this.idUser = await this.storageService.get('idUser');
+
+    if (!this.idTeam || !this.idTaskList || !this.idUser) {
+      return;
+    }
+
     combineLatest([
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTaskList = params.get('idTaskList')!;
-            this.idTeam = params.get('idTeam')!;
-
-            return from(this.storageService.get('user'));
-          }
-
-          return of();
-        }),
-        switchMap((user) => {
-          if (user) {
-            this.idUser = user.id;
-            return this.teamService.getTeamObservable(this.idTeam!);
-          }
-
-          return of();
-        })
-      ),
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTaskList = params.get('idTaskList')!;
-            this.idTeam = params.get('idTeam')!;
-
-            return this.userService.getUsersByTeam(this.idTeam!);
-          }
-
-          return of();
-        })
-      ),
-      this.activeRoute.paramMap.pipe(
-        switchMap((params) => {
-          if (params.get('idTeam') && params.get('idTaskList')) {
-            this.idTaskList = params.get('idTaskList')!;
-            this.idTeam = params.get('idTeam')!;
-
-            return this.ratingService.getRatingsByTaskList(this.idTaskList!);
-          }
-
-          return of();
-        })
-      )
+      this.teamService.getTeamObservable(this.idTeam),
+      this.userService.getUsersByTeam(this.idTeam),
+      this.ratingService.getRatingsByTaskList(this.idTaskList)
     ])
       .pipe(
+        map(([team, users, ratings]) => ({ team, users, ratings })),
         takeUntil(this.destroy$),
-        map(([team, users, ratings]) => ({ team, users, ratings }))
       )
       .subscribe(({ users, team, ratings }) => {
         if (

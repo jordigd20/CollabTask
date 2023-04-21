@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../../services/team.service';
 import { TaskList, Team } from '../../../interfaces';
-import { switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-task-list-form',
@@ -37,29 +36,24 @@ export class TaskListFormPage implements OnInit {
     return this.taskListForm.get('distributionType');
   }
 
-  ngOnInit() {
-    this.activeRoute.paramMap
-      .pipe(
-        switchMap((params) => {
-          this.idTeam = params.get('idTeam') as string;
-          this.idTaskList = params.get('idTaskList') as string;
+  async ngOnInit() {
+    this.idTeam = this.activeRoute.snapshot.params['idTeam'];
+    this.idTaskList = this.activeRoute.snapshot.params['idTaskList'];
 
-          if (this.idTeam && this.idTaskList) {
-            this.headerTitle = 'Editar lista de tareas';
-            this.buttonText = 'Guardar cambios';
-            return this.teamService.getTeam(this.idTeam);
-          }
+    if (!this.idTeam || !this.idTaskList) {
+      return;
+    }
 
-          return of();
-        })
-      )
-      .subscribe((team) => {
-        if (team) {
-          this.fillComponentData(team);
-        } else {
-          this.router.navigate(['/tabs/lists']);
-        }
-      });
+    this.headerTitle = 'Editar lista de tareas';
+    this.buttonText = 'Guardar cambios';
+
+    this.teamService.getTeam(this.idTeam).subscribe((team) => {
+      if (team) {
+        this.fillComponentData(team);
+      } else {
+        this.router.navigate(['tabs/lists']);
+      }
+    });
   }
 
   fillComponentData(team: Team) {

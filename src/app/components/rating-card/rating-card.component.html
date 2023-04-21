@@ -22,7 +22,9 @@
         <div class="progress-bar">
           <div
             class="progress"
-            [ngStyle]="{ width: (totalStars[5] / totalRatings) * 100 + '%' }"
+            [ngStyle]="{
+              width: totalRatings === 0 ? '0%' : (totalStars[5] / totalRatings) * 100 + '%'
+            }"
           ></div>
         </div>
       </div>
@@ -31,7 +33,9 @@
         <div class="progress-bar">
           <div
             class="progress"
-            [ngStyle]="{ width: (totalStars[4] / totalRatings) * 100 + '%' }"
+            [ngStyle]="{
+              width: totalRatings === 0 ? '0%' : (totalStars[4] / totalRatings) * 100 + '%'
+            }"
           ></div>
         </div>
       </div>
@@ -40,7 +44,9 @@
         <div class="progress-bar">
           <div
             class="progress"
-            [ngStyle]="{ width: (totalStars[3] / totalRatings) * 100 + '%' }"
+            [ngStyle]="{
+              width: totalRatings === 0 ? '0%' : (totalStars[3] / totalRatings) * 100 + '%'
+            }"
           ></div>
         </div>
       </div>
@@ -49,7 +55,9 @@
         <div class="progress-bar">
           <div
             class="progress"
-            [ngStyle]="{ width: (totalStars[2] / totalRatings) * 100 + '%' }"
+            [ngStyle]="{
+              width: totalRatings === 0 ? '0%' : (totalStars[2] / totalRatings) * 100 + '%'
+            }"
           ></div>
         </div>
       </div>
@@ -58,7 +66,9 @@
         <div class="progress-bar">
           <div
             class="progress"
-            [ngStyle]="{ width: (totalStars[1] / totalRatings) * 100 + '%' }"
+            [ngStyle]="{
+              width: totalRatings === 0 ? '0%' : (totalStars[1] / totalRatings) * 100 + '%'
+            }"
           ></div>
         </div>
       </div>

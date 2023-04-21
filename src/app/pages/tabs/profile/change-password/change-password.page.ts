@@ -46,7 +46,7 @@ export class ChangePasswordPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    const idUser = this.activeRoute.snapshot.paramMap.get('idUser');
+    const idUser = this.activeRoute.snapshot.params['idUser'];
 
     if (!idUser) {
       return;

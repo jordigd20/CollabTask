@@ -5,13 +5,12 @@ import firebase from 'firebase/compat/app';
 import { RegisterData, User } from '../interfaces';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AlertController } from '@ionic/angular';
-import { lastValueFrom, of, switchMap, throwError, retry, take } from 'rxjs';
+import { BehaviorSubject, Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { LoginData } from '../interfaces';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { StorageService } from './storage.service';
-import { UserService } from './user.service';
 import { ToastService } from './toast.service';
 import { FcmService } from './fcm.service';
 import { authErrors } from '../helpers/common-functions';
@@ -20,6 +19,9 @@ import { authErrors } from '../helpers/common-functions';
   providedIn: 'root'
 })
 export class AuthService {
+  isUserLoggedIn$ = new BehaviorSubject<boolean>(false);
+  destroy$ = new Subject<void>();
+
   constructor(
     private auth: AngularFireAuth,
     private afs: AngularFirestore,
@@ -27,49 +29,31 @@ export class AuthService {
     private loadingController: LoadingController,
     private toastService: ToastService,
     private storageService: StorageService,
-    private userService: UserService,
     private fcmService: FcmService,
     private router: Router
   ) {
-    this.auth.authState
-      .pipe(
-        switchMap((authUser) => {
-          if (authUser) {
-            return this.userService.getUser(authUser?.uid).pipe(take(1));
-          }
-
-          return of();
-        }),
-        switchMap((user) => {
-          // It's possible that the user is still not created in the database
-          // so it retries 2 more times to try to get the user
-          if (user == null) {
-            return throwError(() => new Error('User not found'));
-          }
-
-          return of(user);
-        }),
-        retry(2)
-      )
-      .subscribe({
-        next: async (user) => {
-          console.log('authService', user);
-          if (user) {
-            await this.setUserInStorage(user);
-            this.fcmService.initPush();
-          }
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      });
+    this.auth.authState.subscribe(async (authUser) => {
+      if (authUser) {
+        await this.setUserInStorage(authUser.uid);
+        this.fcmService.initPush();
+        this.isUserLoggedIn$.next(true);
+      } else {
+        this.isUserLoggedIn$.next(false);
+      }
+    });
   }
 
   async logIn({ email, password }: LoginData) {
     try {
       await this.auth.signInWithEmailAndPassword(email, password);
       await this.setAvoidIntroPages(true);
-      this.router.navigate(['/tabs/home'], { replaceUrl: true });
+
+      this.isUserLoggedIn$.pipe(takeUntil(this.destroy$)).subscribe((isUserLoggedIn$) => {
+        if (isUserLoggedIn$) {
+          this.router.navigate(['tabs/home'], { replaceUrl: true });
+          this.destroy$.next();
+        }
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error, 'firebase');
@@ -115,7 +99,12 @@ export class AuthService {
 
       await this.setUserData(user);
       await this.setAvoidIntroPages(true);
-      this.router.navigate(['first-time'], { replaceUrl: true });
+      this.isUserLoggedIn$.pipe(takeUntil(this.destroy$)).subscribe((isUserLoggedIn$) => {
+        if (isUserLoggedIn$) {
+          this.router.navigate(['first-time'], { replaceUrl: true });
+          this.destroy$.next();
+        }
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error, 'firebase');
@@ -138,7 +127,7 @@ export class AuthService {
       const result = await this.auth.signInWithCredential(credential);
 
       // Check if user exists in firestore
-      const userDocSnapshot = await lastValueFrom(
+      const userDocSnapshot = await firstValueFrom(
         this.afs.doc<User>(`users/${result.user?.uid}`).get()
       );
 
@@ -177,14 +166,26 @@ export class AuthService {
         };
 
         await this.setUserData(user);
-        await this.setUserInStorage(user);
-        this.router.navigate(['first-time'], { replaceUrl: true });
-      } else {
-        this.router.navigate(['tabs/home'], { replaceUrl: true });
-      }
+        await this.setUserInStorage(user.id!);
 
-      await this.setAvoidIntroPages(true);
-      loading.dismiss();
+        this.isUserLoggedIn$.pipe(takeUntil(this.destroy$)).subscribe((isUserLoggedIn$) => {
+          if (isUserLoggedIn$) {
+            this.router.navigate(['first-time'], { replaceUrl: true });
+            this.setAvoidIntroPages(true);
+            loading.dismiss();
+            this.destroy$.next();
+          }
+        });
+      } else {
+        this.isUserLoggedIn$.pipe(takeUntil(this.destroy$)).subscribe((isUserLoggedIn$) => {
+          if (isUserLoggedIn$) {
+            this.router.navigate(['tabs/home'], { replaceUrl: true });
+            this.setAvoidIntroPages(true);
+            loading.dismiss();
+            this.destroy$.next();
+          }
+        });
+      }
     } catch (error) {
       loading.dismiss();
       console.error(error);
@@ -202,8 +203,8 @@ export class AuthService {
   }
 
   async logOut() {
-    await this.storageService.remove('user');
     await this.auth.signOut();
+    await this.storageService.remove('idUser');
     await this.router.navigate(['/auth/login'], { replaceUrl: true });
   }
 
@@ -272,7 +273,7 @@ export class AuthService {
     return this.storageService.set('avoidIntroPages', avoidIntroPages);
   }
 
-  private setUserInStorage(user: User) {
-    return this.storageService.set('user', user);
+  private setUserInStorage(idUser: string) {
+    return this.storageService.set('idUser', idUser);
   }
 }
