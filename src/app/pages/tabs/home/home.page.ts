@@ -2,16 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { TaskService } from 'src/app/services/task.service';
 import { StorageService } from 'src/app/services/storage.service';
-import {
-  BehaviorSubject,
-  Observable,
-  Subject,
-  combineLatest,
-  map,
-  of,
-  switchMap,
-  takeUntil
-} from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, map, of, switchMap, takeUntil } from 'rxjs';
 import { Task } from '../../../interfaces';
 import { ModalController } from '@ionic/angular';
 import { DatetimeModalComponent } from 'src/app/components/datetime-modal/datetime-modal.component';
@@ -41,7 +32,6 @@ export class HomePage implements OnInit {
     }[]
   >;
   tasksByDate = new Map<number, Task[]>();
-  destroy$ = new Subject<void>();
 
   constructor(
     private storageService: StorageService,
@@ -65,7 +55,7 @@ export class HomePage implements OnInit {
     this.idCurrentUser = await this.storageService.get('idUser');
 
     if (!this.idCurrentUser) {
-      return
+      return;
     }
 
     this.allDatesSelected.push({
@@ -96,12 +86,9 @@ export class HomePage implements OnInit {
             return of();
           }
 
-          return combineLatest([
-            this.taskService.getOutdatedTasks(this.idCurrentUser!),
-            ...tasks
-          ]);
+          return combineLatest([this.taskService.getOutdatedTasks(this.idCurrentUser!), ...tasks]);
         }),
-        takeUntil(this.destroy$)
+        takeUntil(this.authService.destroyLoggedIn$)
       )
       .subscribe((tasksByDate) => {
         this.outdatedTasks = tasksByDate[0];
@@ -117,7 +104,7 @@ export class HomePage implements OnInit {
     this.allDatesSelected = [];
     this.tasksByDate.clear();
     this.tasksByDate$.next([]);
-    this.destroy$.next();
+    this.tasksByDate$.complete();
   }
 
   ionViewDidLeave() {

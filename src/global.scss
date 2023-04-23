@@ -294,6 +294,10 @@ ion-spinner.loading-content {
   margin: 0 auto;
 }
 
+ion-infinite-scroll-content ion-spinner {
+  color: var(--ion-color-primary);
+}
+
 .info-chip {
   border-radius: 6px;
   background-color: var(--ion-color-tertiary);

@@ -4,7 +4,7 @@ import { TeamService } from '../../../services/team.service';
 import { Team } from '../../../interfaces';
 import { StorageService } from '../../../services/storage.service';
 import { Router } from '@angular/router';
-import { Subject, takeUntil, switchMap, of } from 'rxjs';
+import { takeUntil } from 'rxjs';
 import { presentConfirmationModal } from '../../../helpers/common-functions';
 import { AnimationsService } from '../../../services/animations.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -25,7 +25,6 @@ export class ListsPage implements OnInit {
   colors: string[] = ['yellow', 'blue', 'purple', 'green', 'red'];
   assignedColors: { [key: string]: string } = {};
   searchText: string = '';
-  destroy$ = new Subject<void>();
 
   constructor(
     private actionSheetController: ActionSheetController,
@@ -41,17 +40,9 @@ export class ListsPage implements OnInit {
     this.isLoading = true;
     this.idCurrentUser = await this.storageService.get('idUser');
 
-    this.authService.isUserLoggedIn$
-      .pipe(
-        switchMap((isLoggedIn) => {
-          if (!isLoggedIn) {
-            return of();
-          }
-
-          return this.teamService.getAllUserTeams(this.idCurrentUser);
-        }),
-        takeUntil(this.destroy$)
-      )
+    return this.teamService
+      .getAllUserTeams(this.idCurrentUser)
+      .pipe(takeUntil(this.authService.destroyLoggedIn$))
       .subscribe((teams) => {
         if (!teams) {
           this.teamsList = [];
@@ -66,10 +57,6 @@ export class ListsPage implements OnInit {
           this.isLoading = false;
         }
       });
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
   }
 
   fillComponentData(teams: Team[]) {

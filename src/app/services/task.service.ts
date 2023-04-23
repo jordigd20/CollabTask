@@ -33,6 +33,9 @@ export class TaskService {
   private task$: Observable<Task | undefined> | undefined;
   private outdatedTasks$: Observable<Task[]> | undefined;
   private tasksByDate$: Observable<Task[]> | undefined;
+  private searchedTasks$: Observable<Task[]> | undefined;
+  private lastSearchText: string = '';
+  private lastSearchLimit: number = 10;
   private outdatedTasksIdUser: string = '';
   private tasksByDateIdUser: string = '';
   private currentIdTaskList: string = '';
@@ -89,6 +92,48 @@ export class TaskService {
     return this.getAllTasksByTaskList(idTaskList).pipe(
       map((tasks) => tasks.filter((task) => idTasksResult.includes(task.id)))
     );
+  }
+
+  getTasksByText(idTeams: string[], text: string, limit: number) {
+    if (!this.searchedTasks$ || this.lastSearchText !== text || this.lastSearchLimit !== limit) {
+      this.searchedTasks$ = this.afs
+        .collection<Task>('tasks', (ref) =>
+          ref
+            .where('idTeam', 'in', idTeams)
+            .where('title', '>=', text)
+            .where('title', '<=', text + '\uf8ff')
+            .orderBy('title')
+            .limit(limit)
+        )
+        .valueChanges()
+        .pipe(
+          debounceTime(350),
+          map((tasks) => {
+            return (
+              tasks
+                // Firestore doesn't support inequality filters on multiple properties
+                .filter((tasks) => tasks.idUserAssigned !== '')
+                .map((task) => {
+                  const date = task.date as firebase.firestore.Timestamp;
+                  const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+
+                  task.date = convertTimestampToString(date);
+                  task.dateLimit = convertTimestampToString(dateLimit);
+
+                  return task;
+                })
+            );
+          }),
+          shareReplay({ bufferSize: 1, refCount: true })
+        );
+
+      console.log('searchedTasks$ is undefined');
+      this.lastSearchText = text;
+      this.lastSearchLimit = limit;
+    }
+
+    console.log('searchedTasks$ is defined');
+    return this.searchedTasks$;
   }
 
   getOutdatedTasks(idUser: string) {

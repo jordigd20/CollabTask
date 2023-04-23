@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
-import { Subject, from, of, switchMap, take, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { User } from '../../../interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -53,17 +53,9 @@ export class ProfilePage implements OnInit {
       return;
     }
 
-    this.authService.isUserLoggedIn$
-      .pipe(
-        switchMap((isLoggedIn) => {
-          if (!isLoggedIn) {
-            return of();
-          }
-
-          return this.userService.getUser(this.idCurrentUser!);
-        }),
-        takeUntil(this.destroy$)
-      )
+    this.userService
+      .getUser(this.idCurrentUser!)
+      .pipe(takeUntil(this.authService.destroyLoggedIn$))
       .subscribe((user) => {
         if (!user) {
           return;
@@ -87,6 +79,7 @@ export class ProfilePage implements OnInit {
 
   ngOnDestroy() {
     this.destroy$.next();
+    this.destroy$.complete();
   }
 
   navigateToSettings() {

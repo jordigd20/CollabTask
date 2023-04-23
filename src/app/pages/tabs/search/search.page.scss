@@ -1,0 +1,20 @@
+.main-container {
+  margin-top: 115px;
+}
+
+.loading-content {
+  margin-top: 135px !important;
+}
+
+.loading-search {
+  margin-top: 4px !important;
+  transform: scale(2);
+  display: block;
+  margin: 0 auto;
+}
+
+.list-container {
+  padding: 16px;
+  padding-bottom: 6px;
+  background-color: var(--ion-color-tertiary);
+}

@@ -20,6 +20,7 @@ import { authErrors } from '../helpers/common-functions';
 })
 export class AuthService {
   isUserLoggedIn$ = new BehaviorSubject<boolean>(false);
+  destroyLoggedIn$ = new Subject<void>();
   destroy$ = new Subject<void>();
 
   constructor(
@@ -32,13 +33,12 @@ export class AuthService {
     private fcmService: FcmService,
     private router: Router
   ) {
-    this.auth.authState.subscribe(async (authUser) => {
+    this.auth.onAuthStateChanged(async (authUser) => {
       if (authUser) {
         await this.setUserInStorage(authUser.uid);
         this.fcmService.initPush();
-        this.isUserLoggedIn$.next(true);
-      } else {
-        this.isUserLoggedIn$.next(false);
+        this.isUserLoggedIn$ = new BehaviorSubject<boolean>(true);
+        this.destroyLoggedIn$ = new Subject<void>();
       }
     });
   }
@@ -203,6 +203,10 @@ export class AuthService {
   }
 
   async logOut() {
+    this.destroyLoggedIn$.next();
+    this.destroyLoggedIn$.complete();
+    this.isUserLoggedIn$.next(false);
+    this.isUserLoggedIn$.complete();
     await this.auth.signOut();
     await this.storageService.remove('idUser');
     await this.router.navigate(['/auth/login'], { replaceUrl: true });

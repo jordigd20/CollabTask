@@ -42,6 +42,7 @@ export class SettingsPage implements OnInit {
 
   ngOnDestroy() {
     this.destroy$.next();
+    this.destroy$.complete();
   }
 
   navigateToEditProfile() {

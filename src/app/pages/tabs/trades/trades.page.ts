@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { TradeService } from '../../../services/trade.service';
-import { Observable, Subject, forkJoin, of, switchMap, take, takeUntil } from 'rxjs';
+import { Observable, forkJoin, of, switchMap, take, takeUntil } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
 import { Task, Trade } from '../../../interfaces';
 import { TaskService } from '../../../services/task.service';
@@ -32,7 +32,6 @@ export class TradesPage implements OnInit {
       accepting: boolean;
     };
   } = {};
-  destroy$ = new Subject<void>();
 
   constructor(
     private activeRoute: ActivatedRoute,
@@ -59,15 +58,9 @@ export class TradesPage implements OnInit {
       return;
     }
 
-    this.authService.isUserLoggedIn$
+    this.tradeService
+      .getTradesReceived(this.idUser!)
       .pipe(
-        switchMap((isLoggedIn) => {
-          if (!isLoggedIn) {
-            return of();
-          }
-
-          return this.tradeService.getTradesReceived(this.idUser!);
-        }),
         switchMap((trades) => {
           if (trades) {
             this.tradesReceived = trades;
@@ -96,7 +89,7 @@ export class TradesPage implements OnInit {
 
           return of();
         }),
-        takeUntil(this.destroy$)
+        takeUntil(this.authService.destroyLoggedIn$)
       )
       .subscribe((tasks) => {
         if (!tasks || !this.tradesReceived) {
@@ -123,7 +116,6 @@ export class TradesPage implements OnInit {
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
     this.tradesSent = undefined;
   }
 
@@ -135,15 +127,9 @@ export class TradesPage implements OnInit {
         return;
       }
 
-      this.authService.isUserLoggedIn$
+      this.tradeService
+        .getTradesSent(this.idUser!)
         .pipe(
-          switchMap((isLoggedIn) => {
-            if (!isLoggedIn) {
-              return of();
-            }
-
-            return this.tradeService.getTradesSent(this.idUser!);
-          }),
           switchMap((trades) => {
             if (trades) {
               this.tradesSent = trades;
@@ -167,7 +153,7 @@ export class TradesPage implements OnInit {
 
             return of();
           }),
-          takeUntil(this.destroy$)
+          takeUntil(this.authService.destroyLoggedIn$)
         )
         .subscribe((tasks) => {
           if (!tasks || !this.tradesSent) {

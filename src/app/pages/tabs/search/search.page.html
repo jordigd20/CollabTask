@@ -1,9 +1,67 @@
 <ion-header mode="md">
-  <ion-toolbar>
-    <ion-title>search</ion-title>
+  <ion-toolbar mode="md">
+    <ion-title class="fw-bold large-text ion-text-center">Buscador de tareas</ion-title>
+
+    <ion-buttons slot="secondary">
+      <ion-button>
+        <ion-icon slot="icon-only" name="options-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content color="tertiary" role="feed">
+  <ng-container *ngIf="filteredTasks; else loadingContent">
+    <app-toolbar-searchbar
+      title="Lista de tareas"
+      placeholder="Buscar tareas"
+      type="tareas"
+      [totalItems]="filteredTasksCopy?.length || 0"
+      (search)="handleSearch($event)"
+    ></app-toolbar-searchbar>
 
+    <div class="main-container">
+      <ion-list class="list-container" lines="none">
+        <ng-container *ngIf="!isSearching; else loadingSearch">
+          <app-task
+            *ngFor="let task of filteredTasksCopy; trackBy: identify"
+            [task]="task"
+            [idUser]="task.idUserAssigned"
+            [showCompleteButton]="task.idUserAssigned === idUser"
+            [showDistributionMode]="false"
+            [showMoreOptions]="false"
+            [distributionMode]="'none'"
+            [withoutUserAssigned]="false"
+          ></app-task>
+        </ng-container>
+
+        <ng-template #loadingSearch>
+          <ion-spinner class="loading-search" name="circles" color="primary"></ion-spinner>
+        </ng-template>
+      </ion-list>
+    </div>
+  </ng-container>
+
+  <ng-template #loadingContent>
+    <app-toolbar-searchbar
+      title="Lista de tareas"
+      placeholder="Buscar tareas"
+      type="tareas"
+      [totalItems]="0"
+      (search)="handleSearch($event)"
+    ></app-toolbar-searchbar>
+
+    <div class="main-container">
+      <ion-spinner class="loading-content" name="circles" color="primary"></ion-spinner>
+    </div>
+  </ng-template>
+
+  <ion-infinite-scroll
+    threshold="100px"
+    [disabled]="false"
+    position="bottom"
+    (ionInfinite)="loadData()"
+  >
+    <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
