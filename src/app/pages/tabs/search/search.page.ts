@@ -3,9 +3,10 @@ import { StorageService } from '../../../services/storage.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { TaskService } from 'src/app/services/task.service';
 import { TeamService } from 'src/app/services/team.service';
-import { Subject, filter, takeUntil } from 'rxjs';
+import { BehaviorSubject, Subject, filter, switchMap, takeUntil } from 'rxjs';
 import { Task } from '../../../interfaces';
-import { IonInfiniteScroll } from '@ionic/angular';
+import { IonInfiniteScroll, ModalController } from '@ionic/angular';
+import { SearchFiltersComponent } from 'src/app/components/search-filters/search-filters.component';
 
 @Component({
   selector: 'app-search',
@@ -19,17 +20,25 @@ export class SearchPage implements OnInit {
   idTeams: string[] = [];
   filteredTasks: Task[] | undefined;
   filteredTasksCopy: Task[] | undefined;
-  searchText: string = '';
   isSearching: boolean = false;
   userDidLeave: boolean = false;
-  queryLimit: number = 10;
+  filters = new BehaviorSubject({
+    idTeams: [] as string[],
+    searchText: '',
+    queryLimit: 10,
+    team: 'all',
+    idUserAssigned: 'all',
+    tasksCompleted: 'all'
+  });
+  newSearch: boolean = false;
   destroyWhenLeave$ = new Subject<void>();
 
   constructor(
     private storageService: StorageService,
     private authService: AuthService,
     private teamService: TeamService,
-    private taskService: TaskService
+    private taskService: TaskService,
+    private modalController: ModalController
   ) {}
 
   ngOnInit() {}
@@ -45,7 +54,7 @@ export class SearchPage implements OnInit {
       this.getFilteredTasks();
     }
 
-    return this.teamService
+    this.teamService
       .getAllUserTeams(this.idUser!)
       .pipe(
         filter((teams) => this.idTeams.length !== teams.length),
@@ -62,7 +71,11 @@ export class SearchPage implements OnInit {
           this.idTeams.push(team.id);
         }
 
-        this.handleSearch({ detail: { value: '' } });
+        this.filters.next({ ...this.filters.getValue(), idTeams: this.idTeams });
+
+        if (!this.filteredTasks) {
+          this.getFilteredTasks();
+        }
       });
   }
 
@@ -75,6 +88,7 @@ export class SearchPage implements OnInit {
   ngOnDestroy() {
     this.destroyWhenLeave$.next();
     this.destroyWhenLeave$.complete();
+    this.filters.complete();
   }
 
   identify(index: number, item: any) {
@@ -82,27 +96,46 @@ export class SearchPage implements OnInit {
   }
 
   handleSearch(ev: any) {
-    this.searchText = ev.detail.value;
     this.isSearching = true;
-    this.getFilteredTasks();
+    this.infiniteScroll.disabled = false;
+    this.filters.next({
+      ...this.filters.getValue(),
+      searchText: ev.detail.value,
+      queryLimit: 10
+    });
   }
 
   getFilteredTasks() {
-    this.taskService
-      .getTasksByText(this.idTeams, this.searchText, this.queryLimit)
-      .pipe(takeUntil(this.destroyWhenLeave$))
+    this.filters
+      .pipe(
+        switchMap((filters) => {
+          const { idTeams, searchText, queryLimit, team, idUserAssigned, tasksCompleted } = filters;
+          return this.taskService.getTasksByText({
+            idTeams,
+            text: searchText,
+            limit: queryLimit,
+            filters: {
+              team,
+              idUserAssigned,
+              tasksCompleted
+            }
+          });
+        }),
+        takeUntil(this.destroyWhenLeave$)
+      )
       .subscribe((tasks) => {
         if (!tasks) {
           return;
         }
 
         console.log(tasks);
-        if (tasks.length === this.filteredTasks?.length && !this.isSearching) {
+        if (tasks.length === this.filteredTasks?.length && !this.isSearching && !this.newSearch) {
           console.log('INFINITE SCROLL DISABLED');
           this.infiniteScroll.disabled = true;
         }
 
         this.isSearching = false;
+        this.newSearch = false;
         this.filteredTasks = tasks;
         this.filteredTasksCopy = tasks;
         this.infiniteScroll.complete();
@@ -110,7 +143,38 @@ export class SearchPage implements OnInit {
   }
 
   loadData() {
-    this.queryLimit += 10;
-    this.getFilteredTasks();
+    const filtersValue = this.filters.getValue();
+    this.filters.next({ ...filtersValue, queryLimit: filtersValue.queryLimit + 10 });
+  }
+
+  async displayFilters() {
+    const { team, idUserAssigned, tasksCompleted } = this.filters.getValue();
+    const modal = await this.modalController.create({
+      component: SearchFiltersComponent,
+      componentProps: {
+        searchFilters: { team, idUserAssigned, tasksCompleted },
+        idUser: this.idUser
+      },
+      initialBreakpoint: 1,
+      breakpoints: [0, 1],
+      cssClass: 'auto-sheet-modal'
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+
+    if (data) {
+      const { team, idUserAssigned, tasksCompleted } = data.searchForm;
+      this.infiniteScroll.disabled = false;
+      this.newSearch = true;
+      this.filters.next({
+        ...this.filters.getValue(),
+        team,
+        idUserAssigned,
+        tasksCompleted,
+        queryLimit: 10
+      });
+    }
   }
 }

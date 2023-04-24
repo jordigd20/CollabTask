@@ -1,11 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Task, Team } from '../../interfaces';
 import {
-  BehaviorSubject,
   Observable,
   Subject,
   combineLatest,
-  from,
   map,
   of,
   switchMap,
@@ -15,7 +13,7 @@ import { Router } from '@angular/router';
 import { StorageService } from 'src/app/services/storage.service';
 import { TeamService } from 'src/app/services/team.service';
 import { TaskService } from 'src/app/services/task.service';
-import { ModalController, ToastController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { ScoreModalComponent } from '../score-modal/score-modal.component';
 import { FormBuilder, Validators } from '@angular/forms';
 import { TradeService } from 'src/app/services/trade.service';
@@ -71,8 +69,6 @@ export class TradeFormComponent implements OnInit {
     }[]
   >();
   tasksByUser = new Map<string, Task[]>();
-
-  debounceTimer: NodeJS.Timeout | undefined;
   destroy$ = new Subject<void>();
 
   constructor(
@@ -82,7 +78,6 @@ export class TradeFormComponent implements OnInit {
     private taskService: TaskService,
     private tradeService: TradeService,
     private modalController: ModalController,
-    private toastController: ToastController,
     private router: Router
   ) {}
 

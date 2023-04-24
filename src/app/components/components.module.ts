@@ -21,6 +21,7 @@ import { CircleChartComponent } from './circle-chart/circle-chart.component';
 import { TradeFormComponent } from './trade-form/trade-form.component';
 import { EfficiencyCardComponent } from './efficiency-card/efficiency-card.component';
 import { RatingCardComponent } from './rating-card/rating-card.component';
+import { SearchFiltersComponent } from './search-filters/search-filters.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,8 @@ import { RatingCardComponent } from './rating-card/rating-card.component';
     CircleChartComponent,
     TradeFormComponent,
     EfficiencyCardComponent,
-    RatingCardComponent
+    RatingCardComponent,
+    SearchFiltersComponent
   ],
   imports: [
     CommonModule,
@@ -66,7 +68,8 @@ import { RatingCardComponent } from './rating-card/rating-card.component';
     CircleChartComponent,
     TradeFormComponent,
     EfficiencyCardComponent,
-    RatingCardComponent
+    RatingCardComponent,
+    SearchFiltersComponent
   ]
 })
 export class ComponentsModule { }

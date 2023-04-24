@@ -1,3 +1,4 @@
+export { TasksByTextParams } from './data/tasks-by-text-params.interface';
 export { ChangePasswordData } from './data/change-password-data.interface';
 export { UserData } from './data/user-data.interface';
 export { Trade } from './models/trade.interface';

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { TaskData, Task } from '../interfaces';
+import { TaskData, Task, TasksByTextParams } from '../interfaces';
 import { StorageService } from './storage.service';
 import {
   map,
@@ -36,6 +36,11 @@ export class TaskService {
   private searchedTasks$: Observable<Task[]> | undefined;
   private lastSearchText: string = '';
   private lastSearchLimit: number = 10;
+  private lastTextFilters = {
+    team: 'all',
+    idUserAssigned: 'all',
+    tasksCompleted: 'all'
+  };
   private outdatedTasksIdUser: string = '';
   private tasksByDateIdUser: string = '';
   private currentIdTaskList: string = '';
@@ -94,35 +99,60 @@ export class TaskService {
     );
   }
 
-  getTasksByText(idTeams: string[], text: string, limit: number) {
-    if (!this.searchedTasks$ || this.lastSearchText !== text || this.lastSearchLimit !== limit) {
+  getTasksByText({ idTeams, text, limit, filters }: TasksByTextParams) {
+    if (
+      !this.searchedTasks$ ||
+      this.lastSearchText !== text ||
+      this.lastSearchLimit !== limit ||
+      this.lastTextFilters.team !== filters.team ||
+      this.lastTextFilters.idUserAssigned !== filters.idUserAssigned ||
+      this.lastTextFilters.tasksCompleted !== filters.tasksCompleted
+    ) {
       this.searchedTasks$ = this.afs
-        .collection<Task>('tasks', (ref) =>
-          ref
-            .where('idTeam', 'in', idTeams)
-            .where('title', '>=', text)
-            .where('title', '<=', text + '\uf8ff')
-            .orderBy('title')
-            .limit(limit)
-        )
+        .collection<Task>('tasks', (ref) => {
+          let query: firebase.firestore.Query = ref;
+
+          if (filters.team !== 'all') {
+            query = query.where('idTeam', '==', filters.team);
+          } else {
+            query = query.where('idTeam', 'in', idTeams);
+          }
+
+          if (filters.idUserAssigned !== 'all') {
+            query = query.where('idUserAssigned', '==', filters.idUserAssigned);
+          }
+
+          if (filters.tasksCompleted === 'completed') {
+            query = query.where('completed', '==', true);
+          } else if (filters.tasksCompleted === 'uncompleted') {
+            query = query.where('completed', '==', false);
+            query = query.where('availableToAssign', '==', false);
+          }
+
+          if (text !== '') {
+            query = query.where('title', '>=', text);
+            query = query.where('title', '<=', text + '\uf8ff');
+          }
+
+          query = query.orderBy('title').limit(limit);
+
+          return query;
+        })
         .valueChanges()
         .pipe(
           debounceTime(350),
           map((tasks) => {
-            return (
-              tasks
-                // Firestore doesn't support inequality filters on multiple properties
-                .filter((tasks) => tasks.idUserAssigned !== '')
-                .map((task) => {
-                  const date = task.date as firebase.firestore.Timestamp;
-                  const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+            return tasks
+              .filter((tasks) => tasks.idUserAssigned !== '')
+              .map((task) => {
+                const date = task.date as firebase.firestore.Timestamp;
+                const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
 
-                  task.date = convertTimestampToString(date);
-                  task.dateLimit = convertTimestampToString(dateLimit);
+                task.date = convertTimestampToString(date);
+                task.dateLimit = convertTimestampToString(dateLimit);
 
-                  return task;
-                })
-            );
+                return task;
+              });
           }),
           shareReplay({ bufferSize: 1, refCount: true })
         );
@@ -130,6 +160,7 @@ export class TaskService {
       console.log('searchedTasks$ is undefined');
       this.lastSearchText = text;
       this.lastSearchLimit = limit;
+      this.lastTextFilters = filters;
     }
 
     console.log('searchedTasks$ is defined');
