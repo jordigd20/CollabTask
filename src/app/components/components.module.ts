@@ -22,6 +22,7 @@ import { TradeFormComponent } from './trade-form/trade-form.component';
 import { EfficiencyCardComponent } from './efficiency-card/efficiency-card.component';
 import { RatingCardComponent } from './rating-card/rating-card.component';
 import { SearchFiltersComponent } from './search-filters/search-filters.component';
+import { TaskListFiltersComponent } from './task-list-filters/task-list-filters.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { SearchFiltersComponent } from './search-filters/search-filters.componen
     TradeFormComponent,
     EfficiencyCardComponent,
     RatingCardComponent,
-    SearchFiltersComponent
+    SearchFiltersComponent,
+    TaskListFiltersComponent
   ],
   imports: [
     CommonModule,
@@ -69,7 +71,8 @@ import { SearchFiltersComponent } from './search-filters/search-filters.componen
     TradeFormComponent,
     EfficiencyCardComponent,
     RatingCardComponent,
-    SearchFiltersComponent
+    SearchFiltersComponent,
+    TaskListFiltersComponent
   ]
 })
 export class ComponentsModule { }

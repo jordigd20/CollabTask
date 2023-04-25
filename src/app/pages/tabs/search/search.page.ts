@@ -22,6 +22,7 @@ export class SearchPage implements OnInit {
   filteredTasksCopy: Task[] | undefined;
   isSearching: boolean = false;
   userDidLeave: boolean = false;
+  lastQueryLimit: number = 0;
   filters = new BehaviorSubject({
     idTeams: [] as string[],
     searchText: '',
@@ -98,6 +99,7 @@ export class SearchPage implements OnInit {
   handleSearch(ev: any) {
     this.isSearching = true;
     this.infiniteScroll.disabled = false;
+    this.newSearch = true;
     this.filters.next({
       ...this.filters.getValue(),
       searchText: ev.detail.value,
@@ -128,12 +130,22 @@ export class SearchPage implements OnInit {
           return;
         }
 
+        const { queryLimit } = this.filters.getValue();
+        console.log({ queryLimit, lastQueryLimit: this.lastQueryLimit });
         console.log(tasks);
+
+        if (queryLimit === this.lastQueryLimit && !this.newSearch) {
+          console.warn('QUERY LIMIT');
+          this.filteredTasksCopy = tasks;
+          return;
+        }
+
         if (tasks.length === this.filteredTasks?.length && !this.isSearching && !this.newSearch) {
           console.log('INFINITE SCROLL DISABLED');
           this.infiniteScroll.disabled = true;
         }
 
+        this.lastQueryLimit = queryLimit;
         this.isSearching = false;
         this.newSearch = false;
         this.filteredTasks = tasks;
@@ -147,7 +159,7 @@ export class SearchPage implements OnInit {
     this.filters.next({ ...filtersValue, queryLimit: filtersValue.queryLimit + 10 });
   }
 
-  async displayFilters() {
+  async handleFilters() {
     const { team, idUserAssigned, tasksCompleted } = this.filters.getValue();
     const modal = await this.modalController.create({
       component: SearchFiltersComponent,

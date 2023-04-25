@@ -6,7 +6,7 @@
   (preferences)="handlePreferences()"
 ></app-back-header>
 
-<ion-content color="tertiary">
+<ion-content color="tertiary" feed="role">
   <ng-container *ngIf="team && tasks; else loading">
     <app-toolbar-searchbar
       title="Lista de tareas"
@@ -17,23 +17,39 @@
     ></app-toolbar-searchbar>
 
     <div class="main-container ion-padding">
-      <ion-list class="list-container" lines="none">
-        <ion-item *ngIf="tasks.length === 0" class="root-helper helper sub-item" style="z-index: 0">
-          <ion-label>
-            Esta lista todavía no tiene ninguna tarea. ¡Reúnete con tus compañeros de equipo y
-            empieza a organizar el reparto!
-          </ion-label>
+      <ion-list
+        class="list-container"
+        lines="none"
+        [ngStyle]="{'padding': isSearching ? '10px' : '0' }"
+      >
+        <ion-item
+          *ngIf="tasks.length === 0 && !isSearching"
+          class="root-helper helper sub-item"
+          style="z-index: 0"
+        >
+          <ion-label> No se ha encontrado ninguna tarea </ion-label>
         </ion-item>
 
-        <app-task
-          *ngFor="let task of tasks; trackBy: identify"
-          [task]="task"
-          [idUser]="task.idUserAssigned"
-          [currentUserId]="idUser"
-          [withoutUserAssigned]="false"
-          [showCompleteButton]="idUser === task.idUserAssigned"
-          [showMoreOptions]="true"
-        ></app-task>
+        <ng-container *ngIf="!isSearching; else loadingSearch">
+          <app-task
+            *ngFor="let task of tasks; trackBy: identify"
+            [task]="task"
+            [idUser]="task.idUserAssigned"
+            [currentUserId]="idUser"
+            [withoutUserAssigned]="false"
+            [showCompleteButton]="idUser === task.idUserAssigned"
+            [showMoreOptions]="true"
+          ></app-task>
+        </ng-container>
+
+        <ng-template #loadingSearch>
+          <ion-spinner
+            class="loading-content"
+            name="circles"
+            color="primary"
+            style="margin-top: 0 !important"
+          ></ion-spinner>
+        </ng-template>
       </ion-list>
 
       <ion-fab vertical="bottom" horizontal="center" slot="fixed" style="position: fixed">
@@ -65,4 +81,13 @@
       style="margin-top: 140px !important"
     ></ion-spinner>
   </ng-template>
+
+  <ion-infinite-scroll
+    threshold="100px"
+    [disabled]="false"
+    position="bottom"
+    (ionInfinite)="loadData()"
+  >
+    <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

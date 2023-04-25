@@ -77,7 +77,7 @@ export const collabTaskErrors: { [key: string]: string } = {
   [TeamErrorCodes.FirestorePermissionDenied]:
     'No tienes el permiso suficiente para realizar esta acción',
   [TeamErrorCodes.TeamReachedMaxTasksPreferred]:
-    'Has alcanzado el máximo de tareas preferidas permitidas',
+    'Has alcanzado el máximo de tareas preferidas',
   [TeamErrorCodes.TeamEmptyTaskList]: 'No hay tareas para repartir',
   [TeamErrorCodes.TeamTasksExceedMaxPerDistribution]:
     'El número de tareas supera el máximo permitido para realizar el reparto',

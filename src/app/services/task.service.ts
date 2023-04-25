@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { TaskData, Task, TasksByTextParams } from '../interfaces';
+import { TaskData, Task, TasksByTextParams, AssignedTasksParams } from '../interfaces';
 import { StorageService } from './storage.service';
 import {
   map,
@@ -31,15 +31,23 @@ import { TaskErrorCodes } from '../interfaces/errors/task-error-codes.enum';
 export class TaskService {
   private tasks$: Observable<Task[]> | undefined;
   private task$: Observable<Task | undefined> | undefined;
+  private assignedTasks$: Observable<Task[]> | undefined;
   private outdatedTasks$: Observable<Task[]> | undefined;
   private tasksByDate$: Observable<Task[]> | undefined;
   private searchedTasks$: Observable<Task[]> | undefined;
-  private lastSearchText: string = '';
-  private lastSearchLimit: number = 10;
   private lastTextFilters = {
+    text: '',
     team: 'all',
     idUserAssigned: 'all',
-    tasksCompleted: 'all'
+    tasksCompleted: 'all',
+    limit: 10
+  };
+  private lastTaskListFilters = {
+    text: '',
+    idTaskList: '',
+    idUserAssigned: 'all',
+    tasksCompleted: 'all',
+    limit: 10
   };
   private outdatedTasksIdUser: string = '';
   private tasksByDateIdUser: string = '';
@@ -87,10 +95,70 @@ export class TaskService {
     );
   }
 
-  getAllAssignedTasks(idTaskList: string) {
-    return this.getAllTasksByTaskList(idTaskList).pipe(
-      map((tasks) => tasks.filter((task) => task.idUserAssigned !== ''))
-    );
+  getAssignedTasks({ idTaskList, text, limit, filters }: AssignedTasksParams) {
+    if (
+      !this.assignedTasks$ ||
+      this.lastTaskListFilters.idTaskList !== idTaskList ||
+      this.lastTaskListFilters.text !== text ||
+      this.lastTaskListFilters.limit !== limit ||
+      this.lastTaskListFilters.idUserAssigned !== filters.idUserAssigned ||
+      this.lastTaskListFilters.tasksCompleted !== filters.tasksCompleted
+    ) {
+      this.assignedTasks$ = this.afs
+        .collection<Task>('tasks', (ref) => {
+          let query: firebase.firestore.Query = ref;
+
+          if (filters.idUserAssigned !== 'all') {
+            query = query.where('idUserAssigned', '==', filters.idUserAssigned);
+          }
+
+          if (filters.tasksCompleted === 'completed') {
+            query = query.where('completed', '==', true);
+          } else if (filters.tasksCompleted === 'uncompleted') {
+            query = query.where('completed', '==', false);
+          }
+
+          if (text !== '') {
+            query = query.where('title', '>=', text).where('title', '<=', text + '\uf8ff');
+          }
+
+          query = query
+            .where('idTaskList', '==', idTaskList)
+            .orderBy('title', 'asc')
+            .orderBy('createdByUser.date', 'asc')
+            .limit(limit);
+          return query;
+        })
+        .valueChanges()
+        .pipe(
+          debounceTime(350),
+          map((tasks) => {
+            return tasks
+              .filter((task) => task.idUserAssigned !== '')
+              .map((task) => {
+                const date = task.date as firebase.firestore.Timestamp;
+                const dateLimit = task.dateLimit as firebase.firestore.Timestamp;
+
+                task.date = convertTimestampToString(date);
+                task.dateLimit = convertTimestampToString(dateLimit);
+
+                return task;
+              });
+          }),
+          shareReplay({ bufferSize: 1, refCount: true })
+        );
+
+      console.log('this.assignedTasks$ is undefined');
+      this.lastTaskListFilters = {
+        idTaskList,
+        text,
+        limit,
+        ...filters
+      };
+    }
+
+    console.log('this.assignedTasks$ is defined');
+    return this.assignedTasks$;
   }
 
   getTasksFromDistributionResult(idTaskList: string, idTasksResult: string[]) {
@@ -102,8 +170,8 @@ export class TaskService {
   getTasksByText({ idTeams, text, limit, filters }: TasksByTextParams) {
     if (
       !this.searchedTasks$ ||
-      this.lastSearchText !== text ||
-      this.lastSearchLimit !== limit ||
+      this.lastTextFilters.text !== text ||
+      this.lastTextFilters.limit !== limit ||
       this.lastTextFilters.team !== filters.team ||
       this.lastTextFilters.idUserAssigned !== filters.idUserAssigned ||
       this.lastTextFilters.tasksCompleted !== filters.tasksCompleted
@@ -158,9 +226,8 @@ export class TaskService {
         );
 
       console.log('searchedTasks$ is undefined');
-      this.lastSearchText = text;
-      this.lastSearchLimit = limit;
-      this.lastTextFilters = filters;
+
+      this.lastTextFilters = { text, limit, ...filters };
     }
 
     console.log('searchedTasks$ is defined');

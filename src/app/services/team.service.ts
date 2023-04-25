@@ -99,7 +99,6 @@ export class TeamService {
 
   getTeamObservable(id: string) {
     if (!this.team$ || this.currentIdTeam !== id) {
-      console.log('this.teamObs$ is undefined');
 
       this.team$ = this.afs
         .doc<Team>(`teams/${id}`)
@@ -109,13 +108,11 @@ export class TeamService {
       this.currentIdTeam = id;
     }
 
-    console.log('this.teamObs$ is defined');
     return this.team$;
   }
 
   getAllUserTeams(idUser: string) {
     if (!this.teams$ || this.currentIdUser !== idUser) {
-      console.log('this.teams$ is undefined');
 
       this.teams$ = this.afs
         .collection<Team>('teams', (ref) =>
@@ -127,7 +124,6 @@ export class TeamService {
       this.currentIdUser = idUser;
     }
 
-    console.log('this.teams$ is defined');
     return this.teams$;
   }
 

@@ -143,7 +143,7 @@ export class TradeFormComponent implements OnInit {
         console.log(this.tasksByUser);
       });
 
-    return this.taskService
+    this.taskService
       .getAllUncompletedTasksByUser(this.idTaskList!, this.idCurrentUser!)
       .pipe(
         switchMap((tasks) => {

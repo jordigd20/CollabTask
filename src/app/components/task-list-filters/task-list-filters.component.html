@@ -1,0 +1,71 @@
+<form (ngSubmit)="saveFilters()" class="inner-content" [formGroup]="taskListForm">
+  <div class="d-flex justify-center align-items-center ion-padding" style="gap: 5px">
+    <ion-icon slot="start" name="options-outline" class="large-text"></ion-icon>
+    <h3 class="fw-bold" style="margin: 0">Filtrar lista</h3>
+  </div>
+
+  <div class="users-container">
+    <p class="fw-bold ion-no-margin ion-padding-horizontal">Mostrar usuarios</p>
+
+    <div class="slide-flex-container ion-padding-start">
+      <ion-chip
+        (click)="onUserSelected('all')"
+        class="info-chip"
+        [ngClass]="{ 'chip-primary': idUserAssigned?.value === 'all' }"
+      >
+        <span>Todos</span>
+      </ion-chip>
+
+      <ion-chip
+        (click)="onUserSelected(user.id)"
+        *ngFor="let user of team.userMembers | objSortedValues"
+        [disabled]="disableSelectUser"
+        class="info-chip"
+        [ngClass]="{
+          'chip-primary': idUserAssigned?.value === user.id,
+          'chip--disabled': disableSelectUser
+        }"
+      >
+        <ion-avatar>
+          <img
+            [src]="user.photoURL || '../../../assets/no-photo.jpg'"
+            referrerpolicy="no-referrer"
+          />
+        </ion-avatar>
+        <span>{{ user.name }}</span>
+      </ion-chip>
+    </div>
+  </div>
+
+  <div class="complete-container ion-padding-horizontal">
+    <p class="fw-bold ion-no-margin">Mostrar tareas</p>
+
+    <ion-list class="list-radio">
+      <ion-radio-group formControlName="tasksCompleted" value="all">
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Todas</ion-label>
+          <ion-radio value="all"></ion-radio>
+        </ion-item>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Completadas</ion-label>
+          <ion-radio value="completed"></ion-radio>
+        </ion-item>
+
+        <ion-item mode="md" class="item-radio">
+          <ion-label>Sin completar</ion-label>
+          <ion-radio value="uncompleted"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-list>
+  </div>
+
+  <ion-button
+    class="ion-padding-horizontal ion-margin-vertical"
+    type="submit"
+    expand="block"
+    shape="round"
+  >
+    Aceptar
+  </ion-button>
+</form>

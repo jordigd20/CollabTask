@@ -1,3 +1,4 @@
+export { AssignedTasksParams } from './data/assigned-tasks-params.interface';
 export { TasksByTextParams } from './data/tasks-by-text-params.interface';
 export { ChangePasswordData } from './data/change-password-data.interface';
 export { UserData } from './data/user-data.interface';

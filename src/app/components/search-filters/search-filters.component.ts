@@ -80,10 +80,6 @@ export class SearchFiltersComponent implements OnInit {
   }
 
   saveFilters() {
-    this.dismiss();
-  }
-
-  dismiss() {
     this.modalController.dismiss({
       searchForm: this.searchForm.value
     });

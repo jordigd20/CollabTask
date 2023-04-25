@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { ActionSheetController, ModalController } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActionSheetController, IonInfiniteScroll, ModalController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../../../services/task.service';
 import { Task } from '../../../../interfaces';
-import { combineLatest, map, Subject, takeUntil } from 'rxjs';
+import { BehaviorSubject, Subject, switchMap, takeUntil } from 'rxjs';
 import { StorageService } from '../../../../services/storage.service';
 import { TeamService } from '../../../../services/team.service';
 import { Team } from '../../../../interfaces/models/team.interface';
 import { TradeFormComponent } from 'src/app/components/trade-form/trade-form.component';
 import { presentConfirmationModal } from 'src/app/helpers/common-functions';
+import { TaskListFiltersComponent } from 'src/app/components/task-list-filters/task-list-filters.component';
 
 @Component({
   selector: 'app-task-list',
@@ -16,13 +17,27 @@ import { presentConfirmationModal } from 'src/app/helpers/common-functions';
   styleUrls: ['./task-list.page.scss']
 })
 export class TaskListPage implements OnInit {
+  @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll = {} as IonInfiniteScroll;
+
   idTeam: string | undefined;
   idTaskList: string | undefined;
   idUser: string = '';
   team: Team | undefined;
   tasks: Task[] = [];
+  tasksCopy: Task[] = [];
   title: string = '...';
+  isSearching: boolean = false;
+  newSearch: boolean = false;
+  userDidLeave: boolean = false;
+  lastQueryLimit: number = 0;
+  filters = new BehaviorSubject({
+    searchText: '',
+    tasksCompleted: 'all',
+    idUserAssigned: 'all',
+    queryLimit: 10
+  });
   destroy$ = new Subject<void>();
+  destroyWhenLeave$ = new Subject<void>();
 
   constructor(
     private actionSheetController: ActionSheetController,
@@ -43,47 +58,146 @@ export class TaskListPage implements OnInit {
       return;
     }
 
-    combineLatest([
-      this.teamService.getTeamObservable(this.idTeam),
-      this.taskService.getAllAssignedTasks(this.idTaskList)
-    ])
-      .pipe(
-        map(([team, tasks]) => ({ team, tasks })),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(({ team, tasks }) => {
-        if (
-          !team ||
-          !team.taskLists[this.idTaskList!] ||
-          !team.userMembers[this.idUser] ||
-          !tasks
-        ) {
+    this.teamService
+      .getTeamObservable(this.idTeam)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((team) => {
+        if (!team || !team.taskLists[this.idTaskList!] || !team.userMembers[this.idUser]) {
           this.router.navigate(['tabs/lists']);
           return;
         }
 
         this.team = team;
-        this.tasks = tasks;
         this.title = team.taskLists[this.idTaskList!].name;
       });
+
+    this.getFilteredTasks();
+  }
+
+  ionViewWillEnter() {
+    if (this.userDidLeave) {
+      this.userDidLeave = false;
+      this.getFilteredTasks();
+    }
+  }
+
+  ionViewWillLeave() {
+    this.userDidLeave = true;
+    this.tasksCopy = [];
+    this.destroyWhenLeave$.next();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
+    this.destroy$.complete();
+    this.destroyWhenLeave$.next();
+    this.destroyWhenLeave$.complete();
   }
 
   identify(index: number, item: Task) {
     return index;
   }
 
-  handlePreferences() {}
+  getFilteredTasks() {
+    this.filters
+      .pipe(
+        switchMap((filters) => {
+          const { searchText, tasksCompleted, idUserAssigned, queryLimit } = filters;
+
+          return this.taskService.getAssignedTasks({
+            idTaskList: this.idTaskList!,
+            text: searchText,
+            limit: queryLimit,
+            filters: {
+              idUserAssigned,
+              tasksCompleted
+            }
+          });
+        }),
+        takeUntil(this.destroyWhenLeave$)
+      )
+      .subscribe((tasks) => {
+        if (!tasks) {
+          this.router.navigate(['tabs/lists']);
+          return;
+        }
+
+        const { queryLimit } = this.filters.getValue();
+        console.log({ queryLimit, lastQueryLimit: this.lastQueryLimit });
+        if (queryLimit === this.lastQueryLimit && !this.newSearch) {
+          console.warn('QUERY LIMIT');
+          this.tasks = tasks;
+          return;
+        }
+
+        if (tasks.length === this.tasksCopy.length && !this.isSearching && !this.newSearch) {
+          console.log('INFINITE SCROLL DISABLED');
+          this.infiniteScroll.disabled = true;
+        }
+
+        console.log(tasks);
+        this.lastQueryLimit = queryLimit;
+        this.tasks = tasks;
+        this.tasksCopy = tasks;
+        this.isSearching = false;
+        this.newSearch = false;
+        this.infiniteScroll.complete();
+      });
+  }
+
+  loadData() {
+    const filtersValue = this.filters.getValue();
+    this.filters.next({ ...filtersValue, queryLimit: filtersValue.queryLimit + 10 });
+  }
+
+  async handlePreferences() {
+    const { idUserAssigned, tasksCompleted } = this.filters.getValue();
+    console.log(this.filters.getValue());
+    const modal = await this.modalController.create({
+      component: TaskListFiltersComponent,
+      componentProps: {
+        taskListFilters: {
+          idUserAssigned,
+          tasksCompleted
+        },
+        team: this.team
+      },
+      initialBreakpoint: 1,
+      breakpoints: [0, 1],
+      cssClass: 'auto-sheet-modal'
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+
+    if (data) {
+      console.log(data.taskListFilters);
+      const { idUserAssigned, tasksCompleted } = data.taskListFilters;
+      this.infiniteScroll.disabled = false;
+      this.newSearch = true;
+      this.filters.next({
+        ...this.filters.getValue(),
+        idUserAssigned,
+        tasksCompleted,
+        queryLimit: 10
+      });
+    }
+  }
 
   handleMoreOptions() {
     this.presentTaskListActionSheet(this.idTeam!, this.idTaskList!);
   }
 
   handleSearch(event: any) {
-    // console.log(event);
+    this.isSearching = true;
+    this.infiniteScroll.disabled = false;
+    this.newSearch = true;
+    this.filters.next({
+      ...this.filters.getValue(),
+      searchText: event.detail.value,
+      queryLimit: 10
+    });
   }
 
   async presentTaskListActionSheet(idTeam: string, idTaskList: string) {

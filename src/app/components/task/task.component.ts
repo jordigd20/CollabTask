@@ -91,12 +91,7 @@ export class TaskComponent implements OnInit {
       fromDistribution: this.showDistributionMode
     };
 
-    this.router.navigate([
-      'task-detail/',
-      this.task.idTaskList,
-      this.task.id,
-      optParams
-    ]);
+    this.router.navigate(['task-detail/', this.task.idTaskList, this.task.id, optParams]);
   }
 
   async completeTask() {
@@ -194,10 +189,14 @@ export class TaskComponent implements OnInit {
     const userRole = this.team.userMembers[this.currentUserId].role;
     let buttons = [
       editTaskButton,
-      this.distributionMode === 'preferences' ? markAsPreferredButton : assignUserButton,
-      toggleTaskAvailabilityButton,
-      deleteTaskButton
+      this.distributionMode === 'preferences' ? markAsPreferredButton : assignUserButton
     ];
+
+    if (this.distributionMode !== 'none' && this.task.idUserAssigned !== '') {
+      buttons.push(toggleTaskAvailabilityButton);
+    }
+
+    buttons.push(deleteTaskButton);
 
     if (!this.showDistributionMode && userRole === 'member') {
       buttons = [];
