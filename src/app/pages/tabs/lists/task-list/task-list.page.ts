@@ -234,6 +234,24 @@ export class TaskListPage implements OnInit {
           }
         },
         {
+          text: 'Reiniciar los puntos de la lista',
+          icon: 'refresh-outline',
+          cssClass: 'action-sheet-custom-icon',
+          handler: async () => {
+            presentConfirmationModal({
+              title: 'Reinicio de puntos',
+              message:
+                'Realizar un reinicio de los puntos supone que todos los miembros perderán todos los puntos adquiridos de esta lista. ¿Estas seguro de que quieres reiniciar los puntos?',
+              confirmText: 'Aceptar',
+              dangerType: false,
+              confirmHandler: () => {
+                this.teamService.resetTaskListScore(this.idTeam!, this.idTaskList!);
+              },
+              modalController: this.modalController
+            });
+          }
+        },
+        {
           text: 'Editar lista de tareas',
           icon: 'create-outline',
           cssClass: 'action-sheet-tasklist-icon',

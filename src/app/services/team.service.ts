@@ -99,7 +99,6 @@ export class TeamService {
 
   getTeamObservable(id: string) {
     if (!this.team$ || this.currentIdTeam !== id) {
-
       this.team$ = this.afs
         .doc<Team>(`teams/${id}`)
         .valueChanges()
@@ -113,7 +112,6 @@ export class TeamService {
 
   getAllUserTeams(idUser: string) {
     if (!this.teams$ || this.currentIdUser !== idUser) {
-
       this.teams$ = this.afs
         .collection<Team>('teams', (ref) =>
           ref.where(`idUserMembers`, 'array-contains', idUser).orderBy('dateCreated', 'asc')
@@ -336,6 +334,54 @@ export class TeamService {
           cssClass: 'toast-success'
         });
       }
+    } catch (error) {
+      console.error(error);
+      this.handleError(error);
+    }
+  }
+
+  async resetTaskListScore(idTeam: string, idTaskList: string) {
+    try {
+      const idCurrentUser = await this.storageService.get('idUser');
+      const team = await firstValueFrom(this.getTeam(idTeam, idCurrentUser));
+
+      if (!team) {
+        throw new Error(TeamErrorCodes.TeamNotFound);
+      }
+
+      if (!team.userMembers[idCurrentUser]) {
+        throw new Error(TeamErrorCodes.UserNotFound);
+      }
+
+      if (team.userMembers[idCurrentUser].role !== 'admin') {
+        throw new Error(TeamErrorCodes.TeamUserPermissionDenied);
+      }
+
+      if (!team.taskLists[idTaskList]) {
+        throw new Error(TeamErrorCodes.TaskListNotFound);
+      }
+
+      const teamRef = this.afs.firestore.doc(`teams/${idTeam}`);
+      const batch = this.afs.firestore.batch();
+
+      for (const user of Object.values(team.userMembers)) {
+        const taskListScore = team.taskLists[idTaskList].userScore[user.id];
+
+        batch.update(teamRef, {
+          [`taskLists.${idTaskList}.userScore.${user.id}`]: 0,
+          [`userMembers.${user.id}.userTotalScore`]: firebase.firestore.FieldValue.increment(
+            -taskListScore
+          )
+        });
+      }
+
+      await batch.commit();
+
+      this.toastService.showToast({
+        message: 'Se han reiniciado los puntos de la lista de tareas',
+        icon: 'checkmark-circle',
+        cssClass: 'toast-success'
+      });
     } catch (error) {
       console.error(error);
       this.handleError(error);

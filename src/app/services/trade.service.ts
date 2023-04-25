@@ -216,6 +216,23 @@ export class TradeService {
         throw new Error(TeamErrorCodes.UserDoesNotBelongToTeam);
       }
 
+      if (
+        trade.tradeType === 'score' &&
+        team.taskLists[trade.idTaskList].userScore[userSender.id] < trade.scoreOffered
+      ) {
+        await Promise.all([
+          this.afs.doc<Trade>(`trades/${trade.id}`).update({
+            status: 'rejected'
+          }),
+          this.afs.doc<Task>(`tasks/${trade.taskOffered}`).update({
+            isInvolvedInTrade: false,
+            idTrade: ''
+          })
+        ]);
+
+        throw new Error(TradeErrorCodes.SenderUserDoesNotHaveEnoughScore);
+      }
+
       if (taskOffered.completed) {
         await Promise.all([
           this.afs.doc<Trade>(`trades/${trade.id}`).update({
@@ -277,8 +294,9 @@ export class TradeService {
             firebase.firestore.FieldValue.increment(trade.scoreOffered),
           [`taskLists.${idTaskList}.userScore.${userSender.id}`]:
             firebase.firestore.FieldValue.increment(-trade.scoreOffered),
-          [`userMembers.${userSender.id}.userTotalScore`]:
-            firebase.firestore.FieldValue.increment(-trade.scoreOffered)
+          [`userMembers.${userSender.id}.userTotalScore`]: firebase.firestore.FieldValue.increment(
+            -trade.scoreOffered
+          )
         });
 
         batch.update(userSenderRef, {
