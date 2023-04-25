@@ -76,6 +76,12 @@
           <span>{{ user.name }}</span>
         </ion-chip>
       </ng-container>
+
+      <ng-container *ngIf="(team.userMembers | objSortedValues).length === 1">
+        <ion-chip class="info-chip" [disabled]="true">
+          <span>No hay más miembros en el equipo</span>
+        </ion-chip>
+      </ng-container>
     </div>
 
     <ng-template #loadingUsers>
