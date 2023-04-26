@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { isPlatform } from '@ionic/angular';
+import { NavigationBar } from '@hugotomazi/capacitor-navigation-bar';
 
 @Component({
   selector: 'app-register',
@@ -37,6 +38,9 @@ export class RegisterPage implements OnInit {
   }
 
   ngOnInit() {
+    NavigationBar.setTransparency({ isTransparent: false });
+    NavigationBar.setColor({ color: '#ffffff', darkButtons: true });
+
     this.credentials = this.fb.group(
       {
         username: ['', Validators.required],

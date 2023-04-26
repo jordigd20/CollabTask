@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { isPlatform, ModalController } from '@ionic/angular';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { ForgotPasswordComponent } from '../../../components/forgot-password/forgot-password.component';
+import { NavigationBar } from '@hugotomazi/capacitor-navigation-bar';
 
 @Component({
   selector: 'app-login',
@@ -33,6 +34,9 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit() {
+    NavigationBar.setTransparency({ isTransparent: false });
+    NavigationBar.setColor({ color: '#ffffff', darkButtons: true });
+
     this.loginCredentials = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]

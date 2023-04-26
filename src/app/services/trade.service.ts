@@ -417,7 +417,7 @@ export class TradeService {
     await batch.commit();
 
     this.toastService.showToast({
-      message: 'Se ha rechazado el intercambio',
+      message: 'Se ha eliminado el intercambio',
       icon: 'checkmark-circle',
       cssClass: 'toast-success'
     });

@@ -6,6 +6,7 @@ import { BehaviorSubject, Observable, combineLatest, map, of, switchMap, takeUnt
 import { Task } from '../../../interfaces';
 import { ModalController } from '@ionic/angular';
 import { DatetimeModalComponent } from 'src/app/components/datetime-modal/datetime-modal.component';
+import { NavigationBar } from '@hugotomazi/capacitor-navigation-bar';
 
 @Component({
   selector: 'app-home',
@@ -41,6 +42,9 @@ export class HomePage implements OnInit {
   ) {}
 
   async ngOnInit() {
+    NavigationBar.setTransparency({ isTransparent: false });
+    NavigationBar.setColor({ color: '#ffffff', darkButtons: true });
+
     this.selectedDay.setHours(12, 0, 0, 0);
     this.today.setHours(12, 0, 0, 0);
     const firstDay = this.getFirstDayOfWeek(this.today);

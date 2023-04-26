@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { IonicSlides } from '@ionic/angular';
 import SwiperCore, { Pagination, SwiperOptions } from 'swiper';
 import { SwiperComponent } from 'swiper/angular';
+import { NavigationBar } from '@hugotomazi/capacitor-navigation-bar';
 
 SwiperCore.use([Pagination, IonicSlides]);
 
@@ -21,7 +22,9 @@ export class SlidesPage implements OnInit {
 
   constructor(private router: Router) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    NavigationBar.setTransparency({ isTransparent: true });
+  }
 
   continue() {
     if (this.swiper?.swiperRef.activeIndex === 3)
