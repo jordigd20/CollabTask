@@ -106,7 +106,7 @@ export class TaskListPage implements OnInit {
 
           return this.taskService.getAssignedTasks({
             idTaskList: this.idTaskList!,
-            text: searchText,
+            text: searchText.trim().toLowerCase(),
             limit: queryLimit,
             filters: {
               idUserAssigned,

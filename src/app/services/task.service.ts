@@ -119,12 +119,14 @@ export class TaskService {
           }
 
           if (text !== '') {
-            query = query.where('title', '>=', text).where('title', '<=', text + '\uf8ff');
+            query = query
+              .where('lowerCaseTitle', '>=', text)
+              .where('lowerCaseTitle', '<=', text + '\uf8ff');
           }
 
           query = query
             .where('idTaskList', '==', idTaskList)
-            .orderBy('title', 'asc')
+            .orderBy('lowerCaseTitle', 'asc')
             .orderBy('createdByUser.date', 'asc')
             .limit(limit);
           return query;
@@ -198,11 +200,11 @@ export class TaskService {
           }
 
           if (text !== '') {
-            query = query.where('title', '>=', text);
-            query = query.where('title', '<=', text + '\uf8ff');
+            query = query.where('lowerCaseTitle', '>=', text);
+            query = query.where('lowerCaseTitle', '<=', text + '\uf8ff');
           }
 
-          query = query.orderBy('title').limit(limit);
+          query = query.orderBy('lowerCaseTitle').limit(limit);
 
           return query;
         })
@@ -505,6 +507,7 @@ export class TaskService {
         idUserAssigned: '',
         idTemporalUserAssigned: '',
         title: title.trim(),
+        lowerCaseTitle: title.trim().toLowerCase(),
         description,
         score,
         availableToAssign: true,
@@ -536,7 +539,7 @@ export class TaskService {
     }
   }
 
-  async updateTask({ idTask, idTaskList, date, dateLimit, ...taskData }: TaskData) {
+  async updateTask({ idTask, idTaskList, date, dateLimit, title, ...taskData }: TaskData) {
     try {
       if (idTask && idTaskList) {
         const task = await firstValueFrom(this.getTask(idTask, idTaskList));
@@ -550,11 +553,14 @@ export class TaskService {
         const dateString = (date as string).split('T')[0];
         const dateLimitString = (dateLimit as string).split('T')[0];
         const possibleDates = [dateString, dateLimitString].concat(taskData.datePeriodic);
+        const lowerCaseTitle = title.trim().toLowerCase();
 
         await this.afs.doc<Task>(`tasks/${idTask}`).update({
           date: dateTimestamp,
           dateLimit: dateLimitTimestamp,
           possibleDates,
+          title: title.trim(),
+          lowerCaseTitle,
           ...taskData
         });
 

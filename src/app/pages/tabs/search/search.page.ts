@@ -114,7 +114,7 @@ export class SearchPage implements OnInit {
           const { idTeams, searchText, queryLimit, team, idUserAssigned, tasksCompleted } = filters;
           return this.taskService.getTasksByText({
             idTeams,
-            text: searchText,
+            text: searchText.trim().toLowerCase(),
             limit: queryLimit,
             filters: {
               team,

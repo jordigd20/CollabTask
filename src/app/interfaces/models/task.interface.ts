@@ -8,6 +8,7 @@ export interface Task {
   idTemporalUserAssigned: string;
   availableToAssign: boolean;
   title: string;
+  lowerCaseTitle: string;
   description: string;
   score: number;
   selectedDate: string;
