@@ -211,9 +211,10 @@ export class TaskDetailPage implements OnInit {
   async selectImage() {
     try {
       const image = await Camera.getPhoto({
-        quality: 70,
+        quality: 75,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
+        width: 700,
         promptLabelHeader: 'Seleccionar una imagen',
         promptLabelPhoto: 'Seleccionar desde la galería',
         promptLabelPicture: 'Tomar una foto'

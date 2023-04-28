@@ -4,7 +4,7 @@
   <ion-list class="settings-list ion-no-padding" lines="none">
     <ion-list-header color="primary">
       <ion-label>
-        <h2 *ngIf="user; else loading">Jordi Gómez</h2>
+        <h2 *ngIf="user; else loading">{{ user.username }}</h2>
         <ng-template #loading>
           <h2>...</h2>
         </ng-template>
