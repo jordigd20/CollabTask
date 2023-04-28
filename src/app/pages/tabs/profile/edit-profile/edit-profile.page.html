@@ -5,6 +5,7 @@
     <img
       *ngIf="user; else loadingPhoto"
       [src]="user.photoURL || '../../../../../assets/no-photo.jpg'"
+      [alt]="'Avatar de ' + user.username"
     />
     <ng-template #loadingPhoto>
       <img src="../../../../../assets/no-photo.jpg" />

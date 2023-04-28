@@ -11,7 +11,11 @@
   <div class="profile-main-content">
     <ng-container *ngIf="user; else loading">
       <ion-avatar class="user">
-        <img [src]="user.photoURL || '../../../../assets/no-photo.jpg'" referrerpolicy="no-referrer"/>
+        <img
+          [src]="user.photoURL || '../../../../assets/no-photo.jpg'"
+          [alt]="'Avatar de ' + user.username"
+          referrerpolicy="no-referrer"
+        />
       </ion-avatar>
       <h2 class="username">{{ user.username }}</h2>
 

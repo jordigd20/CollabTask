@@ -5,13 +5,17 @@
   (moreOptions)="showMoreOptions()"
 ></app-back-header>
 
-
 <ion-content class="detail-content" [fullscreen]="true">
   <div class="image-container">
-    <ion-img *ngIf="task && task.imageURL" [src]="task.imageURL"></ion-img>
+    <ion-img
+      *ngIf="task && task.imageURL"
+      [src]="task.imageURL"
+      [alt]="'Imagen de fondo de la tarea ' + task.title"
+    ></ion-img>
     <ion-img
       *ngIf="!task || !task.imageURL"
       [src]="'../../../../../assets/task-background.jpg'"
+      alt="Tarea sin imagen de fondo"
     ></ion-img>
 
     <ion-button (click)="selectImage()" class="image-btn fw-regular" color="light" shape="round">

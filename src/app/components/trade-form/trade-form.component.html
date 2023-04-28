@@ -70,6 +70,7 @@
           <ion-avatar>
             <img
               [src]="user.photoURL || '../../../assets/no-photo.jpg'"
+              [alt]="'Avatar de ' + user.name"
               referrerpolicy="no-referrer"
             />
           </ion-avatar>
@@ -88,13 +89,13 @@
       <div class="slide-flex-container ion-padding-start">
         <ion-chip class="info-chip">
           <ion-avatar>
-            <img [src]="'../../../assets/no-photo.jpg'" />
+            <img [src]="'../../../assets/no-photo.jpg'" alt="Sin usuario" />
           </ion-avatar>
           <ion-skeleton-text animated style="width: 115px"></ion-skeleton-text>
         </ion-chip>
         <ion-chip class="info-chip">
           <ion-avatar>
-            <img [src]="'../../../assets/no-photo.jpg'" />
+            <img [src]="'../../../assets/no-photo.jpg'" alt="Sin usuario" />
           </ion-avatar>
           <ion-skeleton-text animated style="width: 115px"></ion-skeleton-text>
         </ion-chip>
