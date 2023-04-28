@@ -116,7 +116,7 @@ export class EditProfilePage implements OnInit {
   async selectImage() {
     try {
       const image = await Camera.getPhoto({
-        quality: 85,
+        quality: 60,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         promptLabelHeader: 'Seleccionar una imagen',

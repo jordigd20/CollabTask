@@ -76,12 +76,12 @@ export class TaskDetailPage implements OnInit {
 
         this.team = team;
 
-        if (!this.fromDistribution && this.task.idUserAssigned) {
+        if (this.fromDistribution && this.task.idUserAssigned) {
           this.userPhotoURL = team.userMembers[this.task.idUserAssigned].photoURL;
           this.username = team.userMembers[this.task.idUserAssigned].name;
         }
 
-        if (this.fromDistribution && this.task.idTemporalUserAssigned) {
+        if (!this.fromDistribution && this.task.idTemporalUserAssigned) {
           this.userPhotoURL = team.userMembers[this.task.idTemporalUserAssigned].photoURL;
           this.username = team.userMembers[this.task.idTemporalUserAssigned].name;
         }
@@ -211,7 +211,7 @@ export class TaskDetailPage implements OnInit {
   async selectImage() {
     try {
       const image = await Camera.getPhoto({
-        quality: 85,
+        quality: 70,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         promptLabelHeader: 'Seleccionar una imagen',

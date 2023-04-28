@@ -31,7 +31,6 @@ export class TaskComponent implements OnInit {
   userTeamMembersList: UserMember[] = [];
   isTaskPreferred: boolean = false;
   isLoading: boolean = false;
-  disableMoreOptions: boolean = false;
 
   destroy$ = new Subject<void>();
 

@@ -111,9 +111,16 @@
       <ion-button
         *ngIf="
           (showDistributionMode && showMoreOptions) ||
-          (!showDistributionMode && showMoreOptions && currentUserId)
+          (!showDistributionMode &&
+            showMoreOptions &&
+            currentUserId &&
+            team.userMembers[currentUserId].role === 'admin') ||
+          (!showDistributionMode &&
+            showMoreOptions &&
+            currentUserId &&
+            team.userMembers[currentUserId].role === 'member' &&
+            task.completed)
         "
-        [disabled]="disableMoreOptions"
         (click)="moreOptions(); $event.stopPropagation()"
         class="more-opts-btn"
         fill="clear"
