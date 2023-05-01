@@ -266,7 +266,12 @@ exports.updateUserQualityMark = functions.firestore
           isRatingUpdated
         ) {
           console.log("Efficiency (before): ", user.efficiency);
-          const efficiency = user.totalTasksCompleted / user.totalTasksAssigned;
+          let efficiency = 0;
+
+          if (user.totalTasksAssigned !== 0) {
+            efficiency = user.totalTasksCompleted / user.totalTasksAssigned;
+          }
+
           console.log("Efficiency (after): ", efficiency);
 
           const qualityMark =
