@@ -24,8 +24,6 @@ El principal objetivo de esta aplicación es permitir a los usuarios crear grupo
 
 ## Funcionalidades a destacar
 
-Collabtask cuenta con varias funcionalidades a destacar, como són:
-
 - **Interacción entre varios usuarios a tiempo real**: El movimiento de las tareas entre usuarios se produce a tiempo real sin tener que recargar las interfaces. Esto se ha conseguido utilizando observables para la comunicación entre la app y la base de datos de Cloud Firestore, haciendo de esta forma que todos los participantes de un mismo equipo puedan interactuar a la vez mientras se hace el reparto.
 
 - **Sistema de notificaciones diarias**: Cada día se ejecuta una función que manda a una notificación a todos los usuarios que tengan tareas pendientes para que no se les olvide realizarlas.
