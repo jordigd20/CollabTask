@@ -20,6 +20,8 @@ import { TradeErrorCodes } from '../interfaces/errors/trade-error-codes.enum';
 export class TradeService {
   private tradesReceived$: Observable<Trade[]> | undefined;
   private tradesSent$: Observable<Trade[]> | undefined;
+  private currentTradesReceivedIdUser: string = '';
+  private currentTradesSentIdUser: string = '';
 
   constructor(
     private afs: AngularFirestore,
@@ -29,7 +31,7 @@ export class TradeService {
   ) {}
 
   getTradesReceived(idUser: string) {
-    if (!this.tradesReceived$) {
+    if (!this.tradesReceived$ || this.currentTradesReceivedIdUser !== idUser) {
       this.tradesReceived$ = this.afs
         .collection<Trade>('trades', (ref) =>
           ref
@@ -51,13 +53,15 @@ export class TradeService {
           }),
           shareReplay({ bufferSize: 1, refCount: true })
         );
+
+      this.currentTradesReceivedIdUser = idUser;
     }
 
     return this.tradesReceived$;
   }
 
   getTradesSent(idUser: string) {
-    if (!this.tradesSent$) {
+    if (!this.tradesSent$ || this.currentTradesSentIdUser !== idUser) {
       this.tradesSent$ = this.afs
         .collection<Trade>('trades', (ref) =>
           ref.where('userSender.id', '==', idUser).orderBy('createdAt', 'desc')
@@ -76,6 +80,8 @@ export class TradeService {
           }),
           shareReplay({ bufferSize: 1, refCount: true })
         );
+
+      this.currentTradesSentIdUser = idUser;
     }
 
     return this.tradesSent$;
